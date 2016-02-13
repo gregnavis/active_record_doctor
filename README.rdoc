@@ -1,0 +1,46 @@
+= Active Record Doctor
+
+Active Record Doctor helps to keep the database in a good shape. Currently, it
+can index unindexed foreign keys. More features coming soon!
+
+== Installation
+
+The preferred installation method is adding +active_record_doctor+ to your
++Gemfile+:
+
+  # git: is required as the gem hasn't been released yet
+  gem 'active_record_doctor', group: :development,
+    github: 'gregnavis/active-record-doctor'
+
+Then run:
+
+  bundle install
+
+== Usage
+
+=== Indexing Unindexed Foreign Keys
+
+Foreign keys should be indexed unless it's proven ineffective. However, Rails
+makes it easy to create an unindexed foreign key. Active Record Doctor can
+automatically generate database migrations that add the missing indexes. It's a
+three-step process:
+
+1. Generate a list of unindexed foreign keys by running
+
+     rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
+
+2. Remove columns that should _not_ be indexed from +unindexed_foreign_keys.txt+
+   as a column can look like a foreign key (i.e. end with +_id+) without being
+   one.
+
+3. Generate the migrations
+
+     rails generate active_record_doctor:add_indexes unindexed_foreign_keys.txt
+
+4. Run the migrations
+
+     rake db:migrate
+
+== Author
+
+This gem is developed and maintained by {Greg Navis}[http://www.gregnavis.com].
