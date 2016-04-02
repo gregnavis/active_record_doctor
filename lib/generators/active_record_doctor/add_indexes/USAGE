@@ -1,0 +1,2 @@
+Usage:
+  rails generate active_record_doctor:add_indexes PATH
