@@ -12,21 +12,28 @@ module ActiveRecordDoctor
       end
 
       def run
-        tables = connection.tables
-        @printer.print_unindexed_foreign_keys(tables.select do |table|
-          !["schema_migrations"].include?(table)
+        @printer.print_unindexed_foreign_keys(unindexed_foreign_keys)
+      end
+
+      private
+
+      def unindexed_foreign_keys
+        connection.tables.select do |table|
+          "schema_migrations" != table
         end.map do |table|
           [
             table,
             connection.columns(table).select do |column|
-              column.name.end_with?("_id") && !indexed?(table, column)
-            end.map do |column|
-              column.name
-            end
+              foreign_key?(table, column) && !indexed?(table, column)
+            end.map(&:name)
           ]
         end.select do |table, columns|
-          columns.present?
-        end.to_h)
+          !columns.empty?
+        end.to_h
+      end
+
+      def foreign_key?(table, column)
+        column.name.end_with?("_id")
       end
 
       def indexed?(table, column)
