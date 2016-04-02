@@ -7,9 +7,10 @@ module ActiveRecordDoctor
 
     def create_migrations
       migration_descriptions = read_migration_descriptions(path)
-      timestamp = Time.now.strftime("%Y%m%d%H%M%S")
+      now = Time.now
 
-      migration_descriptions.each do |migration_description|
+      migration_descriptions.each_with_index do |migration_description, index|
+        timestamp = (now + index).strftime("%Y%m%d%H%M%S")
         file_name = "db/migrate/#{timestamp}_index_foreign_keys_in_#{migration_description.table}.rb"
         create_file(file_name, content(migration_description))
       end
