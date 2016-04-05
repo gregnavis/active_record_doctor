@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_doctor (1.0.1)
+    active_record_doctor (1.0.2)
       rails (~> 4.2)
 
 GEM
@@ -107,6 +107,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_record_doctor!
+  rails (~> 4.2)
   rake (~> 11.1)
   sqlite3 (~> 1.3)
 
