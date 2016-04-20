@@ -3,6 +3,8 @@
 Active Record Doctor helps to keep the database in a good shape. Currently, it
 can index unindexed foreign keys. More features coming soon!
 
+Want to suggest a feature? Just shoot me {an email}[mailto:contact@gregnavis.com].
+
 {<img src="https://travis-ci.org/gregnavis/active_record_doctor.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/gregnavis/active_record_doctor]
 
 == Installation
