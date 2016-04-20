@@ -10,9 +10,7 @@ can index unindexed foreign keys. More features coming soon!
 The preferred installation method is adding +active_record_doctor+ to your
 +Gemfile+:
 
-  # git: is required as the gem hasn't been released yet
-  gem 'active_record_doctor', group: :development,
-    github: 'gregnavis/active-record-doctor'
+  gem 'active_record_doctor', group: :development
 
 Then run:
 
