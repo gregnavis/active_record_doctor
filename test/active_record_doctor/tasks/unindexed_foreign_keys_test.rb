@@ -6,7 +6,7 @@ class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < ActiveSupport::TestC
   def test_unindexed_foreign_keys_are_reported
     result = run_task
 
-    assert_equal([{ "users" => ["profile_id"] }], result)
+    assert_equal({ "users" => ["profile_id"] }, result)
   end
 
   private
