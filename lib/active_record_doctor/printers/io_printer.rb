@@ -10,6 +10,17 @@ module ActiveRecordDoctor
           "#{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
+
+      def print_extraneous_indexes(extraneous_indexes)
+        if extraneous_indexes.empty?
+          @io.puts("No indexes are extraneous.")
+        else
+          @io.puts("The following indexes are extraneous and can be removed:")
+          extraneous_indexes.each do |index, super_index|
+            @io.puts("  #{index} (can be handled by #{super_index})")
+          end
+        end
+      end
     end
   end
 end

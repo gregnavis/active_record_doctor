@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(version: 20160213102131) do
 
   create_table "users", force: :cascade do |t|
     t.string   "email"
+    t.string   "first_name"
+    t.string   "last_name"
     t.integer  "profile_id"
     t.integer  "employer_id"
     t.string   "country_code", null: false
@@ -37,5 +39,8 @@ ActiveRecord::Schema.define(version: 20160213102131) do
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true
   add_index "users", ["employer_id", "country_code"], name: "index_users_on_employer_id_and_country_code"
+  add_index "users", ["last_name", "first_name", "email"], name: "index_users_on_last_name_and_first_name_and_email"
+  add_index "users", ["last_name", "first_name"], name: "index_users_on_last_name_and_first_name"
+  add_index "users", ["last_name"], name: "index_users_on_last_name"
 
 end

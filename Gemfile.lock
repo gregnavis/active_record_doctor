@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_doctor (1.0.2)
+    active_record_doctor (1.0.3)
       rails (~> 4.2)
 
 GEM
