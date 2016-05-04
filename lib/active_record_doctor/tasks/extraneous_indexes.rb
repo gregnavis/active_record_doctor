@@ -21,7 +21,7 @@ module ActiveRecordDoctor
         @extraneous_indexes ||=
           tables.reject do |table|
             "schema_migrations" == table
-          end.map do |table|
+          end.flat_map do |table|
             indexes = indexes(table)
             maximum_indexes = indexes.select do |index|
               indexes.all? do |another_index|
@@ -39,7 +39,7 @@ module ActiveRecordDoctor
                 end.name
               ]
             end
-          end.flatten(1)
+          end
       end
 
       def prefix?(lhs, rhs)
