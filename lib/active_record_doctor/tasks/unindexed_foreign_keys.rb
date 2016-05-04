@@ -18,7 +18,7 @@ module ActiveRecordDoctor
       private
 
       def unindexed_foreign_keys
-        connection.tables.select do |table|
+        hash_from_pairs(connection.tables.select do |table|
           "schema_migrations" != table
         end.map do |table|
           [
@@ -29,7 +29,7 @@ module ActiveRecordDoctor
           ]
         end.select do |table, columns|
           !columns.empty?
-        end.to_h
+        end)
       end
 
       def foreign_key?(table, column)
@@ -44,6 +44,10 @@ module ActiveRecordDoctor
 
       def connection
         @connection ||= ActiveRecord::Base.connection
+      end
+
+      def hash_from_pairs(pairs)
+        Hash[*pairs.flatten(1)]
       end
     end
   end
