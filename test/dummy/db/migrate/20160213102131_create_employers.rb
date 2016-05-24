@@ -5,5 +5,7 @@ class CreateEmployers < ActiveRecord::Migration
 
       t.timestamps null: false
     end
+
+    add_index :employers, :id
   end
 end

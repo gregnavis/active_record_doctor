@@ -19,6 +19,8 @@ ActiveRecord::Schema.define(version: 20160213102131) do
     t.datetime "updated_at", null: false
   end
 
+  add_index "employers", ["id"], name: "index_employers_on_id"
+
   create_table "profiles", force: :cascade do |t|
     t.string   "first_name"
     t.string   "last_name"

@@ -18,33 +18,56 @@ module ActiveRecordDoctor
       private
 
       def extraneous_indexes
-        @extraneous_indexes ||=
-          tables.reject do |table|
-            "schema_migrations" == table
-          end.flat_map do |table|
-            indexes = indexes(table)
-            maximum_indexes = indexes.select do |index|
-              indexes.all? do |another_index|
-                index == another_index || !prefix?(index, another_index)
-              end
-            end
+        subindexes_of_multi_column_indexes + indexed_primary_keys
+      end
 
-            indexes.reject do |index|
-              maximum_indexes.include?(index)
-            end.map do |extraneous_index|
+      def subindexes_of_multi_column_indexes
+        tables.reject do |table|
+          "schema_migrations" == table
+        end.flat_map do |table|
+          indexes = indexes(table)
+          maximum_indexes = indexes.select do |index|
+            indexes.all? do |another_index|
+              index == another_index || !prefix?(index, another_index)
+            end
+          end
+
+          indexes.reject do |index|
+            maximum_indexes.include?(index)
+          end.map do |extraneous_index|
+            [
+              extraneous_index.name,
               [
-                extraneous_index.name,
+                :multi_column,
                 maximum_indexes.find do |maximum_index|
                   prefix?(extraneous_index, maximum_index)
                 end.name
               ]
-            end
+            ]
           end
+        end
+      end
+
+      def indexed_primary_keys
+        @indexed_primary_keys ||= tables.reject do |table|
+          "schema_migrations" == table
+        end.map do |table|
+          [
+            table,
+            indexes(table).select do |index|
+              index.columns == ["id"]
+            end
+          ]
+        end.flat_map do |table, indexes|
+          indexes.map do |index|
+            [index.name, [:primary_key, table]]
+          end
+        end
       end
 
       def prefix?(lhs, rhs)
-       lhs.columns.count <= rhs.columns.count &&
-        rhs.columns[0...lhs.columns.count] == lhs.columns
+        lhs.columns.count <= rhs.columns.count &&
+          rhs.columns[0...lhs.columns.count] == lhs.columns
       end
 
       def indexes(table_name)

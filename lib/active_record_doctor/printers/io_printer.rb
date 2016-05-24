@@ -16,8 +16,16 @@ module ActiveRecordDoctor
           @io.puts("No indexes are extraneous.")
         else
           @io.puts("The following indexes are extraneous and can be removed:")
-          extraneous_indexes.each do |index, super_index|
-            @io.puts("  #{index} (can be handled by #{super_index})")
+          extraneous_indexes.each do |index, details|
+            reason, param = details
+            case reason
+            when :multi_column
+              @io.puts("  #{index} (can be handled by #{param})")
+            when :primary_key
+              @io.puts("  #{index} (is a primary key of #{param})")
+            else
+              fail("unknown reason #{reason.inspect}")
+            end
           end
         end
       end

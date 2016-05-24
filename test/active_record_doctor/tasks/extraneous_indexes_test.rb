@@ -7,11 +7,12 @@ class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < ActiveSupport::TestCase
     result = run_task
 
     assert_equal(
-      result.sort,
       [
-        ["index_users_on_last_name_and_first_name", "index_users_on_last_name_and_first_name_and_email"],
-        ["index_users_on_last_name", "index_users_on_last_name_and_first_name_and_email"]
-      ].sort
+        ["index_employers_on_id", [:primary_key, "employers"]],
+        ["index_users_on_last_name_and_first_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email"]],
+        ["index_users_on_last_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email"]]
+      ].sort,
+      result.sort
     )
   end
 
