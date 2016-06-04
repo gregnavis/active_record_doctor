@@ -71,9 +71,9 @@ general, a multi-column index on `column_1, column_2, ..., column_n` can replace
 indexes on:
 
 * `column_1`
-* `column_1`, `column_2`
+* `column_1, column_2`
 * ...
-* `column_1`, `column_2`, ..., `column_(n - 1)`
+* `column_1, column_2, ..., column_(n - 1)`
 
 To discover such indexes automatically just follow these steps:
 
