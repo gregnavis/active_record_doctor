@@ -9,11 +9,11 @@ Gem::Specification.new do |s|
   s.version     = ActiveRecordDoctor::VERSION
   s.authors     = ["Greg Navis"]
   s.email       = ["contact@gregnavis.com"]
-  s.homepage    = "http://www.gregnavis.com/active-record-doctor/"
+  s.homepage    = "https://github.com/gregnavis/active_record_doctor"
   s.summary     = "A cure for your Active Record ailments."
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE.txt", "Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails", "~> 4.2"
