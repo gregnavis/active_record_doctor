@@ -24,7 +24,9 @@ module ActiveRecordDoctor
           [
             table,
             connection.columns(table).select do |column|
-              foreign_key?(table, column) && !indexed?(table, column)
+              foreign_key?(table, column) &&
+                !indexed?(table, column) &&
+                !indexed_as_polymorphic?(table, column)
             end.map(&:name)
           ]
         end.select do |table, columns|
@@ -39,6 +41,13 @@ module ActiveRecordDoctor
       def indexed?(table, column)
         connection.indexes(table).any? do |index|
           index.columns.first == column.name
+        end
+      end
+
+      def indexed_as_polymorphic?(table, column)
+        type_column_name = column.name.sub(/_id\Z/, '_type')
+        connection.indexes(table).any? do |index|
+          index.columns == [type_column_name, column.name]
         end
       end
 
