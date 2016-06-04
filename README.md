@@ -91,6 +91,9 @@ The indexes aren't dropped automatically because there's usually just a few of
 them and it's a good idea to double-check that you won't drop something
 necessary.
 
+Also, extra indexes on primary keys are considered extraneous too and will be
+reported.
+
 ## Author
 
 This gem is developed and maintained by [Greg Navis](http://www.gregnavis.com).
