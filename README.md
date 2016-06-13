@@ -38,9 +38,9 @@ three-step process:
 
 1. Generate a list of unindexed foreign keys by running
 
-```bash
-rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
-```
+  ```bash
+  rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
+  ```
 
 2. Remove columns that should _not_ be indexed from `unindexed_foreign_keys.txt`
    as a column can look like a foreign key (i.e. end with `_id`) without being
@@ -48,15 +48,15 @@ rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
 
 3. Generate the migrations
 
-```bash
-rails generate active_record_doctor:add_indexes unindexed_foreign_keys.txt
-```
+  ```bash
+  rails generate active_record_doctor:add_indexes unindexed_foreign_keys.txt
+  ```
 
 4. Run the migrations
 
-```bash
-rake db:migrate
-```
+  ```bash
+  rake db:migrate
+  ```
 
 ### Removing Extraneous Indexes
 
@@ -79,9 +79,9 @@ To discover such indexes automatically just follow these steps:
 
 1. List extraneous indexes by running:
 
-```bash
-rake active_record_doctor:extraneous_indexes
-```
+  ```bash
+  rake active_record_doctor:extraneous_indexes
+  ```
 
 2. Confirm that each of the indexes can be indeed dropped.
 
