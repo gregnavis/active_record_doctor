@@ -48,10 +48,12 @@ ActiveRecord::Schema.define(version: 20160604081452) do
     t.datetime "updated_at",   null: false
   end
 
-  add_index "users", ["email"], name: "index_users_on_email", unique: true
+  add_index "users", ["email"], name: "index_users_on_email"
+  add_index "users", ["email"], name: "unique_index_on_users_email", unique: true
   add_index "users", ["employer_id", "country_code"], name: "index_users_on_employer_id_and_country_code"
   add_index "users", ["last_name", "first_name", "email"], name: "index_users_on_last_name_and_first_name_and_email"
   add_index "users", ["last_name", "first_name"], name: "index_users_on_last_name_and_first_name"
+  add_index "users", ["last_name", "first_name"], name: "unique_index_on_users_last_name_and_first_name", unique: true
   add_index "users", ["last_name"], name: "index_users_on_last_name"
 
 end

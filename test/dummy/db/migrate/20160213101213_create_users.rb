@@ -12,8 +12,10 @@ class CreateUsers < ActiveRecord::Migration
     end
     add_index :users, [:last_name, :first_name, :email]
     add_index :users, [:last_name, :first_name]
+    add_index :users, [:last_name, :first_name], unique: true, name: :unique_index_on_users_last_name_and_first_name
     add_index :users, :last_name
-    add_index :users, :email, unique: true
+    add_index :users, :email
+    add_index :users, :email, unique: true, name: :unique_index_on_users_email
     add_index :users, [:employer_id, :country_code]
   end
 end

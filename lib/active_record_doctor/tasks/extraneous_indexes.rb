@@ -27,9 +27,7 @@ module ActiveRecordDoctor
         end.flat_map do |table|
           indexes = indexes(table)
           maximum_indexes = indexes.select do |index|
-            indexes.all? do |another_index|
-              index == another_index || !prefix?(index, another_index)
-            end
+            maximal?(indexes, index)
           end
 
           indexes.reject do |index|
@@ -39,10 +37,10 @@ module ActiveRecordDoctor
               extraneous_index.name,
               [
                 :multi_column,
-                maximum_indexes.find do |maximum_index|
-                  prefix?(extraneous_index, maximum_index)
-                end.name
-              ]
+                maximum_indexes.select do |maximum_index|
+                  cover?(maximum_index, extraneous_index)
+                end.map(&:name).sort
+              ].flatten(1)
             ]
           end
         end
@@ -62,6 +60,24 @@ module ActiveRecordDoctor
           indexes.map do |index|
             [index.name, [:primary_key, table]]
           end
+        end
+      end
+
+      def maximal?(indexes, index)
+        indexes.all? do |another_index|
+          index == another_index || !cover?(another_index, index)
+        end
+      end
+
+      # Does lhs cover rhs?
+      def cover?(lhs, rhs)
+        case [lhs.unique, rhs.unique]
+        when [true, true]
+          lhs.columns == rhs.columns
+        when [false, true]
+          false
+        else
+          prefix?(rhs, lhs)
         end
       end
 

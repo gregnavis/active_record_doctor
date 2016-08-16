@@ -9,8 +9,9 @@ class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < ActiveSupport::TestCase
     assert_equal(
       [
         ["index_employers_on_id", [:primary_key, "employers"]],
-        ["index_users_on_last_name_and_first_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email"]],
-        ["index_users_on_last_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email"]]
+        ["index_users_on_last_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email", "unique_index_on_users_last_name_and_first_name"]],
+        ["index_users_on_last_name_and_first_name", [:multi_column, "index_users_on_last_name_and_first_name_and_email", "unique_index_on_users_last_name_and_first_name"]],
+        ["index_users_on_email", [:multi_column, "unique_index_on_users_email"]],
       ].sort,
       result.sort
     )
