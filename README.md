@@ -94,6 +94,11 @@ necessary.
 Also, extra indexes on primary keys are considered extraneous too and will be
 reported.
 
+Note that a unique index can _never be replaced by a non-unique one_. For
+example, if there's a unique index on `users.login` and a non-unique index on
+`users.login, users.domain` then the tool will _not_ suggest dropping
+`users.login` as it could violate the uniqueness assumption.
+
 ## Author
 
 This gem is developed and maintained by [Greg Navis](http://www.gregnavis.com).
