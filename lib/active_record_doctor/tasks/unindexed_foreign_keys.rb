@@ -1,8 +1,11 @@
+require "active_record_doctor/compatibility"
 require "active_record_doctor/printers/io_printer"
 
 module ActiveRecordDoctor
   module Tasks
     class UnindexedForeignKeys
+      include Compatibility
+
       def self.run
         new.run
       end
@@ -18,7 +21,7 @@ module ActiveRecordDoctor
       private
 
       def unindexed_foreign_keys
-        hash_from_pairs(connection.tables.select do |table|
+        hash_from_pairs(connection_tables.select do |table|
           "schema_migrations" != table
         end.map do |table|
           [
