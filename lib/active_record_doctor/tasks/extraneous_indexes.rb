@@ -1,8 +1,11 @@
+require "active_record_doctor/compatibility"
 require "active_record_doctor/printers/io_printer"
 
 module ActiveRecordDoctor
   module Tasks
     class ExtraneousIndexes
+      include Compatibility
+
       def self.run
         new.run
       end
@@ -91,7 +94,7 @@ module ActiveRecordDoctor
       end
 
       def tables
-        @tables ||= connection.tables
+        @tables ||= connection_tables
       end
 
       def connection
