@@ -1,3 +1,7 @@
+# Version 1.2.1
+
+* Support for Rails 5 (thanks @syndbg)
+
 # Version 1.2.0
 
 * New feature: report extraneous indexes on primary keys.
