@@ -13,6 +13,9 @@
 
 ActiveRecord::Schema.define(version: 20160604081452) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "comments", force: :cascade do |t|
     t.integer  "commentable_id"
     t.string   "commentable_type"
@@ -20,7 +23,7 @@ ActiveRecord::Schema.define(version: 20160604081452) do
     t.datetime "updated_at",       null: false
   end
 
-  add_index "comments", ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
+  add_index "comments", ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id", using: :btree
 
   create_table "employers", force: :cascade do |t|
     t.string   "name"
@@ -28,7 +31,7 @@ ActiveRecord::Schema.define(version: 20160604081452) do
     t.datetime "updated_at", null: false
   end
 
-  add_index "employers", ["id"], name: "index_employers_on_id"
+  add_index "employers", ["id"], name: "index_employers_on_id", using: :btree
 
   create_table "profiles", force: :cascade do |t|
     t.string   "first_name"
@@ -48,12 +51,14 @@ ActiveRecord::Schema.define(version: 20160604081452) do
     t.datetime "updated_at",   null: false
   end
 
-  add_index "users", ["email"], name: "index_users_on_email"
-  add_index "users", ["email"], name: "unique_index_on_users_email", unique: true
-  add_index "users", ["employer_id", "country_code"], name: "index_users_on_employer_id_and_country_code"
-  add_index "users", ["last_name", "first_name", "email"], name: "index_users_on_last_name_and_first_name_and_email"
-  add_index "users", ["last_name", "first_name"], name: "index_users_on_last_name_and_first_name"
-  add_index "users", ["last_name", "first_name"], name: "unique_index_on_users_last_name_and_first_name", unique: true
-  add_index "users", ["last_name"], name: "index_users_on_last_name"
+  add_index "users", ["email"], name: "index_users_on_email", using: :btree
+  add_index "users", ["email"], name: "unique_index_on_users_email", unique: true, using: :btree
+  add_index "users", ["employer_id", "country_code"], name: "index_users_on_employer_id_and_country_code", using: :btree
+  add_index "users", ["last_name", "first_name", "email"], name: "index_users_on_last_name_and_first_name_and_email", using: :btree
+  add_index "users", ["last_name", "first_name"], name: "index_users_on_last_name_and_first_name", using: :btree
+  add_index "users", ["last_name", "first_name"], name: "unique_index_on_users_last_name_and_first_name", unique: true, using: :btree
+  add_index "users", ["last_name"], name: "index_users_on_last_name", using: :btree
 
+  add_foreign_key "users", "employers"
+  add_foreign_key "users", "profiles"
 end
