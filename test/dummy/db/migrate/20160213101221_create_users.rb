@@ -4,7 +4,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string :email
       t.string :first_name
       t.string :last_name
-      t.references :profile, foreign_key: true
+      t.references :profile, foreign_key: false
       t.references :employer, foreign_key: true
       t.string :country_code, null: false
 

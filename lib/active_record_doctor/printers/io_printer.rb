@@ -29,6 +29,12 @@ module ActiveRecordDoctor
           end
         end
       end
+
+      def print_missing_foreign_keys(missing_foreign_keys)
+        @io.puts(missing_foreign_keys.sort.map do |table, columns|
+          "#{table} #{columns.sort.join(' ')}"
+        end.join("\n"))
+      end
     end
   end
 end

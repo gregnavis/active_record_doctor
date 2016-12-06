@@ -5,6 +5,7 @@ can:
 
 * index unindexed foreign keys
 * detect extraneous indexes
+* detect missing foreign key constraints
 
 More features coming soon!
 
@@ -98,6 +99,46 @@ Note that a unique index can _never be replaced by a non-unique one_. For
 example, if there's a unique index on `users.login` and a non-unique index on
 `users.login, users.domain` then the tool will _not_ suggest dropping
 `users.login` as it could violate the uniqueness assumption.
+
+### Detecting Missing Foreign Key Constraints
+
+If `users.profile_id` references a row in `profiles` then this can be expressed
+at the database level with a foreign key constraint. It _forces_
+`users.profile_id` to point to an existing row in `profiles`. The problem is
+that in many legacy Rails apps the constraint isn't enforced at the database
+level.
+
+`active_record_doctor` can automatically detect foreign keys that could benefit
+from a foreign key constraint (a future version will generate a migrations that
+add the constraint; for now, it's your job). You can obtain the list of foreign
+keys with the following command:
+
+```bash
+rake active_record_doctor:missing_foreign_keys
+```
+
+The output will look like:
+
+```
+users profile_id
+comments user_id article_id
+```
+
+Tables are listed one per line. Each line starts with a table name followed by
+column names that should have a foreign key constraint. In the example above,
+`users.profile_id`, `comments.user_id`, and `comments.article_id` lack a foreign
+key constraint.
+
+In order to add a foreign key constraint to `users.profile_id` use the following
+migration:
+
+```ruby
+class AddForeignKeyConstraintToUsersProfileId < ActiveRecord::Migration
+  def change
+    add_foreign_key :users, :profiles
+  end
+end
+```
 
 ## Author
 

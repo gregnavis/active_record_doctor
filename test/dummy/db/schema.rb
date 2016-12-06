@@ -60,5 +60,4 @@ ActiveRecord::Schema.define(version: 20160604081452) do
   add_index "users", ["last_name"], name: "index_users_on_last_name", using: :btree
 
   add_foreign_key "users", "employers"
-  add_foreign_key "users", "profiles"
 end
