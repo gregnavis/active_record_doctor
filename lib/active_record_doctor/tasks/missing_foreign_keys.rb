@@ -52,8 +52,8 @@ module ActiveRecordDoctor
 
       def polymorphic_foreign_key?(table, column)
         type_column_name = column.name.sub(/_id\Z/, '_type')
-        connection.columns(table).any? do |column|
-          column.name == type_column_name
+        connection.columns(table).any? do |another_column|
+          another_column.name == type_column_name
         end
       end
 
