@@ -1,3 +1,8 @@
 language: ruby
 rvm:
   - 2.3.0
+services:
+  - postgresql
+before_script:
+  - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
+  - bundle exec rake --rakefile test/dummy/Rakefile db:create db:migrate
