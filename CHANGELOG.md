@@ -1,3 +1,7 @@
+# Version 1.3.0
+
+* New feature: detect missing foreign key constraints.
+
 # Version 1.2.1
 
 * Support for Rails 5 (thanks @syndbg)
