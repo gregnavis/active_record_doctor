@@ -19,8 +19,16 @@ module ActiveRecordDoctor
     private
 
     def read_migration_descriptions(path)
-      File.readlines(path).map do |line|
-        table, *columns = line.split(" ")
+      File.readlines(path).each_with_index.map do |line, index|
+        table, *columns = line.split(/\s+/)
+
+        if table.empty?
+          fail("No table name in #{path} on line #{index + 1}. Ensure the line doesn't start with whitespace.")
+        end
+        if columns.empty?
+          fail("No columns for table #{table} in #{path} on line #{index + 1}.")
+        end
+
         MigrationDescription.new(table, columns)
       end
     end
