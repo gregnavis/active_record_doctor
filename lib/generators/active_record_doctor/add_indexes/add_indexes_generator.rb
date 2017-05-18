@@ -27,7 +27,7 @@ module ActiveRecordDoctor
 
     def content(migration_description)
       <<EOF
-class IndexForeignKeysIn#{migration_description.table.camelize} < ActiveRecord::Migration
+class IndexForeignKeysIn#{migration_description.table.camelize} < ActiveRecord::Migration#{migration_version}
   def change
 #{add_indexes(migration_description)}
   end
@@ -43,6 +43,16 @@ EOF
 
     def add_index(table, column)
       "    add_index :#{table}, :#{column}"
+    end
+
+    def migration_version
+      major = ActiveRecord::VERSION::MAJOR
+      minor = ActiveRecord::VERSION::MINOR
+      if major >= 5 && minor >= 1
+        "[#{major}.#{minor}]"
+      else
+        ''
+      end
     end
   end
 end

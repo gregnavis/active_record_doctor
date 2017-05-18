@@ -1,4 +1,6 @@
-class CreateEmployers < ActiveRecord::Migration
+require_relative 'base_migration'
+
+class CreateEmployers < BaseMigration
   def change
     create_table :employers do |t|
       t.string :name

@@ -1,4 +1,6 @@
-class CreateUsers < ActiveRecord::Migration
+require_relative 'base_migration'
+
+class CreateUsers < BaseMigration
   def change
     create_table :users do |t|
       t.string :email
