@@ -1,8 +1,18 @@
 language: ruby
+
 rvm:
-  - 2.3.0
+  - 2.3.1
+gemfile:
+  - gemfiles/Gemfile.rails-4.2.x
+  - gemfiles/Gemfile.rails-5.0.x
+  - gemfiles/Gemfile.rails-5.1.x
+
 services:
   - postgresql
+
+before_install:
+  - rm Gemfile Gemfile.lock
+
 before_script:
   - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
   - bundle exec rake --rakefile test/dummy/Rakefile db:create db:migrate
