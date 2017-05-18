@@ -1,3 +1,8 @@
+# Version 1.3.1
+
+* Support for Rails 4.2, 5.0 and 5.1.
+* Improve errors reported by add_index on malformed inputs.
+
 # Version 1.3.0
 
 * New feature: detect missing foreign key constraints.
