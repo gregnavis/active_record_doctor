@@ -1,3 +1,7 @@
+# Version 1.4.0
+
+* New feature: detect models referencing undefined tables.
+
 # Version 1.3.1
 
 * Support for Rails 4.2, 5.0 and 5.1.

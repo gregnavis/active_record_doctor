@@ -6,6 +6,7 @@ can:
 * index unindexed foreign keys
 * detect extraneous indexes
 * detect missing foreign key constraints
+* detect models referencing undefined tables
 
 More features coming soon!
 
@@ -139,6 +140,30 @@ class AddForeignKeyConstraintToUsersProfileId < ActiveRecord::Migration
   end
 end
 ```
+
+### Detecting Models Referencing Undefined Tables
+
+Active Record guesses the table name based on the class name. There are a few
+cases where the name can be wrong (e.g. you forgot to commit a migration or
+changed the table name). Active Record Doctor can help you identify these cases
+before they hit production.
+
+The only  think you need to do is run:
+
+```
+rake active_record_doctor:undefined_table_references
+```
+
+If there a model references an undefined table then you'll see a message like
+this:
+
+```
+The following models reference undefined tables:
+  Contract (the table contract_records is undefined)
+```
+
+On top of that `rake` will exit with status code of 1. This allows you to use
+this check as part of your Continuous Integration pipeline.
 
 ## Author
 

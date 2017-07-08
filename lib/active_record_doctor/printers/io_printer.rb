@@ -35,6 +35,15 @@ module ActiveRecordDoctor
           "#{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
+
+      def print_undefined_table_references(models)
+        return if models.empty?
+
+        @io.puts('The following models reference undefined tables:')
+        models.each do |model|
+          @io.puts("  #{model.name} (the table #{model.table_name} is undefined)")
+        end
+      end
     end
   end
 end
