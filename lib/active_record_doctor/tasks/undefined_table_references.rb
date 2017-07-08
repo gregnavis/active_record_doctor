@@ -24,8 +24,9 @@ module ActiveRecordDoctor
       def undefined_table_references
         Rails.application.eager_load!
 
-        ActiveRecord::Base.subclasses.reject do |model|
-          model.connection.tables.include?(model.table_name)
+        ActiveRecord::Base.descendants.select do |model|
+          model.table_name.present? &&
+            !model.connection.tables.include?(model.table_name)
         end
       end
     end

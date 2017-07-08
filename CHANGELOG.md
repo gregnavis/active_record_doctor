@@ -1,3 +1,8 @@
+# Version 1.4.1
+
+* Bug fix: only look for references to undefined tables on models that have a
+  table name defined.
+
 # Version 1.4.0
 
 * New feature: detect models referencing undefined tables.
