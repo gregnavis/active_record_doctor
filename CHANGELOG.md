@@ -1,3 +1,8 @@
+# Version 1.5.0
+
+* New feature: detect indexes unprepared for working with models supporting
+  soft-delete (thanks to Jason Fleetwood-Boldt for suggesting this feature).
+
 # Version 1.4.1
 
 * Bug fix: only look for references to undefined tables on models that have a
