@@ -5,6 +5,7 @@ can:
 
 * index unindexed foreign keys
 * detect extraneous indexes
+* detect unindexed `deleted_at` columns
 * detect missing foreign key constraints
 * detect models referencing undefined tables
 
@@ -100,6 +101,24 @@ Note that a unique index can _never be replaced by a non-unique one_. For
 example, if there's a unique index on `users.login` and a non-unique index on
 `users.login, users.domain` then the tool will _not_ suggest dropping
 `users.login` as it could violate the uniqueness assumption.
+
+### Detecting Unindexed `deleted_at` Columns
+
+If you soft-delete some models (e.g. with `paranoia`) then you need to modify
+your indexes to include only non-deleted rows. Otherwise they will include
+logically non-existent rows. This will make them larger and slower to use. Most
+of the time they should only cover columns satisfying `deleted_at IS NULL`.
+
+`active_record_doctor` can automatically detect indexes on tables with a
+`deleted_at` column. Just run:
+
+```
+rake active_record_doctor:unindexed_soft_delete
+```
+
+This will print a list of indexes that don't have the `deleted_at IS NULL`
+clause. Currently, `active_record_doctor` cannot automatically generate
+appropriate migrations. You need to do that manually.
 
 ### Detecting Missing Foreign Key Constraints
 

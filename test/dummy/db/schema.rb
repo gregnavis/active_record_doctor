@@ -27,18 +27,23 @@ ActiveRecord::Schema.define(version: 20160604081452) do
 
   create_table "employers", force: :cascade do |t|
     t.string   "name"
+    t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  add_index "employers", ["id"], name: "index_employers_on_id", using: :btree
+  add_index "employers", ["id"], name: "index_employers_on_id", where: "(deleted_at IS NULL)", using: :btree
+  add_index "employers", ["name"], name: "index_employers_on_name", where: "(deleted_at IS NULL)", using: :btree
 
   create_table "profiles", force: :cascade do |t|
     t.string   "first_name"
     t.string   "last_name"
+    t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_index "profiles", ["first_name", "last_name"], name: "index_profiles_on_first_name_and_last_name", using: :btree
 
   create_table "users", force: :cascade do |t|
     t.string   "email"

@@ -44,6 +44,15 @@ module ActiveRecordDoctor
           @io.puts("  #{model.name} (the table #{model.table_name} is undefined)")
         end
       end
+
+      def print_unindexed_deleted_at(indexes)
+        return if indexes.empty?
+
+        @io.puts('The following indexes should include `deleted_at IS NULL`:')
+        indexes.each do |index|
+          @io.puts("  #{index}")
+        end
+      end
     end
   end
 end
