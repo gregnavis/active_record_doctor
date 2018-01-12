@@ -90,7 +90,7 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name)
-        @connection.indexes(table_name)
+        @connection.indexes(table_name).select {|i| i.columns.kind_of?(Array) }
       end
 
       def tables
