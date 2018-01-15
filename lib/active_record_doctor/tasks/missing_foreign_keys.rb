@@ -1,27 +1,10 @@
-require "active_record_doctor/compatibility"
-require "active_record_doctor/printers/io_printer"
+require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
-    class MissingForeignKeys
-      include Compatibility
-
-      def self.run
-        new.run
-      end
-
-      def initialize(printer: ActiveRecordDoctor::Printers::IOPrinter.new)
-        @printer = printer
-      end
-
+    class MissingForeignKeys < Base
       def run
-        @printer.print_missing_foreign_keys(missing_foreign_keys)
-      end
-
-      private
-
-      def missing_foreign_keys
-        hash_from_pairs(connection_tables.select do |table|
+        success(hash_from_pairs(tables.select do |table|
           "schema_migrations" != table
         end.map do |table|
           [
@@ -37,8 +20,10 @@ module ActiveRecordDoctor
           ]
         end.select do |table, columns|
           !columns.empty?
-        end)
+        end))
       end
+
+      private
 
       def id?(table, column)
         column.name.end_with?("_id")
@@ -55,14 +40,6 @@ module ActiveRecordDoctor
         connection.columns(table).any? do |another_column|
           another_column.name == type_column_name
         end
-      end
-
-      def connection
-        @connection ||= ActiveRecord::Base.connection
-      end
-
-      def hash_from_pairs(pairs)
-        Hash[*pairs.flatten(1)]
       end
     end
   end

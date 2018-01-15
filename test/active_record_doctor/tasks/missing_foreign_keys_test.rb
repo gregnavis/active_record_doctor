@@ -12,8 +12,6 @@ class ActiveRecordDoctor::Tasks::MissingForeignKeysTest < ActiveSupport::TestCas
   private
 
   def run_task
-    printer = SpyPrinter.new
-    ActiveRecordDoctor::Tasks::MissingForeignKeys.new(printer: printer).run
-    printer.missing_foreign_keys
+    ActiveRecordDoctor::Tasks::MissingForeignKeys.run.first
   end
 end

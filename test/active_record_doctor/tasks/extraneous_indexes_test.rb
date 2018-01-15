@@ -20,8 +20,6 @@ class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < ActiveSupport::TestCase
   private
 
   def run_task
-    printer = SpyPrinter.new
-    ActiveRecordDoctor::Tasks::ExtraneousIndexes.new(printer: printer).run
-    printer.extraneous_indexes
+    ActiveRecordDoctor::Tasks::ExtraneousIndexes.run.first
   end
 end

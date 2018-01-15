@@ -12,8 +12,6 @@ class ActiveRecordDoctor::Tasks::UnindexedDeletedAtTest < ActiveSupport::TestCas
   private
 
   def run_task
-    printer = SpyPrinter.new
-    ActiveRecordDoctor::Tasks::UnindexedDeletedAt.new(printer: printer).run
-    printer.unindexed_deleted_at
+    ActiveRecordDoctor::Tasks::UnindexedDeletedAt.run.first
   end
 end

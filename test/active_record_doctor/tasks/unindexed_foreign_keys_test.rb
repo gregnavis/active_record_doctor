@@ -12,8 +12,6 @@ class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < ActiveSupport::TestC
   private
 
   def run_task
-    printer = SpyPrinter.new
-    ActiveRecordDoctor::Tasks::UnindexedForeignKeys.new(printer: printer).run
-    printer.unindexed_foreign_keys
+    ActiveRecordDoctor::Tasks::UnindexedForeignKeys.run.first
   end
 end

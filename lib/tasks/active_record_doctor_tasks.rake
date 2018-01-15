@@ -1,3 +1,4 @@
+require "active_record_doctor/tasks"
 require "active_record_doctor/tasks/unindexed_foreign_keys"
 require "active_record_doctor/tasks/extraneous_indexes"
 require "active_record_doctor/tasks/missing_foreign_keys"
@@ -5,23 +6,23 @@ require "active_record_doctor/tasks/undefined_table_references"
 require "active_record_doctor/tasks/unindexed_deleted_at"
 
 namespace :active_record_doctor do
-  task :unindexed_foreign_keys => :environment do
-    ActiveRecordDoctor::Tasks::UnindexedForeignKeys.run
+  def mount(task_class)
+    name = task_class.name.demodulize.underscore.to_sym
+
+    task name => :environment do
+      result, success = task_class.run
+      success = true if success.nil?
+
+      printer = ActiveRecordDoctor::Printers::IOPrinter.new
+      printer.public_send(name, result)
+
+      # nil doesn't indicate a failure but rather no explicit result. We assume
+      # success by default hence only false results in an erroneous exit code.
+      exit(1) if success == false
+    end
   end
 
-  task :extraneous_indexes => :environment do
-    ActiveRecordDoctor::Tasks::ExtraneousIndexes.run
-  end
-
-  task :missing_foreign_keys => :environment do
-    ActiveRecordDoctor::Tasks::MissingForeignKeys.run
-  end
-
-  task :undefined_table_references => :environment do
-    exit(ActiveRecordDoctor::Tasks::UndefinedTableReferences.run)
-  end
-
-  task :unindexed_soft_delete => :environment do
-    ActiveRecordDoctor::Tasks::UnindexedDeletedAt.run
+  ActiveRecordDoctor::Tasks.all.each do |task|
+    mount task
   end
 end

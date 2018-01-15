@@ -12,8 +12,6 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < ActiveSupport::T
   private
 
   def run_task
-    printer = SpyPrinter.new
-    ActiveRecordDoctor::Tasks::UndefinedTableReferences.new(printer: printer).run
-    printer.undefined_table_references
+    ActiveRecordDoctor::Tasks::UndefinedTableReferences.run.first
   end
 end

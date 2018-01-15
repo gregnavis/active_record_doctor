@@ -1,28 +1,13 @@
-require "active_record_doctor/compatibility"
-require "active_record_doctor/printers/io_printer"
+require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
-    class ExtraneousIndexes
-      include Compatibility
-
-      def self.run
-        new.run
-      end
-
-      def initialize(printer: ActiveRecordDoctor::Printers::IOPrinter.new)
-        @printer = printer
-      end
-
+    class ExtraneousIndexes < Base
       def run
-        @printer.print_extraneous_indexes(extraneous_indexes)
+        success(subindexes_of_multi_column_indexes + indexed_primary_keys)
       end
 
       private
-
-      def extraneous_indexes
-        subindexes_of_multi_column_indexes + indexed_primary_keys
-      end
 
       def subindexes_of_multi_column_indexes
         tables.reject do |table|
@@ -90,15 +75,7 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name)
-        @connection.indexes(table_name).select {|i| i.columns.kind_of?(Array) }
-      end
-
-      def tables
-        @tables ||= connection_tables
-      end
-
-      def connection
-        @connection ||= ActiveRecord::Base.connection
+        super.select { |index| index.columns.kind_of?(Array) }
       end
     end
   end

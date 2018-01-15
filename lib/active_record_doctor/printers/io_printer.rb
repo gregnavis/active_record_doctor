@@ -5,13 +5,13 @@ module ActiveRecordDoctor
         @io = io
       end
 
-      def print_unindexed_foreign_keys(unindexed_foreign_keys)
+      def unindexed_foreign_keys(unindexed_foreign_keys)
         @io.puts(unindexed_foreign_keys.sort.map do |table, columns|
           "#{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
 
-      def print_extraneous_indexes(extraneous_indexes)
+      def extraneous_indexes(extraneous_indexes)
         if extraneous_indexes.empty?
           @io.puts("No indexes are extraneous.")
         else
@@ -30,13 +30,13 @@ module ActiveRecordDoctor
         end
       end
 
-      def print_missing_foreign_keys(missing_foreign_keys)
+      def missing_foreign_keys(missing_foreign_keys)
         @io.puts(missing_foreign_keys.sort.map do |table, columns|
           "#{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
 
-      def print_undefined_table_references(models)
+      def undefined_table_references(models)
         return if models.empty?
 
         @io.puts('The following models reference undefined tables:')
@@ -45,7 +45,7 @@ module ActiveRecordDoctor
         end
       end
 
-      def print_unindexed_deleted_at(indexes)
+      def unindexed_deleted_at(indexes)
         return if indexes.empty?
 
         @io.puts('The following indexes should include `deleted_at IS NULL`:')
