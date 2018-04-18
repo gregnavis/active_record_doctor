@@ -3,15 +3,25 @@ require 'test_helper'
 require 'active_record_doctor/tasks/missing_foreign_keys'
 
 class ActiveRecordDoctor::Tasks::MissingForeignKeysTest < ActiveSupport::TestCase
-  def test_missing_foreign_keys_are_reported
-    result = run_task
+  def test_missing_foreign_key_is_reported
+    Temping.create(:companies, temporary: false)
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.references :company, foreign_key: false
+      end
+    end
 
-    assert_equal({'users' => ['profile_id']}, result)
+    assert_equal({'users' => ['company_id']}, run_task)
   end
 
-  private
+  def test_present_foreign_key_is_not_reported
+    Temping.create(:companies, temporary: false)
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.references :company, foreign_key: true
+      end
+    end
 
-  def run_task
-    ActiveRecordDoctor::Tasks::MissingForeignKeys.run.first
+    assert_equal({}, run_task)
   end
 end

@@ -3,15 +3,32 @@ require 'test_helper'
 require 'active_record_doctor/tasks/unindexed_deleted_at'
 
 class ActiveRecordDoctor::Tasks::UnindexedDeletedAtTest < ActiveSupport::TestCase
-  def test_unindexed_deleted_at_are_reported
-    result = run_task
+  def test_indexed_deleted_at_is_not_reported
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.string :first_name
+        t.string :last_name
+        t.datetime :deleted_at
+        t.index [:first_name, :last_name],
+          name: 'index_profiles_on_first_name_and_last_name',
+          where: 'deleted_at IS NULL'
+      end
+    end
 
-    assert_equal(['index_profiles_on_first_name_and_last_name'], result)
+    assert_result([])
   end
 
-  private
+  def test_unindexed_deleted_at_is_reported
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.string :first_name
+        t.string :last_name
+        t.datetime :deleted_at
+        t.index [:first_name, :last_name],
+          name: 'index_profiles_on_first_name_and_last_name'
+      end
+    end
 
-  def run_task
-    ActiveRecordDoctor::Tasks::UnindexedDeletedAt.run.first
+    assert_result(['index_profiles_on_first_name_and_last_name'])
   end
 end
