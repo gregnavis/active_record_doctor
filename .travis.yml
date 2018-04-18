@@ -1,7 +1,8 @@
 language: ruby
 
 rvm:
-  - 2.3.1
+  - 2.3.7
+
 gemfile:
   - gemfiles/Gemfile.rails-4.2.x
   - gemfiles/Gemfile.rails-5.0.x
@@ -10,9 +11,6 @@ gemfile:
 
 services:
   - postgresql
-
-before_install:
-  - rm Gemfile Gemfile.lock
 
 before_script:
   - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
