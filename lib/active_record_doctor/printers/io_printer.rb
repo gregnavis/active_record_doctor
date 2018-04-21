@@ -53,6 +53,17 @@ module ActiveRecordDoctor
           @io.puts("  #{index}")
         end
       end
+
+      def missing_unique_indexes(indexes)
+        return if indexes.empty?
+
+        @io.puts('The following indexes should be created to back model-level uniqueness validations:')
+        indexes.each do |table, arrays_of_columns|
+          arrays_of_columns.each do |columns|
+            @io.puts("  #{table}: #{columns.join(', ')}")
+          end
+        end
+      end
     end
   end
 end

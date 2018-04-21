@@ -8,6 +8,7 @@ can:
 * detect unindexed `deleted_at` columns
 * detect missing foreign key constraints
 * detect models referencing undefined tables
+* detect uniqueness validations not backed by an unique index
 
 More features coming soon!
 
@@ -183,6 +184,27 @@ The following models reference undefined tables:
 
 On top of that `rake` will exit with status code of 1. This allows you to use
 this check as part of your Continuous Integration pipeline.
+
+### Detecting Uniqueness Validations not Backed by an Index
+
+A model-level uniqueness validations should be backed by a database index in
+order to be robust. Otherwise you risk inserting duplicate values under heavy
+load.
+
+In order to detect such validations run:
+
+```
+rake active_record_doctor:missing_unique_indexes
+```
+
+If there are such indexes then the command will print:
+
+```
+The following indexes should be created to back model-level uniqueness validations:
+  users: email
+```
+
+This means that you should create a unique index on `users.email`.
 
 ## Author
 

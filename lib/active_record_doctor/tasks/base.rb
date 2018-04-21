@@ -22,7 +22,7 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name)
-        @connection.indexes(table_name)
+        connection.indexes(table_name)
       end
 
       def tables
