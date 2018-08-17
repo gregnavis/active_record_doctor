@@ -43,7 +43,7 @@ three-step process:
 1. Generate a list of unindexed foreign keys by running
 
   ```bash
-  rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
+  bundle exec rake active_record_doctor:unindexed_foreign_keys > unindexed_foreign_keys.txt
   ```
 
 2. Remove columns that should _not_ be indexed from `unindexed_foreign_keys.txt`
@@ -59,7 +59,7 @@ three-step process:
 4. Run the migrations
 
   ```bash
-  rake db:migrate
+  bundle exec rake db:migrate
   ```
 
 ### Removing Extraneous Indexes
@@ -84,7 +84,7 @@ To discover such indexes automatically just follow these steps:
 1. List extraneous indexes by running:
 
   ```bash
-  rake active_record_doctor:extraneous_indexes
+  bundle exec rake active_record_doctor:extraneous_indexes
   ```
 
 2. Confirm that each of the indexes can be indeed dropped.
@@ -114,7 +114,7 @@ of the time they should only cover columns satisfying `deleted_at IS NULL`.
 `deleted_at` column. Just run:
 
 ```
-rake active_record_doctor:unindexed_soft_delete
+bundle exec rake active_record_doctor:unindexed_soft_delete
 ```
 
 This will print a list of indexes that don't have the `deleted_at IS NULL`
@@ -135,7 +135,7 @@ add the constraint; for now, it's your job). You can obtain the list of foreign
 keys with the following command:
 
 ```bash
-rake active_record_doctor:missing_foreign_keys
+bundle exec rake active_record_doctor:missing_foreign_keys
 ```
 
 The output will look like:
@@ -171,7 +171,7 @@ before they hit production.
 The only  think you need to do is run:
 
 ```
-rake active_record_doctor:undefined_table_references
+bundle exec rake active_record_doctor:undefined_table_references
 ```
 
 If there a model references an undefined table then you'll see a message like
@@ -194,7 +194,7 @@ load.
 In order to detect such validations run:
 
 ```
-rake active_record_doctor:missing_unique_indexes
+bundle exec rake active_record_doctor:missing_unique_indexes
 ```
 
 If there are such indexes then the command will print:
