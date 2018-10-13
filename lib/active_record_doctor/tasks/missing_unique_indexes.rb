@@ -4,7 +4,7 @@ module ActiveRecordDoctor
   module Tasks
     class MissingUniqueIndexes < Base
       def run
-        Rails.application.eager_load!
+        eager_load!
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil?
@@ -45,10 +45,6 @@ module ActiveRecordDoctor
         indexes(table_name).any? do |index|
           index.columns == columns && index.unique
         end
-      end
-
-      def models
-        ActiveRecord::Base.subclasses
       end
     end
   end

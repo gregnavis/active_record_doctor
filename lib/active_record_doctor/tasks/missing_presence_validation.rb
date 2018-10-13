@@ -4,7 +4,7 @@ module ActiveRecordDoctor
   module Tasks
     class MissingPresenceValidation < Base
       def run
-        Rails.application.eager_load!
+        eager_load!
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil? || model.table_name == 'schema_migrations'
@@ -33,10 +33,6 @@ module ActiveRecordDoctor
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
             validator.attributes.include?(column.name.to_sym)
         end
-      end
-
-      def models
-        ActiveRecord::Base.descendants
       end
     end
   end
