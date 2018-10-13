@@ -7,7 +7,7 @@ module ActiveRecordDoctor
         new.run
       end
 
-      def initialize(printer: ActiveRecordDoctor::Printers::IOPrinter.new)
+      def initialize(printer = ActiveRecordDoctor::Printers::IOPrinter.new)
         @printer = printer
       end
 
@@ -26,7 +26,7 @@ module ActiveRecordDoctor
       end
 
       def tables
-        @tables ||= 
+        @tables ||=
           if Rails::VERSION::MAJOR == 5
             connection.data_sources
           else

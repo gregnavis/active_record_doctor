@@ -1,7 +1,7 @@
 module ActiveRecordDoctor
   module Printers
     class IOPrinter
-      def initialize(io: STDOUT)
+      def initialize(io = STDOUT)
         @io = io
       end
 
