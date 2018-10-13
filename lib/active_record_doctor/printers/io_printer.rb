@@ -64,6 +64,15 @@ module ActiveRecordDoctor
           end
         end
       end
+
+      def missing_presence_validation(missing_presence_validators)
+        return if missing_presence_validators.empty?
+
+        @io.puts('The following models and columns should have presence validations:')
+        missing_presence_validators.each do |model_name, array_of_columns|
+          @io.puts("  #{model_name}: #{array_of_columns.join(', ')}")
+        end
+      end
     end
   end
 end
