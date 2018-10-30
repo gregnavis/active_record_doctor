@@ -1,3 +1,14 @@
+# Version 1.6.0
+
+* New feature: detect columns validated for presence but missing a non-NULL
+  constraint at the database level.
+* New feature: detect columns with a non-NULL constraint at the database level
+  without the corresponding presence validation.
+* Official support for Rubies 1.9.3+ and Rails 4.2+
+* Skipping full-text indexes when detecting extraneous indexes (thanks
+  Tom)
+* Some improvements and fixes in README.md (thanks Jay)
+
 # Version 1.5.0
 
 * New feature: detect indexes unprepared for working with models supporting
