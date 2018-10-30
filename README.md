@@ -115,7 +115,7 @@ of the time they should only cover columns satisfying `deleted_at IS NULL`.
 `deleted_at` column. Just run:
 
 ```
-bundle exec rake active_record_doctor:unindexed_soft_delete
+bundle exec rake active_record_doctor:unindexed_deleted_at
 ```
 
 This will print a list of indexes that don't have the `deleted_at IS NULL`
