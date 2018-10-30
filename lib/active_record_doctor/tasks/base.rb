@@ -53,19 +53,7 @@ module ActiveRecordDoctor
       end
 
       def descendants(superclass)
-        if Rails::VERSION::MAJOR == 5
-          # It seems that temporary classes created by Temping don't play nicely
-          # with Rails 5 descendant tracking. We use ObjectSpace for a more robust
-          # implementation that works both in the test and development
-          # environments.
-          klasses = []
-          ObjectSpace.each_object(Class) do |klass|
-            klasses << klass if descendant?(klass, superclass)
-          end
-          klasses
-        else
-          superclass.descendants
-        end
+        superclass.descendants
       end
 
       def descendant?(klass, superclass)
