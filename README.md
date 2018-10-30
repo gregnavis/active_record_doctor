@@ -9,6 +9,7 @@ can:
 * detect missing foreign key constraints
 * detect models referencing undefined tables
 * detect uniqueness validations not backed by an unique index
+* detect missing non-`NULL` constraints
 * detect missing presence validations
 
 More features coming soon!
@@ -206,6 +207,29 @@ The following indexes should be created to back model-level uniqueness validatio
 ```
 
 This means that you should create a unique index on `users.email`.
+
+### Detecting Missing Non-`NULL` Constraints
+
+If there's an unconditional presence validation on a column then it should be
+marked as non-`NULL`-able at the database level.
+
+In order to detect columns whose presence is required but that are marked
+`null: true` in the database run the following command:
+
+```
+bundle exec rake active_record_doctor:missing_non_null_constraint
+```
+
+The output of the command is similar to:
+
+```
+The following columns should be marked as `null: false`:
+  users: name
+
+```
+
+You can mark the columns mentioned in the output as `null: false` by creating a
+migration and calling `change_column_null`.
 
 ### Detecting Missing Presence Validations
 

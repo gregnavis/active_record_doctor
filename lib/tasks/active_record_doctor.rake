@@ -6,6 +6,7 @@ require "active_record_doctor/tasks/undefined_table_references"
 require "active_record_doctor/tasks/unindexed_deleted_at"
 require "active_record_doctor/tasks/missing_unique_indexes"
 require "active_record_doctor/tasks/missing_presence_validation"
+require "active_record_doctor/tasks/missing_non_null_constraint"
 
 namespace :active_record_doctor do
   def mount(task_class)

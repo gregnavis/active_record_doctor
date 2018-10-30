@@ -73,6 +73,15 @@ module ActiveRecordDoctor
           @io.puts("  #{model_name}: #{array_of_columns.join(', ')}")
         end
       end
+
+      def missing_non_null_constraint(missing_non_null_constraints)
+        return if missing_non_null_constraints.empty?
+
+        @io.puts('The following columns should be marked as `null: false`:')
+        missing_non_null_constraints.each do |table, columns|
+          @io.puts("  #{table}: #{columns.join(', ')}")
+        end
+      end
     end
   end
 end
