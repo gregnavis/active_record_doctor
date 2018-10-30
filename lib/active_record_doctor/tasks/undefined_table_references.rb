@@ -6,12 +6,12 @@ module ActiveRecordDoctor
       def run
         eager_load!
 
-        models = models.select do |model|
+        offending_models = models.select do |model|
           model.table_name.present? &&
             !model.connection.tables.include?(model.table_name)
         end
 
-        [models, models.blank?]
+        [offending_models, offending_models.blank?]
       end
     end
   end
