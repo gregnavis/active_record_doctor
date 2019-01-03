@@ -31,7 +31,8 @@ module ActiveRecordDoctor
       def has_presence_validator?(model, column)
         model.validators.any? do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            validator.attributes.include?(column.name.to_sym)
+            validator.attributes.include?(column.name.to_sym) ||
+              column.name.end_with?("_id") ? validator.attributes.include?(column.name.sub(/_id\Z/, '').to_sym) : false
         end
       end
     end
