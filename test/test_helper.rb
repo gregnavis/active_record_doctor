@@ -9,5 +9,7 @@ require "rails/test_help"
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
+Minitest.parallel_executor = Minitest::ForkExecutor.new
+
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
