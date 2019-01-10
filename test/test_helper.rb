@@ -9,6 +9,8 @@ require "rails/test_help"
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
+# Run each test method in a separate process.
+require 'minitest/fork_executor'
 Minitest.parallel_executor = Minitest::ForkExecutor.new
 
 # Load support files
