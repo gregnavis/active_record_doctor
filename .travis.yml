@@ -34,6 +34,10 @@ matrix:
 services:
   - postgresql
 
+
+before_install:
+  - gem install bundler -v '< 2'
+
 before_script:
   - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
   - bundle exec rake --rakefile test/dummy/Rakefile db:create db:migrate
