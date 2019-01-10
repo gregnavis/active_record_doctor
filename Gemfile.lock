@@ -59,7 +59,7 @@ GEM
     mini_mime (1.0.1)
     mini_portile2 (2.1.0)
     minitest (5.11.3)
-    minitest-fork_executor (1.0.0)
+    minitest-fork_executor (1.0.1)
       minitest
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
@@ -112,7 +112,7 @@ PLATFORMS
 
 DEPENDENCIES
   active_record_doctor!
-  minitest-fork_executor
+  minitest-fork_executor (~> 1.0.1)
   pg (<= 0.20)
   rails (>= 4.2)
   temping
