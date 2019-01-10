@@ -35,6 +35,19 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < ActiveSupport::
     assert_equal({}, run_task)
   end
 
+  def test_non_null_column_is_not_reported_if_association_validation_present
+    Temping.create(:companies, temporary: false)
+    Temping.create(:users, temporary: false) do
+      belongs_to :company, required: true
+
+      with_columns do |t|
+        t.references :company, null: false
+      end
+    end
+
+    assert_equal({}, run_task)
+  end
+
   def test_timestamps_are_not_reported
     Temping.create(:users, temporary: false) do
       validates :name, presence: true
