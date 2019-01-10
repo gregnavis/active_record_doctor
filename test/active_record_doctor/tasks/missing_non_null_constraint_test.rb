@@ -15,6 +15,19 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < ActiveSupport::T
     assert_equal({ 'users' => ['name'] }, run_task)
   end
 
+  def test_association_presence_true_and_null_true
+    Temping.create(:companies, temporary: false)
+    Temping.create(:users, temporary: false) do
+      belongs_to :company, required: true
+
+      with_columns do |t|
+        t.references :company
+      end
+    end
+
+    assert_equal({ 'users' => ['company_id'] }, run_task)
+  end
+
   def test_presence_true_and_null_false
     Temping.create(:users, temporary: false) do
       validates :name, presence: true

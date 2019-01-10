@@ -29,9 +29,16 @@ module ActiveRecordDoctor
       end
 
       def has_mandatory_presence_validator?(model, column)
+        allowed_attributes = [column.name.to_sym]
+
+        belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
+          reflection.foreign_key == column.name
+        end
+        allowed_attributes << belongs_to.name.to_sym if belongs_to
+
         model.validators.any? do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            validator.attributes.include?(column.name.to_sym) &&
+            (validator.attributes && allowed_attributes).present? &&
             !validator.options[:allow_nil] &&
             !validator.options[:if] &&
             !validator.options[:unless]
