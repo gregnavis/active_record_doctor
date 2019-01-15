@@ -34,9 +34,9 @@ matrix:
 services:
   - postgresql
 
-
 before_install:
-  - gem install bundler -v '< 2'
+  - gem uninstall -v '>=2' -i $(rvm gemdir)@global -ax bundler || true
+  - gem install bundler -v '1.17.3'
 
 before_script:
   - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
