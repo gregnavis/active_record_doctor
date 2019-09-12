@@ -14,6 +14,7 @@ module ActiveRecordDoctor
             connection.columns(model.table_name).select do |column|
               validator_needed?(model, column) &&
                 !column.null &&
+                column.type != :boolean &&
                 !has_presence_validator?(model, column)
             end.map(&:name)
           ]
