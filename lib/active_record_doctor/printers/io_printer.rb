@@ -45,7 +45,7 @@ WARNING: Models backed by database views are supported only in Rails 5+ OR
 Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
 will be erroneously reported below as not having their underlying tables/views.
 Consider upgrading Rails or disabling this task temporarily.
-          EOS
+EOS
         end
 
         @io.puts('The following models reference undefined tables:')
