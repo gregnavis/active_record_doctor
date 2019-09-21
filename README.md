@@ -11,6 +11,7 @@ can:
 * detect uniqueness validations not backed by an unique index
 * detect missing non-`NULL` constraints
 * detect missing presence validations
+* detect incorrect presence validations on boolean columns
 
 More features coming soon!
 
@@ -250,6 +251,27 @@ The following models and columns should have presence validations:
 ```
 
 This means `User` should have a presence validator on `email` and `name`.
+
+### Detecting Incorrect Presence Validations on Boolean Columns
+
+A boolean column's presence should be validated using inclusion or exclusion
+validators instead of the usual presence validator.
+
+In order to detect boolean columns whose presence is validated incorrectly run:
+
+```
+bundle exec rake active_record_doctor:incorrect_boolean_presence_validation
+```
+
+The output of the command looks like this:
+
+```
+The presence of the following boolean columns is validated incorrectly:
+  User: active
+```
+
+This means `active` is validated with `presence: true` instead of
+`inclusion: { in: [true, false] }` or `exclusion: { in: [nil] }`.
 
 ## Author
 

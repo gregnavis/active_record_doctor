@@ -82,6 +82,15 @@ module ActiveRecordDoctor
           @io.puts("  #{table}: #{columns.join(', ')}")
         end
       end
+
+      def presence_true_on_boolean(presence_true_on_booleans)
+        return if presence_true_on_booleans.empty?
+
+        @io.puts('The presence of the following boolean columns is validated incorrectly:')
+        presence_true_on_booleans.each do |table, columns|
+          @io.puts("  #{table}: #{columns.join(', ')}")
+        end
+      end
     end
   end
 end
