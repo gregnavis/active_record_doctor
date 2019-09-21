@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < ActiveSupport::T
     # No columns needed, just the table.
     Temping.create(:users, temporary: false)
 
-    assert_equal([], run_task)
+    assert_equal([[], true], run_task)
   end
 
   def test_table_does_not_exist
@@ -22,7 +22,7 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < ActiveSupport::T
     # signalled via exceptions which we shouldn't swallow if we don't want to
     # break the test suite hence the choice of begin/ensure.
     begin
-      assert_equal([[User.name, User.table_name]], run_task)
+      assert_equal([[[User.name, User.table_name]], true], run_task)
     ensure
       ActiveRecord::Base.connection.create_table(User.table_name)
     end
@@ -42,7 +42,7 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < ActiveSupport::T
     # signalled via exceptions which we shouldn't swallow if we don't want to
     # break the test suite hence the choice of begin/ensure.
     begin
-      assert_equal([], run_task)
+      assert_equal([[], true], run_task)
     ensure
       ActiveRecord::Base.connection.execute("DROP VIEW users")
       ActiveRecord::Base.connection.create_table(User.table_name)
