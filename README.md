@@ -171,7 +171,12 @@ cases where the name can be wrong (e.g. you forgot to commit a migration or
 changed the table name). Active Record Doctor can help you identify these cases
 before they hit production.
 
-The only  think you need to do is run:
+**IMPORTANT**. Models backed by views are supported only in:
+
+* Rails 5+ and _any_ database or
+* Rails 4.2 with PostgreSQL.
+
+The only think you need to do is run:
 
 ```
 bundle exec rake active_record_doctor:undefined_table_references

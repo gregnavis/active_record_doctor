@@ -34,6 +34,20 @@ module ActiveRecordDoctor
           end
       end
 
+      def views
+        @views ||=
+          if Rails::VERSION::MAJOR == 5
+            connection.views
+          elsif connection.is_a?(ActiveRecord::ConnectionAdapters::PostgreSQLAdapter)
+            ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
+              SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
+            SQL
+          else
+            # We don't support this Rails/database combination yet.
+            nil
+          end
+      end
+
       def hash_from_pairs(pairs)
         Hash[*pairs.flatten(1)]
       end
