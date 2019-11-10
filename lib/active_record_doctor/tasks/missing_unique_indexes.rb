@@ -36,7 +36,7 @@ module ActiveRecordDoctor
         validator.options[:if].nil? &&
           validator.options[:unless].nil? &&
           validator.options[:conditions].nil? &&
-          validator.options[:case_sensitive]
+          validator.options.fetch(:case_sensitive) { ::Rails.version.to_i == 6 }
       end
 
       def unique_index?(table_name, columns, scope)
