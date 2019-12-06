@@ -1,36 +1,62 @@
+# The current settings are based on:
+#
+# https://www.jetbrains.com/lp/devecosystem-2019/ruby/
 language: ruby
 
-rvm:
-  - 1.9.3-p551 # minimum required by Rails 4.2
-  - 2.0.0-p648
-  - 2.1.10
-  - 2.2.2 # minimum required by Rails 5.0
-  - 2.3.7
-  - 2.4.4
-  - 2.5.1
-
-gemfile:
-  - gemfiles/Gemfile.rails-4.2.x
-  - gemfiles/Gemfile.rails-5.0.x
-  - gemfiles/Gemfile.rails-5.1.x
-  - gemfiles/Gemfile.rails-5.2.x
-  - gemfiles/Gemfile.rails-6.0.x
-
+# Supporting Ruby 2.1+ covers almost the whole market. Over 10% of apps are on
+# Rails 4.2 so we'll continue to support it.
 matrix:
-  exclude:
-    # First, we exclude Rubies older than 2.2.2 because they are unsupported by
-    # Rails 5.
-    - rvm: 1.9.3-p551
-    - rvm: 2.0.0-p648
-    - rvm: 2.1.10
   include:
-    # Second, we reenable Rubies older than 2.2.2 but only for Rails 4.2.
-    - rvm: 1.9.3-p551
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.0.0-p648
-      gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.1.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
+    - rvm: 2.2.10
+      gemfile: gemfiles/Gemfile.rails-4.2.x
+    - rvm: 2.3.8
+      gemfile: gemfiles/Gemfile.rails-4.2.x
+    - rvm: 2.4.9
+      gemfile: gemfiles/Gemfile.rails-4.2.x
+    - rvm: 2.5.7
+      gemfile: gemfiles/Gemfile.rails-4.2.x
+    - rvm: 2.6.5
+      gemfile: gemfiles/Gemfile.rails-4.2.x
+
+    - rvm: 2.2.10
+      gemfile: gemfiles/Gemfile.rails-5.0.x
+    - rvm: 2.3.8
+      gemfile: gemfiles/Gemfile.rails-5.0.x
+    - rvm: 2.4.9
+      gemfile: gemfiles/Gemfile.rails-5.0.x
+    - rvm: 2.5.7
+      gemfile: gemfiles/Gemfile.rails-5.0.x
+    - rvm: 2.6.5
+      gemfile: gemfiles/Gemfile.rails-5.0.x
+
+    - rvm: 2.2.10
+      gemfile: gemfiles/Gemfile.rails-5.1.x
+    - rvm: 2.3.8
+      gemfile: gemfiles/Gemfile.rails-5.1.x
+    - rvm: 2.4.9
+      gemfile: gemfiles/Gemfile.rails-5.1.x
+    - rvm: 2.5.7
+      gemfile: gemfiles/Gemfile.rails-5.1.x
+    - rvm: 2.6.5
+      gemfile: gemfiles/Gemfile.rails-5.1.x
+
+    - rvm: 2.2.10
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - rvm: 2.3.8
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - rvm: 2.4.9
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - rvm: 2.5.7
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - rvm: 2.6.5
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+
+    - rvm: 2.5.7
+      gemfile: gemfiles/Gemfile.rails-6.0.x
+    - rvm: 2.6.5
+      gemfile: gemfiles/Gemfile.rails-6.0.x
 
 services:
   - postgresql
