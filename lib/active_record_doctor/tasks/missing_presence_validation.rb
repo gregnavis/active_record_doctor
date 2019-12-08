@@ -13,8 +13,7 @@ module ActiveRecordDoctor
             model.name,
             connection.columns(model.table_name).select do |column|
               validator_needed?(model, column) &&
-                !column.null &&
-                !has_presence_validator?(model, column)
+                !validator_present?(model, column)
             end.map(&:name)
           ]
         end.reject do |model_name, columns|
@@ -25,10 +24,11 @@ module ActiveRecordDoctor
       private
 
       def validator_needed?(model, column)
-        ![model.primary_key, 'created_at', 'updated_at'].include?(column.name)
+        ![model.primary_key, 'created_at', 'updated_at'].include?(column.name) &&
+          !column.null
       end
 
-      def has_presence_validator?(model, column)
+      def validator_present?(model, column)
         allowed_attributes = [column.name.to_sym]
 
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
