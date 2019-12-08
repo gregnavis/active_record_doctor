@@ -36,7 +36,12 @@ module ActiveRecordDoctor
         validator.options[:if].nil? &&
           validator.options[:unless].nil? &&
           validator.options[:conditions].nil? &&
-          validator.options[:case_sensitive]
+
+          # In Rails 6, default option values are no longer explicitly set on
+          # options so if the key is absent we must fetch the default value
+          # ourselves. case_sensitive is the default in 4.2+ so it's safe to
+          # put true literally.
+          validator.options.fetch(:case_sensitive, true)
       end
 
       def unique_index?(table_name, columns, scope)
