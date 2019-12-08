@@ -29,6 +29,31 @@ module ActiveRecordDoctor
       end
 
       def validator_present?(model, column)
+        if column.type == :boolean
+          inclusion_validator_present?(model, column) ||
+            exclusion_validator_present?(model, column)
+        else
+          presence_validator_present?(model, column)
+        end
+      end
+
+      def inclusion_validator_present?(model, column)
+        model.validators.any? do |validator|
+          validator.is_a?(ActiveModel::Validations::InclusionValidator) &&
+            validator.attributes.include?(column.name.to_sym) &&
+            !validator.options.fetch(:in, []).include?(nil)
+        end
+      end
+
+      def exclusion_validator_present?(model, column)
+        model.validators.any? do |validator|
+          validator.is_a?(ActiveModel::Validations::ExclusionValidator) &&
+            validator.attributes.include?(column.name.to_sym) &&
+              validator.options.fetch(:in, []).include?(nil)
+        end
+      end
+
+      def presence_validator_present?(model, column)
         allowed_attributes = [column.name.to_sym]
 
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
