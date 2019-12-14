@@ -60,7 +60,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < ActiveSupport::
     assert_equal({ 'User' => ['active'] }, run_task)
   end
 
-  def test_non_null_boolean_is_reported_if_nil_not_included
+  def test_non_null_boolean_is_not_reported_if_nil_not_included
     Temping.create(:users, temporary: false) do
       validates :active, inclusion: { in: [true, false] }
 
