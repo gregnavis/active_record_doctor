@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    active_record_doctor (1.6.0)
+    active_record_doctor (1.7.0)
       activerecord (>= 4.2)
       railties (>= 4.2)
 
@@ -112,10 +112,10 @@ PLATFORMS
 
 DEPENDENCIES
   active_record_doctor!
-  minitest-fork_executor (~> 1.0.1)
+  minitest-fork_executor (~> 1.0)
   pg (<= 0.20)
   rails (>= 4.2)
-  temping
+  temping (~> 3.10)
 
 BUNDLED WITH
-   1.16.6
+   1.17.3

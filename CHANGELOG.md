@@ -1,3 +1,17 @@
+# Version 1.7.0
+
+* New feature: detect incorrect boolean column persence validations (they
+  must always use inclusion/exclusion instead of presence validators).
+* Bug fix: don't report missing persence validations on boolean columns if
+  they're properly validated for inclusion/exclusion.
+* Bug fix: don't report missing presence validations if the validation is
+  defined on the association instead of the foreign key column.
+* Bug fix: report missing non-NULL constraints on foreign keys when the persence
+  validation is defined on the association.
+* Bug fix: make missing_unique_indexes work in Rails 6 (thanks for Hrvoje Šimić
+  for the fix).
+* Enhancement: support view-backed models in undefined_table_references.
+
 # Version 1.6.0
 
 * New feature: detect columns validated for presence but missing a non-NULL

@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Greg Navis"]
   s.email       = ["contact@gregnavis.com"]
   s.homepage    = "https://github.com/gregnavis/active_record_doctor"
-  s.summary     = "A cure for your Active Record ailments."
+  s.summary     = "Identify database issues before they hit production."
   s.license     = "MIT"
 
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE.txt", "Rakefile", "README.md"]
