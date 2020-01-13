@@ -29,16 +29,19 @@ module ActiveRecordDoctor
       end
 
       def has_mandatory_presence_validator?(model, column)
-        allowed_attributes = [column.name.to_sym]
-
+        # A foreign key can be validates via the column name (e.g. company_id)
+        # or the association name (e.g. company). We collect the allowed names
+        # in an array to check for their presence in the validator definition
+        # in one go.
+        attribute_name_forms = [column.name.to_sym]
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
           reflection.foreign_key == column.name
         end
-        allowed_attributes << belongs_to.name.to_sym if belongs_to
+        attribute_name_forms << belongs_to.name.to_sym if belongs_to
 
         model.validators.any? do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            (validator.attributes && allowed_attributes).present? &&
+            (validator.attributes & attribute_name_forms).present? &&
             !validator.options[:allow_nil] &&
             !validator.options[:if] &&
             !validator.options[:unless]

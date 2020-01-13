@@ -42,6 +42,12 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < ActiveSupport::T
 
   def test_presence_false_and_null_true
     Temping.create(:users, temporary: false) do
+      # The age validator is a form of regression test against a bug that
+      # caused false positives. In this test case, name is NOT validated
+      # for presence so it does NOT need be marked non-NULL. However, the
+      # bug would match the age presence validator with the NULL-able name
+      # column which would result in a false positive error report.
+      validates :age, presence: true
       validates :name, presence: false
 
       with_columns do |t|
