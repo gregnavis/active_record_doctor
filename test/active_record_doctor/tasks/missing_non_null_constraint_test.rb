@@ -99,4 +99,18 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < ActiveSupport::T
 
     assert_equal({}, run_task)
   end
+
+  def test_presence_true_with_null_true
+    Temping.create(:companies, temporary: false)
+    Temping.create(:users, temporary: false) do
+      belongs_to :company, required: true
+
+      with_columns do |t|
+        t.string :name, null: true
+        t.references :company, null: false
+      end
+    end
+
+    assert_equal({}, run_task)
+  end
 end
