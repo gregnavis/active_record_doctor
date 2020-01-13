@@ -38,7 +38,7 @@ module ActiveRecordDoctor
 
         model.validators.any? do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            (validator.attributes && allowed_attributes).present? &&
+            (validator.attributes & allowed_attributes).present? &&
             !validator.options[:allow_nil] &&
             !validator.options[:if] &&
             !validator.options[:unless]
