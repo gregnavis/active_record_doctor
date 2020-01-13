@@ -1,3 +1,8 @@
+# Version 1.7.1
+
+* Bug fix: fix a bug in missing_non_null_constraint that resulted in false
+  positives (thanks for Artem Chubchenko for the fix).
+
 # Version 1.7.0
 
 * New feature: detect incorrect boolean column persence validations (they
