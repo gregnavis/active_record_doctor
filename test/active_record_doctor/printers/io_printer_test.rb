@@ -10,6 +10,14 @@ users account_id profile_id
 EOF
   end
 
+  def test_incorrect_boolean_presence_validation
+    out, _err = capture_io do
+      printer = ActiveRecordDoctor::Printers::IOPrinter.new($stdout)
+      printer.unindexed_foreign_keys({ 'User' => ['active'] })
+    end
+    assert_match(/\AUser active\Z/, out)
+  end
+
   private
 
   def unindexed_foreign_keys(argument)
