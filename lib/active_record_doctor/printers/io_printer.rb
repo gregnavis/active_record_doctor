@@ -92,11 +92,11 @@ EOS
         end
       end
 
-      def presence_true_on_boolean(presence_true_on_booleans)
-        return if presence_true_on_booleans.empty?
+      def incorrect_boolean_presence_validation(incorrect_boolean_presence_validations)
+        return if incorrect_boolean_presence_validations.empty?
 
         @io.puts('The presence of the following boolean columns is validated incorrectly:')
-        presence_true_on_booleans.each do |table, columns|
+        incorrect_boolean_presence_validations.each do |table, columns|
           @io.puts("  #{table}: #{columns.join(', ')}")
         end
       end
