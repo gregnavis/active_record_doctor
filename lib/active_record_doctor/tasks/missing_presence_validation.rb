@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class MissingPresenceValidation < Base
+      @description = 'Detect non-NULL columns without a presence validator'
+
       def run
         eager_load!
 

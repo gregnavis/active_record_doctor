@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class UndefinedTableReferences < Base
+      @description = 'Detect models referencing undefined tables or views'
+
       def run
         eager_load!
 

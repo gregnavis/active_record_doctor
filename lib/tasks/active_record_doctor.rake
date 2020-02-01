@@ -13,6 +13,7 @@ namespace :active_record_doctor do
   def mount(task_class)
     name = task_class.name.demodulize.underscore.to_sym
 
+    desc task_class.description
     task name => :environment do
       result, success = task_class.run
       success = true if success.nil?

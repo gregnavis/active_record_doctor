@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class IncorrectBooleanPresenceValidation < Base
+      @description = 'Detect boolean columns with presence/absence instead of includes/excludes validators'
+
       def run
         eager_load!
 

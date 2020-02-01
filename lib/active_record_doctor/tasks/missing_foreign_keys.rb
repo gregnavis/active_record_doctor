@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class MissingForeignKeys < Base
+      @description = 'Detect association columns without a foreign key constraint'
+
       def run
         success(hash_from_pairs(tables.select do |table|
           "schema_migrations" != table

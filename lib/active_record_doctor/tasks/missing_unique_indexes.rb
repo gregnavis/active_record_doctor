@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class MissingUniqueIndexes < Base
+      @description = 'Detect columns covered by a uniqueness validator without a unique index'
+
       def run
         eager_load!
 

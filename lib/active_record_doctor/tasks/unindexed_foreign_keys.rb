@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class UnindexedForeignKeys < Base
+      @description = 'Detect foreign keys without an index on them'
+
       def run
         success(hash_from_pairs(tables.select do |table|
           "schema_migrations" != table

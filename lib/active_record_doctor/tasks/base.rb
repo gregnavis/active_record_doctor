@@ -7,6 +7,10 @@ module ActiveRecordDoctor
         new.run
       end
 
+      def self.description
+        @description
+      end
+
       def initialize(printer = ActiveRecordDoctor::Printers::IOPrinter.new)
         @printer = printer
       end

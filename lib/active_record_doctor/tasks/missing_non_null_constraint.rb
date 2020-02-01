@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class MissingNonNullConstraint < Base
+      @description = 'Detect presence validators not backed by a non-NULL constraint'
+
       def run
         eager_load!
 

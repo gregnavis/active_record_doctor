@@ -3,6 +3,8 @@ require "active_record_doctor/tasks/base"
 module ActiveRecordDoctor
   module Tasks
     class ExtraneousIndexes < Base
+      @description = 'Detect extraneous indexes'
+
       def run
         success(subindexes_of_multi_column_indexes + indexed_primary_keys)
       end
