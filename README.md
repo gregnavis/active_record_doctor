@@ -3,15 +3,15 @@
 Active Record Doctor helps to keep the database in a good shape. Currently, it
 can:
 
-* index unindexed foreign keys
-* detect extraneous indexes
-* detect unindexed `deleted_at` columns
-* detect missing foreign key constraints
-* detect models referencing undefined tables
-* detect uniqueness validations not backed by an unique index
-* detect missing non-`NULL` constraints
-* detect missing presence validations
-* detect incorrect presence validations on boolean columns
+* index unindexed foreign keys - [`active_record_doctor:unindexed_foreign_keys`](#indexing-unindexed-foreign-keys)
+* detect extraneous indexes - [`active_record_doctor:extraneous_indexes`](#removing-extraneous-indexes)
+* detect unindexed `deleted_at` columns - [`active_record_doctor:unindexed_deleted_at`](#detecting-unindexed-deleted_at-columns)
+* detect missing foreign key constraints - [`active_record_doctor:missing_foreign_keys`](#detecting-missing-foreign-key-constraints)
+* detect models referencing undefined tables - [`active_record_doctor:undefined_table_references`](#detecting-models-referencing-undefined-tables)
+* detect uniqueness validations not backed by an unique index - [`active_record_doctor:missing_unique_indexes`](#detecting-uniqueness-validations-not-backed-by-an-index)
+* detect missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
+* detect missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
+* detect incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
 
 More features coming soon!
 
