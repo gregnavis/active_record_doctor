@@ -82,7 +82,7 @@ indexes on:
 * ...
 * `column_1, column_2, ..., column_(n - 1)`
 
-To discover such indexes automatically just follow these steps:
+To discover such indexes automatically, follow these steps:
 
 1. List extraneous indexes by running:
 
