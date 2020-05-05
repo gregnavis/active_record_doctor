@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "railties", rails_version
   s.add_dependency "activerecord", rails_version
+  s.add_dependency "activesupport", rails_version
 
   s.add_development_dependency "rails", rails_version
   s.add_development_dependency "pg", "<= 0.20"
