@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
   s.add_dependency "activerecord", rails_version
 
   s.add_development_dependency "rails", rails_version
-  s.add_development_dependency "pg", "<= 0.20"
   s.add_development_dependency "temping", "~> 3.10"
   s.add_development_dependency "minitest-fork_executor", '~> 1.0'
 end
