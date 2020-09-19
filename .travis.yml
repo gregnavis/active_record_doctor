@@ -19,8 +19,10 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.6.6
       gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.7.1
-      gemfile: gemfiles/Gemfile.rails-4.2.x
+
+    # We skip 2.7.1 since it ships with Bundler 2 and Rails 4.2 explicitly
+    # depends upon Bundler 1. The build should be fixable but we're assuming
+    # most Rails 4.2 apps simply won't update to Ruby 2.7.
 
     - rvm: 2.2.10
       gemfile: gemfiles/Gemfile.rails-5.2.x
