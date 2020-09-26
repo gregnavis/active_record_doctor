@@ -3,6 +3,10 @@
 # https://www.jetbrains.com/lp/devecosystem-2019/ruby/
 language: ruby
 
+env:
+  global:
+    - DATABASE_URL=postgres://postgres:@localhost:5432/active_record_doctor_test
+
 # Supporting Ruby 2.1+ covers almost the whole market. Over 10% of apps are on
 # Rails 4.2 so we'll continue to support it.
 matrix:
@@ -52,5 +56,4 @@ before_install:
   - gem install bundler -v '1.17.3'
 
 before_script:
-  - cp test/dummy/config/database.yml.travis test/dummy/config/database.yml
-  - bundle exec rake --rakefile test/dummy/Rakefile db:create db:migrate
+  - createdb active_record_doctor_test

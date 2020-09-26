@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/unindexed_deleted_at'
-
-class ActiveRecordDoctor::Tasks::UnindexedDeletedAtTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::UnindexedDeletedAtTest < Minitest::Test
   def test_indexed_deleted_at_is_not_reported
     Temping.create(:users, temporary: false) do
       with_columns do |t|

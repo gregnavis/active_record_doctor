@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/extraneous_indexes'
-
-class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < Minitest::Test
   def test_index_on_primary_key_is_duplicate
     Temping.create(:user, temporary: false) do
       with_columns do |t|

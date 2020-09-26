@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/missing_presence_validation'
-
-class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
   def test_null_column_is_not_reported_if_validation_absent
     Temping.create(:users, temporary: false) do
       with_columns do |t|

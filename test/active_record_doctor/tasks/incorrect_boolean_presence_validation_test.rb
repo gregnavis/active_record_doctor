@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/incorrect_boolean_presence_validation'
-
-class ActiveRecordDoctor::Tasks::IncorrectBooleanPresenceValidationTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::IncorrectBooleanPresenceValidationTest < Minitest::Test
   def test_presence_true_is_reported_on_boolean_only
     Temping.create(:users, temporary: false) do
       # email is a non-boolean column whose presence CAN be validated in the

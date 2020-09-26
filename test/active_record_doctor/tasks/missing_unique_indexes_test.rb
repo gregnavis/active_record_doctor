@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/missing_unique_indexes'
-
-class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   def test_missing_unique_index
     Temping.create(:users, temporary: false) do
       with_columns do |t|

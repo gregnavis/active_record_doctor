@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/undefined_table_references'
-
-class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < Minitest::Test
   def test_table_exists
     # No columns needed, just the table.
     Temping.create(:users, temporary: false)

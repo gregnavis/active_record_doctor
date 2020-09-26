@@ -19,8 +19,8 @@ Bundler::GemHelper.install_tasks
 require 'rake/testtask'
 
 Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.libs << 'test'
+  t.libs = ['lib', 'test']
+  t.ruby_opts = ['-rsetup']
   t.pattern = 'test/**/*_test.rb'
   t.verbose = false
 end

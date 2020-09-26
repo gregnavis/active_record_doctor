@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/missing_non_null_constraint'
-
-class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
   def test_presence_true_and_null_true
     Temping.create(:users, temporary: false) do
       validates :name, presence: true

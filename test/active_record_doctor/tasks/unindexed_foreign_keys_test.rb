@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/unindexed_foreign_keys'
- 
-class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < Minitest::Test
   def test_unindexed_foreign_key_is_reported
     Temping.create(:companies, temporary: false)
     Temping.create(:users, temporary: false) do

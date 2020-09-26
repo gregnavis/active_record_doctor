@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary     = "Identify database issues before they hit production."
   s.license     = "MIT"
 
-  s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE.txt", "Rakefile", "README.md"]
+  s.files = Dir["lib/**/*", "MIT-LICENSE.txt", "README.md"]
   s.test_files = Dir["test/**/*"]
 
   rails_version = ">= 4.2"

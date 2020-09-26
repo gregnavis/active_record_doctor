@@ -31,7 +31,7 @@ module ActiveRecordDoctor
 
       def tables
         @tables ||=
-          if Rails::VERSION::MAJOR == 5
+          if ActiveRecord::VERSION::MAJOR == 5
             connection.data_sources
           else
             connection.tables
@@ -40,7 +40,7 @@ module ActiveRecordDoctor
 
       def views
         @views ||=
-          if Rails::VERSION::MAJOR == 5
+          if ActiveRecord::VERSION::MAJOR == 5
             connection.views
           elsif connection.is_a?(ActiveRecord::ConnectionAdapters::PostgreSQLAdapter)
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }

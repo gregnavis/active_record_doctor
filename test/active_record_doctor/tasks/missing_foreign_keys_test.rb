@@ -1,8 +1,4 @@
-require 'test_helper'
-
-require 'active_record_doctor/tasks/missing_foreign_keys'
-
-class ActiveRecordDoctor::Tasks::MissingForeignKeysTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Tasks::MissingForeignKeysTest < Minitest::Test
   def test_missing_foreign_key_is_reported
     Temping.create(:companies, temporary: false)
     Temping.create(:users, temporary: false) do

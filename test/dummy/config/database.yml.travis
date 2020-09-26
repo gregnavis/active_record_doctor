@@ -1,5 +1,0 @@
-test:
-  adapter: postgresql
-  user: postgres
-  password:
-  database: active_record_doctor_test

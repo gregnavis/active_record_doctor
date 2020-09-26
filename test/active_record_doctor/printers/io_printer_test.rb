@@ -1,10 +1,5 @@
-require 'test_helper'
-
 # Load all tasks
-Dir["#{File.dirname(__FILE__)}/../../../lib/active_record_doctor/tasks/*.rb"].each { |f| require f }
-require 'active_record_doctor/printers/io_printer'
-
-class ActiveRecordDoctor::Printers::IOPrinterTest < ActiveSupport::TestCase
+class ActiveRecordDoctor::Printers::IOPrinterTest < Minitest::Test
   def test_all_tasks_have_printers
     ActiveRecordDoctor::Tasks::Base.subclasses.each do |task_class|
       name = task_class.name.demodulize.underscore.to_sym
