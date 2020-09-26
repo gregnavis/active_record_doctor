@@ -9,7 +9,7 @@ module ActiveRecordDoctor
 
       def run
         success(connection.tables.select do |table|
-          connection.columns(table).map(&:name).any?(/^#{PATTERN}$/)
+          connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
         end.flat_map do |table|
           connection.indexes(table).reject do |index|
             index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
