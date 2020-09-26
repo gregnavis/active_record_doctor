@@ -15,12 +15,11 @@ module ActiveRecordDoctor
             model.table_name,
             model.validators.select do |validator|
               table_name = model.table_name
-              attributes = validator.attributes
               scope = validator.options.fetch(:scope, [])
 
               validator.is_a?(ActiveRecord::Validations::UniquenessValidator) &&
                 supported_validator?(validator) &&
-                !unique_index?(table_name, attributes, scope)
+                !unique_index?(table_name, validator.attributes, scope)
             end.map do |validator|
               scope = Array(validator.options.fetch(:scope, []))
               attributes = validator.attributes

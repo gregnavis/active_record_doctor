@@ -79,6 +79,26 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < ActiveSupport::TestC
     assert_skipped(unless: ->(model) { true })
   end
 
+  def test_skips_validator_without_attributes
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.string :email
+        t.index :email
+      end
+
+      validates_with DummyValidator
+    end
+
+    # There's no need for assert/refute as it's enough the line below doesn't
+    # raise an exception.
+    run_task
+  end
+
+  class DummyValidator < ActiveModel::Validator
+    def validate(record)
+    end
+  end
+
   private
 
   def assert_skipped(options)
