@@ -67,7 +67,7 @@ module ActiveRecordDoctor
       end
 
       def models
-        descendants(ActiveRecord::Base)
+        descendants(ActiveRecord::Base).select { |m| tables.include?(m.table_name) }
       end
 
       def descendants(superclass)
