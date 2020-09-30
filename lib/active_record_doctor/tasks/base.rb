@@ -38,6 +38,10 @@ module ActiveRecordDoctor
           end
       end
 
+      def table_exists?(table_name)
+        connection.table_exists?(table_name)
+      end
+
       def views
         @views ||=
           if Rails::VERSION::MAJOR == 5
@@ -67,7 +71,7 @@ module ActiveRecordDoctor
       end
 
       def models
-        descendants(ActiveRecord::Base).select { |m| tables.include?(m.table_name) }
+        descendants(ActiveRecord::Base)
       end
 
       def descendants(superclass)
