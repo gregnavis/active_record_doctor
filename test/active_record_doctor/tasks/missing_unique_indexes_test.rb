@@ -59,6 +59,21 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
     assert_result([])
   end
 
+  def test_column_order_is_ignored
+    Temping.create(:users, temporary: false) do
+      with_columns do |t|
+        t.string :email
+        t.integer :organization_id
+
+        t.index [:email, :organization_id], unique: true
+      end
+
+      validates :email, uniqueness: { scope: :organization_id }
+    end
+
+    assert_result([])
+  end
+
   def test_conditions_is_skipped
     assert_skipped(conditions: -> { where.not(email: nil) })
   end
