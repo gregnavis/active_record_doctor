@@ -107,6 +107,27 @@ WARNING
           @io.puts("  #{table}: #{columns.join(', ')}")
         end
       end
+
+      def incorrect_dependent_option(problems)
+        return if problems.empty?
+
+        @io.puts("The following associations might be using invalid dependent settings:")
+        problems.each do |model, associations|
+          associations.each do |(name, problem)|
+            # rubocop:disable Layout/LineLength
+            message =
+              case problem
+              when :suggest_destroy then "skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar"
+              when :suggest_delete then "loads the associated model before deleting it - consider using `dependent: :delete`"
+              when :suggest_delete_all then "loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`"
+              else next
+              end
+            # rubocop:enable Layout/LineLength
+
+            @io.puts("  #{model}: #{name} #{message}")
+          end
+        end
+      end
     end
   end
 end
