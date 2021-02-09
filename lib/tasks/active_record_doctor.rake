@@ -10,6 +10,7 @@ require "active_record_doctor/detectors/missing_unique_indexes"
 require "active_record_doctor/detectors/missing_presence_validation"
 require "active_record_doctor/detectors/missing_non_null_constraint"
 require "active_record_doctor/detectors/incorrect_boolean_presence_validation"
+require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/task"
 
 namespace :active_record_doctor do

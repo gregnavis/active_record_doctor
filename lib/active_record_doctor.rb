@@ -14,6 +14,7 @@ require "active_record_doctor/detectors/unindexed_deleted_at"
 require "active_record_doctor/detectors/undefined_table_references"
 require "active_record_doctor/detectors/missing_non_null_constraint"
 require "active_record_doctor/detectors/unindexed_foreign_keys"
+require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/task"
 require "active_record_doctor/version"
 

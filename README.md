@@ -12,6 +12,7 @@ can:
 * detect missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
 * detect missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
 * detect incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
+* detect incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
 
 More features coming soon!
 
@@ -283,6 +284,34 @@ This means `active` is validated with `presence: true` instead of
 `inclusion: { in: [true, false] }` or `exclusion: { in: [nil] }`.
 
 This validator skips models whose corresponding database tables don't exist.
+
+### Detecting Incorrect `dependent` Option on Associations
+
+Cascading model deletions can be sped up with `dependent: :delete_all` (to
+delete all dependent models with one SQL query) but only if the deleted models
+have no callbacks as they're skipped.
+
+This can lead to two types of errors:
+
+- Using `delete_all` when dependent models define callbacks - they will NOT be
+  invoked.
+- Using `destroy` when dependent models define no callbacks - dependent models
+  will be loaded one-by-one with no reason
+
+In order to detect associations affected by the two aforementioned problems run
+the following command:
+
+```
+bundle exec rake active_record_doctor:incorrect_dependent_option
+```
+
+The output of the command looks like this:
+
+```
+The following associations might be using invalid dependent settings:
+  Company: users loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`
+  Post: comments skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+```
 
 ## Ruby and Rails Compatibility Policy
 

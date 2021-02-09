@@ -7,3 +7,7 @@ inherit_from:
 # causes them to be indented without any benefit.
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+
+# Some test models need methods defined on them in a #create_model block.
+Lint/NestedMethodDefinition:
+  Enabled: false
