@@ -10,6 +10,8 @@ module ActiveRecordDoctor
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil? || model.table_name == 'schema_migrations'
+        end.reject do |model|
+          model.table_name == 'pg_search_documents'
         end.map do |model|
           [
             model.table_name,
