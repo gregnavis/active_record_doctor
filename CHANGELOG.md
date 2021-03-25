@@ -1,7 +1,24 @@
+# Version 1.7.2
+
+* All rake tasks added by active_record_doctor have a description so that they
+  are now shown by `rake -T`.
+* Bug fix: incorrect_boolean_presence_validation, missing_non_null_constraint and
+  missing_presence_validation skip models whose underlying tables don't exist
+  (thanks to rhymes for the fix).
+* Bug fix: fix a bug in incorrect_boolean_presence_validation that caused
+  exceptions (thanks to Eito Katagiri for the fix).
+* Bug fix: add a missing dependency on activesupport (thanks to Yuto Ito for
+  the fix).
+* Bug fix: make missing_unique_indexes work on custom validators (thanks to Max
+  Schwenk for the fix).
+* Bug fix: make missing_unique_indexes order-independent so that it no longer
+  reports false-positives when columns are reordered (thanks to rhymes for the
+  fix).
+
 # Version 1.7.1
 
 * Bug fix: fix a bug in missing_non_null_constraint that resulted in false
-  positives (thanks for Artem Chubchenko for the fix).
+  positives (thanks to Artem Chubchenko for the fix).
 
 # Version 1.7.0
 
