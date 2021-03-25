@@ -17,7 +17,7 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.3.8
       gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.4.9
+    - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.5.8
       gemfile: gemfiles/Gemfile.rails-4.2.x
@@ -32,20 +32,20 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-5.2.x
     - rvm: 2.3.8
       gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.4.9
+    - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-5.2.x
     - rvm: 2.5.8
       gemfile: gemfiles/Gemfile.rails-5.2.x
     - rvm: 2.6.6
       gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.7.1
+    - rvm: 2.7.2
       gemfile: gemfiles/Gemfile.rails-5.2.x
 
     - rvm: 2.5.8
       gemfile: gemfiles/Gemfile.rails-6.0.x
     - rvm: 2.6.6
       gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 2.7.1
+    - rvm: 2.7.2
       gemfile: gemfiles/Gemfile.rails-6.0.x
 
 services:

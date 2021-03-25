@@ -1,4 +1,9 @@
 # Configure Active Record.
+
+# We must import "uri" explicitly as otherwsie URI won't be accessible in
+# Ruby 2.7.2 / Rails 6.
+require "uri"
+
 require "active_record"
 
 # Connect to the database defined in the URL.
