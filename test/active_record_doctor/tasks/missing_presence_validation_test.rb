@@ -103,4 +103,13 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
 
     assert_equal({}, run_task)
   end
+
+  def test_models_with_non_existent_tables_are_skipped
+    klass = Class.new(ActiveRecord::Base) do
+      self.table_name = 'action_text_rich_texts'
+    end
+
+    # No need to assert anything as merely not raising an exception is a success.
+    run_task
+  end
 end

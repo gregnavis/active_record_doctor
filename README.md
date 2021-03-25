@@ -237,6 +237,8 @@ The following columns should be marked as `null: false`:
 You can mark the columns mentioned in the output as `null: false` by creating a
 migration and calling `change_column_null`.
 
+This validator skips models whose corresponding database tables don't exist.
+
 ### Detecting Missing Presence Validations
 
 If a column is marked as `null: false` then it's likely it should have the
@@ -256,6 +258,8 @@ The following models and columns should have presence validations:
 ```
 
 This means `User` should have a presence validator on `email` and `name`.
+
+This validator skips models whose corresponding database tables don't exist.
 
 ### Detecting Incorrect Presence Validations on Boolean Columns
 
@@ -277,6 +281,8 @@ The presence of the following boolean columns is validated incorrectly:
 
 This means `active` is validated with `presence: true` instead of
 `inclusion: { in: [true, false] }` or `exclusion: { in: [nil] }`.
+
+This validator skips models whose corresponding database tables don't exist.
 
 ## Ruby and Rails Compatibility Policy
 

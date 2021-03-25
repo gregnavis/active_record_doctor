@@ -38,6 +38,10 @@ module ActiveRecordDoctor
           end
       end
 
+      def table_exists?(table_name)
+        connection.table_exists?(table_name)
+      end
+
       def views
         @views ||=
           if ActiveRecord::VERSION::MAJOR == 5
