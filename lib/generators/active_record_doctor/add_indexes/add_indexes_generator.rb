@@ -54,10 +54,9 @@ EOF
     end
 
     def migration_version
-      major = ActiveRecord::VERSION::MAJOR
-      minor = ActiveRecord::VERSION::MINOR
-      if major >= 5 && minor >= 1
-        "[#{major}.#{minor}]"
+      version = ActiveRecord::VERSION::STRING.to_f
+      if version >= 5.1
+        "[#{version}]"
       else
         ''
       end
