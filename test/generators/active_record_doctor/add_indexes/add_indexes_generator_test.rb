@@ -76,6 +76,40 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
     end
   end
 
+  def test_create_migrations_truncates_long_index_names
+    # Both the table and column names must be quite long. Otherwise, the
+    # we might reach table or column name length limits and fail to generate an
+    # index name that's long enough.
+    create_table(:organizations_migrated_from_legacy_app) do |t|
+      t.integer :legacy_owner_id_compatible_with_v1_to_v8
+    end
+
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir)
+
+      path = File.join(dir, "indexes.txt")
+      File.write(path, <<~INDEXES)
+        organizations_migrated_from_legacy_app legacy_owner_id_compatible_with_v1_to_v8
+      INDEXES
+
+      capture_io do
+        Time.stub(:now, TIMESTAMP) do
+          # If no exceptions are raised then we consider this to be a success.
+          ActiveRecordDoctor::AddIndexesGenerator.start([path])
+
+          load(File.join(
+            "db",
+            "migrate",
+            "20210201131530_index_foreign_keys_in_organizations_migrated_from_legacy_app.rb"
+          ))
+          ::IndexForeignKeysInOrganizationsMigratedFromLegacyApp.migrate(:up)
+
+          ::Object.send(:remove_const, :IndexForeignKeysInOrganizationsMigratedFromLegacyApp)
+        end
+      end
+    end
+  end
+
   private
 
   def assert_indexes(expected_indexes)
