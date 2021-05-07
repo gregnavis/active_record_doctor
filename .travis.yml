@@ -19,9 +19,9 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.5.8
+    - rvm: 2.5.9
       gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.6.6
+    - rvm: 2.6.7
       gemfile: gemfiles/Gemfile.rails-4.2.x
 
     # We skip 2.7.1 since it ships with Bundler 2 and Rails 4.2 explicitly
@@ -34,18 +34,22 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-5.2.x
     - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.5.8
+    - rvm: 2.5.9
       gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.6.6
+    - rvm: 2.6.7
       gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.7.2
+    - rvm: 2.7.3
+      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - rvm: 3.0.1
       gemfile: gemfiles/Gemfile.rails-5.2.x
 
-    - rvm: 2.5.8
+    - rvm: 2.5.9
       gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 2.6.6
+    - rvm: 2.6.7
       gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 2.7.2
+    - rvm: 2.7.3
+      gemfile: gemfiles/Gemfile.rails-6.0.x
+    - rvm: 3.0.1
       gemfile: gemfiles/Gemfile.rails-6.0.x
 
 services:
