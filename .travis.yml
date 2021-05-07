@@ -52,6 +52,15 @@ matrix:
     - rvm: 3.0.1
       gemfile: gemfiles/Gemfile.rails-6.0.x
 
+    - rvm: 2.5.9
+      gemfile: gemfiles/Gemfile.rails-6.1.x
+    - rvm: 2.6.7
+      gemfile: gemfiles/Gemfile.rails-6.1.x
+    - rvm: 2.7.3
+      gemfile: gemfiles/Gemfile.rails-6.1.x
+    - rvm: 3.0.1
+      gemfile: gemfiles/Gemfile.rails-6.1.x
+
 services:
   - postgresql
 
