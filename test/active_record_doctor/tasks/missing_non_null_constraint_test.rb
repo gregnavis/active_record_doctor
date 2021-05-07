@@ -1,43 +1,39 @@
 class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
   def test_presence_true_and_null_true
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
       validates :name, presence: true
-
-      with_columns do |t|
-        t.string :name, null: true
-      end
     end
 
     assert_equal({ 'users' => ['name'] }, run_task)
   end
 
   def test_association_presence_true_and_null_true
-    Temping.create(:companies, temporary: false)
-    Temping.create(:users, temporary: false) do
+    create_table(:companies)
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
       belongs_to :company, required: true
-
-      with_columns do |t|
-        t.references :company
-      end
     end
 
     assert_equal({ 'users' => ['company_id'] }, run_task)
   end
 
   def test_presence_true_and_null_false
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: false
+    end.create_model do
       validates :name, presence: true
-
-      with_columns do |t|
-        t.string :name, null: false
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_presence_false_and_null_true
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
       # The age validator is a form of regression test against a bug that
       # caused false positives. In this test case, name is NOT validated
       # for presence so it does NOT need be marked non-NULL. However, the
@@ -45,67 +41,53 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
       # column which would result in a false positive error report.
       validates :age, presence: true
       validates :name, presence: false
-
-      with_columns do |t|
-        t.string :name, null: true
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_presence_false_and_null_false
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: false
+    end.create_model do
       validates :name, presence: false
-
-      with_columns do |t|
-        t.string :name, null: false
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_presence_true_with_if
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
       validates :name, presence: true, if: -> { false }
-
-      with_columns do |t|
-        t.string :name, null: true
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_presence_true_with_unless
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
       validates :name, presence: true, unless: -> { false }
-
-      with_columns do |t|
-        t.string :name, null: true
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_presence_true_with_allow_nil
-    Temping.create(:users, temporary: false) do
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
       validates :name, presence: true, allow_nil: true
-
-      with_columns do |t|
-        t.string :name, null: true
-      end
     end
 
     assert_equal({}, run_task)
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    klass = Class.new(ActiveRecord::Base) do
-      self.table_name = 'action_text_rich_texts'
-    end
+    create_model(:users)
 
     # No need to assert anything as merely not raising an exception is a success.
     run_task

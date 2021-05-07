@@ -1,11 +1,9 @@
 class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   def test_missing_unique_index
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.index :email
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+      t.index :email
+    end.create_model do
       validates :email, uniqueness: true
     end
 
@@ -15,12 +13,10 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_present_unique_index
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.index :email, unique: true
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+      t.index :email, unique: true
+    end.create_model do
       validates :email, uniqueness: true
     end
 
@@ -28,14 +24,12 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_missing_unique_index_with_scope
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.integer :company_id
-        t.integer :department_id
-        t.index [:company_id, :department_id, :email]
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :company_id
+      t.integer :department_id
+      t.index [:company_id, :department_id, :email]
+    end.create_model do
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
@@ -45,14 +39,12 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_present_unique_index_with_scope
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.integer :company_id
-        t.integer :department_id
-        t.index [:company_id, :department_id, :email], unique: true
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :company_id
+      t.integer :department_id
+      t.index [:company_id, :department_id, :email], unique: true
+    end.create_model do
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
@@ -60,14 +52,12 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_column_order_is_ignored
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.integer :organization_id
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :organization_id
 
-        t.index [:email, :organization_id], unique: true
-      end
-
+      t.index [:email, :organization_id], unique: true
+    end.create_model do
       validates :email, uniqueness: { scope: :organization_id }
     end
 
@@ -91,12 +81,10 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_skips_validator_without_attributes
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-        t.index :email
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+      t.index :email
+    end.create_model do
       validates_with DummyValidator
     end
 
@@ -113,11 +101,9 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   private
 
   def assert_skipped(options)
-    Temping.create(:users, temporary: false) do
-      with_columns do |t|
-        t.string :email
-      end
-
+    create_table(:users) do |t|
+      t.string :email
+    end.create_model do
       validates :email, uniqueness: options
     end
 

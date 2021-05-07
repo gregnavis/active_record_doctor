@@ -41,40 +41,29 @@ require "minitest"
 require "minitest/autorun"
 require "minitest/fork_executor"
 
-
-
-# temping is a test library for creating tables and models on the fly. We use
-# it instead of a fixed dummy Rails app created by the generator.
-require "temping"
-
-# Temping 3.10.0 is broken because it removes the tables in the order of
-# creation which fails if foreign key constraints are present.
-class Temping
-  class << self
-    alias_method :old_teardown, :teardown
-
-    def teardown
-      @model_klasses.reverse!
-      old_teardown
-
-      # This hack is required to avoid leaking temporary model classes defined
-      # by Temping. If we don't clear the cache then they'll be kept around and
-      # returned as valid models which will break tests.
-      ActiveSupport::DescendantsTracker.class_variable_get(:@@direct_descendants).clear
-    end
-  end
-end
-
-
+require_relative "model_factory"
 
 # Prepare the test class.
 class Minitest::Test
+  def setup
+    # Ensure all remnants of previous test runs, most likely in form of tables,
+    # are removed.
+    ModelFactory.cleanup
+  end
+
   def teardown
-    # Remove temporary databases created by the current test case.
-    Temping.teardown
+    ModelFactory.cleanup
   end
 
   private
+
+  def create_table(*args, &block)
+    ModelFactory.create_table(*args, &block)
+  end
+
+  def create_model(*args, &block)
+    ModelFactory.create_model(*args, &block)
+  end
 
   # Run the appropriate task. The task name is inferred from the test class.
   def run_task
@@ -94,4 +83,4 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 # Run each test method in a separate process so that we avoid leaking
 # temporary models defined by temping. I'm not entirely sure but it seems to
 # be a problem with Rails caching those classes aggressively.
-# Minitest.parallel_executor = Minitest::ForkExecutor.new
+Minitest.parallel_executor = Minitest::ForkExecutor.new
