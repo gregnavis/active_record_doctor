@@ -1,0 +1,9 @@
+inherit_from:
+  - ./../.rubocop.yml
+
+# Nested style is a good idea for production code as it makes it impossible to
+# define a constant a module instead of a class (which can happen if a compact
+# definition is evaluated before a nested one) but for test cases it only
+# causes them to be indented without any benefit.
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact

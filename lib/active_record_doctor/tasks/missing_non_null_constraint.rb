@@ -1,16 +1,20 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Detect model-level presence validators on columns that lack a non-NULL constraint thus allowing potentially
+    # invalid insertions.
     class MissingNonNullConstraint < Base
-      @description = 'Detect presence validators not backed by a non-NULL constraint'
+      @description = "Detect presence validators not backed by a non-NULL constraint"
 
       def run
         eager_load!
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
-          model.table_name == 'schema_migrations' ||
+          model.table_name == "schema_migrations" ||
           !table_exists?(model.table_name)
         end.map do |model|
           [
@@ -21,7 +25,7 @@ module ActiveRecordDoctor
                 column.null
             end.map(&:name)
           ]
-        end.reject do |model_name, columns|
+        end.reject do |_model_name, columns|
           columns.empty?
         end))
       end
@@ -29,7 +33,7 @@ module ActiveRecordDoctor
       private
 
       def validator_needed?(model, column)
-        ![model.primary_key, 'created_at', 'updated_at'].include?(column.name)
+        ![model.primary_key, "created_at", "updated_at"].include?(column.name)
       end
 
       def has_mandatory_presence_validator?(model, column)

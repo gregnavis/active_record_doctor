@@ -1,14 +1,17 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/printers/io_printer"
 
 module ActiveRecordDoctor
   module Tasks
+    # Base class for all active_record_doctor tasks.
     class Base
-      def self.run
-        new.run
-      end
+      class << self
+        attr_reader :description
 
-      def self.description
-        @description
+        def run
+          new.run
+        end
       end
 
       def initialize(printer = ActiveRecordDoctor::Printers::IOPrinter.new)
@@ -45,7 +48,7 @@ module ActiveRecordDoctor
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
               SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
             SQL
-          else
+          else # rubocop:disable Style/EmptyElse
             # We don't support this Rails/database combination yet.
             nil
           end

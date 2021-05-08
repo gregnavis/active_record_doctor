@@ -1,0 +1,84 @@
+# We upgrade to new versions of rubocop manually so it won't harm to enable all
+# new cops.
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+
+# We don't want to be switching between styles depending on whether
+# we're interpolating or not.
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+# Block chains allow processing to be broken down into discrete steps
+# similarily to Elixir pipelines. They actually increase readability so
+# forbidding them isn't a good idea.
+Style/MultilineBlockChain:
+  Enabled: false
+
+# For consistency across all method definitions.
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+
+Style/WordArray:
+  EnforcedStyle: brackets
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/SymbolProc:
+  Enabled: false
+
+# We pass an empty block in a few places to have a placeholder to add code to
+# in the future without having to dig through the code to determine whether a
+# block is allowed. Additionally, removing an empty block is **NOT** a
+# refactoring because the method can change it's behavior via #block_given?.
+Lint/EmptyBlock:
+  Enabled: false
+
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+# <<~ is unsupported on ancient Rubies.
+Layout/HeredocIndentation:
+  Enabled: false
+
+# Method length is a poor metric for quality as being forced to break a method
+# up into multiple smaller pieces can increase cognitive overhead, cause
+# confusion (are those smaller methods used anywhere else), add more
+# meaningless identifiers.
+Metrics/MethodLength:
+  Enabled: false
+
+# ABC, cycolmatic complexity and perceived complexity fare rather poorly on our
+# task definitions as trying to satisfy them would mean breaking longish but
+# not cognitively demanding method definitions into multiple smaller methods
+# which would obscure what's going on by adding lots of indirection.
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# In general, it's a good recommendation but there are two exceptions in
+# active_record_doctor where it harms readability. has_presence_validator?
+# is more intention revealing than presence_validator? Does the former take
+# a model as a parameter and check wheter it has a presence validator? Or does
+# it take a validator and check its type?
+Naming/PredicateName:
+  AllowedMethods:
+    - "has_presence_validator?"
+    - "has_mandatory_presence_validator?"
+
+# We support a broad range of versions and it's impossible to satisfy this.
+Gemspec/RequiredRubyVersion:
+  Enabled: false

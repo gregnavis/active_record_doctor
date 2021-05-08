@@ -1,16 +1,19 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Detect models with non-NULL columns that lack the corresponding model-level validator.
     class MissingPresenceValidation < Base
-      @description = 'Detect non-NULL columns without a presence validator'
+      @description = "Detect non-NULL columns without a presence validator"
 
       def run
         eager_load!
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
-          model.table_name == 'schema_migrations' ||
+          model.table_name == "schema_migrations" ||
           !table_exists?(model.table_name)
         end.map do |model|
           [
@@ -20,7 +23,7 @@ module ActiveRecordDoctor
                 !validator_present?(model, column)
             end.map(&:name)
           ]
-        end.reject do |model_name, columns|
+        end.reject do |_model_name, columns|
           columns.empty?
         end))
       end
@@ -28,7 +31,7 @@ module ActiveRecordDoctor
       private
 
       def validator_needed?(model, column)
-        ![model.primary_key, 'created_at', 'updated_at'].include?(column.name) &&
+        ![model.primary_key, "created_at", "updated_at"].include?(column.name) &&
           !column.null
       end
 
@@ -53,7 +56,7 @@ module ActiveRecordDoctor
         model.validators.any? do |validator|
           validator.is_a?(ActiveModel::Validations::ExclusionValidator) &&
             validator.attributes.include?(column.name.to_sym) &&
-              validator.options.fetch(:in, []).include?(nil)
+            validator.options.fetch(:in, []).include?(nil)
         end
       end
 

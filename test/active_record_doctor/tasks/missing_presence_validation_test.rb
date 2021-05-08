@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
   def test_null_column_is_not_reported_if_validation_absent
     create_table(:users) do |t|
@@ -14,7 +16,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
     end.create_model do
     end
 
-    assert_equal({ 'ModelFactory::Models::User' => ['name'] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["name"] }, run_task)
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
@@ -45,7 +47,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
-    assert_equal({ 'ModelFactory::Models::User' => ['active'] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_task)
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
@@ -75,7 +77,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, exclusion: { in: [false] }
     end
 
-    assert_equal({ 'ModelFactory::Models::User' => ['active'] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_task)
   end
 
   def test_timestamps_are_not_reported

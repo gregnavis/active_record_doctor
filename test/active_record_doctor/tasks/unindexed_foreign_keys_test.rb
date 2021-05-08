@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < Minitest::Test
   def test_unindexed_foreign_key_is_reported
     create_table(:companies)
@@ -5,7 +7,7 @@ class ActiveRecordDoctor::Tasks::UnindexedForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: true, index: false
     end
 
-    assert_equal({'users' => ['company_id']}, run_task)
+    assert_equal({ "users" => ["company_id"] }, run_task)
   end
 
   def test_indexed_foreign_key_is_not_reported

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Configure Active Record.
 
 # We must import "uri" explicitly as otherwsie URI won't be accessible in
@@ -13,8 +15,6 @@ ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL"))
 # the connection.
 ActiveRecord::Base.connection
 
-
-
 # We need to mock Rails because some tasks depend on .eager_load! This must
 # happen AFTER loading active_record_doctor as otherwise it'd attempt to
 # install a Railtie.
@@ -29,12 +29,8 @@ module Rails
   end
 end
 
-
-
 # Load Active Record Doctor.
 require "active_record_doctor"
-
-
 
 # Configure the test suite.
 require "minitest"
@@ -67,7 +63,7 @@ class Minitest::Test
 
   # Run the appropriate task. The task name is inferred from the test class.
   def run_task
-    self.class.name.sub(/Test$/, '').constantize.run.first
+    self.class.name.sub(/Test$/, "").constantize.run.first
   end
 
   # Assert results are equal without regards to the order of elements.

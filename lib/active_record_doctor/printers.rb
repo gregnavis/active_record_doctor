@@ -1,4 +1,6 @@
+# frozen_string_literal: true
+
 module ActiveRecordDoctor
-  module Printers
+  module Printers # :nodoc:
   end
 end

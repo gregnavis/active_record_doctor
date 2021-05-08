@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::IncorrectBooleanPresenceValidationTest < Minitest::Test
   def test_presence_true_is_reported_on_boolean_only
     create_table(:users) do |t|
@@ -10,7 +12,7 @@ class ActiveRecordDoctor::Tasks::IncorrectBooleanPresenceValidationTest < Minite
       validates :email, :active, presence: true
     end
 
-    assert_equal({ 'ModelFactory::Models::User' => ['active'] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_task)
   end
 
   def test_inclusion_is_not_reported

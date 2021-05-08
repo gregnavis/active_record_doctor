@@ -1,9 +1,13 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Detect indexes whose function can be overtaken by other indexes. For example, an index on columns A, B, and C
+    # can also serve as an index on A and A, B.
     class ExtraneousIndexes < Base
-      @description = 'Detect extraneous indexes'
+      @description = "Detect extraneous indexes"
 
       def run
         success(subindexes_of_multi_column_indexes + indexed_primary_keys)
@@ -13,7 +17,7 @@ module ActiveRecordDoctor
 
       def subindexes_of_multi_column_indexes
         tables.reject do |table|
-          "schema_migrations" == table
+          table == "schema_migrations"
         end.flat_map do |table|
           indexes = indexes(table)
           maximum_indexes = indexes.select do |index|
@@ -38,7 +42,7 @@ module ActiveRecordDoctor
 
       def indexed_primary_keys
         @indexed_primary_keys ||= tables.reject do |table|
-          "schema_migrations" == table
+          table == "schema_migrations"
         end.map do |table|
           [
             table,
@@ -77,7 +81,7 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name)
-        super.select { |index| index.columns.kind_of?(Array) }
+        super.select { |index| index.columns.is_a?(Array) }
       end
     end
   end

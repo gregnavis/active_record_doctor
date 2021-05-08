@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   def test_missing_unique_index
     create_table(:users) do |t|
@@ -8,7 +10,7 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_result([
-      ['users', [['email']]]
+      ["users", [["email"]]]
     ])
   end
 
@@ -34,7 +36,7 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_result([
-      ['users', [['company_id', 'department_id', 'email']]]
+      ["users", [["company_id", "department_id", "email"]]]
     ])
   end
 
@@ -73,11 +75,11 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_if_is_skipped
-    assert_skipped(if: ->(model) { true })
+    assert_skipped(if: ->(_model) { true })
   end
 
   def test_unless_is_skipped
-    assert_skipped(unless: ->(model) { true })
+    assert_skipped(unless: ->(_model) { true })
   end
 
   def test_skips_validator_without_attributes

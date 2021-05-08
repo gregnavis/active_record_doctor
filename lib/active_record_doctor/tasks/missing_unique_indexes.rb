@@ -1,9 +1,13 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Detect columns covered by a uniqueness validation that lack the corresponding unique index thus risking duplicate
+    # inserts.
     class MissingUniqueIndexes < Base
-      @description = 'Detect columns covered by a uniqueness validator without a unique index'
+      @description = "Detect columns covered by a uniqueness validator without a unique index"
 
       def run
         eager_load!

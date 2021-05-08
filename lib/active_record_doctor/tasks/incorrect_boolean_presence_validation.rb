@@ -1,16 +1,19 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Find instances of boolean column presence validations that use presence/absence instead of includes/excludes.
     class IncorrectBooleanPresenceValidation < Base
-      @description = 'Detect boolean columns with presence/absence instead of includes/excludes validators'
+      @description = "Detect boolean columns with presence/absence instead of includes/excludes validators"
 
       def run
         eager_load!
 
         success(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
-            model.table_name == 'schema_migrations' ||
+            model.table_name == "schema_migrations" ||
             !table_exists?(model.table_name)
         end.map do |model|
           [
@@ -20,7 +23,7 @@ module ActiveRecordDoctor
                 has_presence_validator?(model, column)
             end.map(&:name)
           ]
-        end.reject do |model_name, columns|
+        end.reject do |_model_name, columns|
           columns.empty?
         end))
       end

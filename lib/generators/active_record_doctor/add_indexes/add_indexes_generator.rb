@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 module ActiveRecordDoctor
+  # Generate migrations that add missing indexes to the database.
   class AddIndexesGenerator < Rails::Generators::Base
     MigrationDescription = Struct.new(:table, :columns)
 
-    desc 'Generate migrations for the specified indexes'
-    argument :path, type: :string, default: nil, banner: 'PATH'
+    desc "Generate migrations for the specified indexes"
+    argument :path, type: :string, default: nil, banner: "PATH"
 
     def create_migrations
       migration_descriptions = read_migration_descriptions(path)
@@ -23,10 +26,10 @@ module ActiveRecordDoctor
         table, *columns = line.split(/\s+/)
 
         if table.empty?
-          fail("No table name in #{path} on line #{index + 1}. Ensure the line doesn't start with whitespace.")
+          raise("No table name in #{path} on line #{index + 1}. Ensure the line doesn't start with whitespace.")
         end
         if columns.empty?
-          fail("No columns for table #{table} in #{path} on line #{index + 1}.")
+          raise("No columns for table #{table} in #{path} on line #{index + 1}.")
         end
 
         MigrationDescription.new(table, columns)
@@ -34,13 +37,16 @@ module ActiveRecordDoctor
     end
 
     def content(migration_description)
-      <<EOF
+      # In order to properly indent the resulting code, we must disable the
+      # rubocop rule below.
+
+      <<MIGRATION
 class IndexForeignKeysIn#{migration_description.table.camelize} < ActiveRecord::Migration#{migration_version}
   def change
 #{add_indexes(migration_description)}
   end
 end
-EOF
+MIGRATION
     end
 
     def add_indexes(migration_description)
@@ -59,7 +65,7 @@ EOF
       if major >= 5 && minor >= 1
         "[#{major}.#{minor}]"
       else
-        ''
+        ""
       end
     end
   end

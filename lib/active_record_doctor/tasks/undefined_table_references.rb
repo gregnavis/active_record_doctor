@@ -1,9 +1,12 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Find models referencing non-existent database tables or views.
     class UndefinedTableReferences < Base
-      @description = 'Detect models referencing undefined tables or views'
+      @description = "Detect models referencing undefined tables or views"
 
       def run
         eager_load!

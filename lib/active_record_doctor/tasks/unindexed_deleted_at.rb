@@ -1,11 +1,17 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Find unindexed deleted_at columns.
     class UnindexedDeletedAt < Base
-      COLUMNS = %w[deleted_at discarded_at].freeze
-      PATTERN = COLUMNS.join('|').freeze
-      @description = 'Detect unindexed deleted_at columns'
+      PATTERN = [
+        "deleted_at",
+        "discarded_at"
+      ].join("|").freeze
+
+      @description = "Detect unindexed deleted_at columns"
 
       def run
         success(connection.tables.select do |table|

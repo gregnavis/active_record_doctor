@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ModelFactory
   def self.cleanup
     delete_models

@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 module ActiveRecordDoctor
   module Printers
+    # Default printer for displaying messages produced by active_record_doctor.
     class IOPrinter
-      def initialize(io = STDOUT)
+      def initialize(io = $stdout)
         @io = io
       end
 
@@ -24,7 +27,7 @@ module ActiveRecordDoctor
             when :primary_key
               @io.puts("  #{index} (is a primary key of #{params[0]})")
             else
-              fail("unknown reason #{reason.inspect}")
+              raise("unknown reason #{reason.inspect}")
             end
           end
         end
@@ -40,15 +43,15 @@ module ActiveRecordDoctor
         return if models.empty?
 
         unless views_checked
-          @io.puts(<<EOS)
+          @io.puts(<<WARNING)
 WARNING: Models backed by database views are supported only in Rails 5+ OR
 Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
 will be erroneously reported below as not having their underlying tables/views.
 Consider upgrading Rails or disabling this task temporarily.
-EOS
+WARNING
         end
 
-        @io.puts('The following models reference undefined tables:')
+        @io.puts("The following models reference undefined tables:")
         models.each do |model_name, table_name|
           @io.puts("  #{model_name} (the table #{table_name} is undefined)")
         end
@@ -57,7 +60,7 @@ EOS
       def unindexed_deleted_at(indexes)
         return if indexes.empty?
 
-        @io.puts('The following indexes should include `deleted_at IS NULL`:')
+        @io.puts("The following indexes should include `deleted_at IS NULL`:")
         indexes.each do |index|
           @io.puts("  #{index}")
         end
@@ -66,7 +69,7 @@ EOS
       def missing_unique_indexes(indexes)
         return if indexes.empty?
 
-        @io.puts('The following indexes should be created to back model-level uniqueness validations:')
+        @io.puts("The following indexes should be created to back model-level uniqueness validations:")
         indexes.each do |table, arrays_of_columns|
           arrays_of_columns.each do |columns|
             @io.puts("  #{table}: #{columns.join(', ')}")
@@ -77,7 +80,7 @@ EOS
       def missing_presence_validation(missing_presence_validators)
         return if missing_presence_validators.empty?
 
-        @io.puts('The following models and columns should have presence validations:')
+        @io.puts("The following models and columns should have presence validations:")
         missing_presence_validators.each do |model_name, array_of_columns|
           @io.puts("  #{model_name}: #{array_of_columns.join(', ')}")
         end
@@ -86,7 +89,7 @@ EOS
       def missing_non_null_constraint(missing_non_null_constraints)
         return if missing_non_null_constraints.empty?
 
-        @io.puts('The following columns should be marked as `null: false`:')
+        @io.puts("The following columns should be marked as `null: false`:")
         missing_non_null_constraints.each do |table, columns|
           @io.puts("  #{table}: #{columns.join(', ')}")
         end
@@ -95,7 +98,7 @@ EOS
       def incorrect_boolean_presence_validation(incorrect_boolean_presence_validations)
         return if incorrect_boolean_presence_validations.empty?
 
-        @io.puts('The presence of the following boolean columns is validated incorrectly:')
+        @io.puts("The presence of the following boolean columns is validated incorrectly:")
         incorrect_boolean_presence_validations.each do |table, columns|
           @io.puts("  #{table}: #{columns.join(', ')}")
         end

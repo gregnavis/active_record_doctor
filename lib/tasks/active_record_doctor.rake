@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks"
 require "active_record_doctor/tasks/unindexed_foreign_keys"
 require "active_record_doctor/tasks/extraneous_indexes"

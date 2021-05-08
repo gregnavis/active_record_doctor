@@ -13,12 +13,16 @@ matrix:
   include:
     - rvm: 2.1.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.2.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.3.8
       gemfile: gemfiles/Gemfile.rails-4.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-4.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.5.9
       gemfile: gemfiles/Gemfile.rails-4.2.x
     - rvm: 2.6.7
@@ -30,10 +34,13 @@ matrix:
 
     - rvm: 2.2.10
       gemfile: gemfiles/Gemfile.rails-5.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.3.8
       gemfile: gemfiles/Gemfile.rails-5.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.4.10
       gemfile: gemfiles/Gemfile.rails-5.2.x
+      env: SKIP_RUBOCOP=
     - rvm: 2.5.9
       gemfile: gemfiles/Gemfile.rails-5.2.x
     - rvm: 2.6.7
@@ -68,3 +75,7 @@ before_install:
 
 before_script:
   - createdb active_record_doctor_test
+
+script:
+  - "[[ -v SKIP_RUBOCOP ]] || bundle exec rubocop"
+  - bundle exec rake

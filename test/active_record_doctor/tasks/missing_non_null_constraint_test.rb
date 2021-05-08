@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
   def test_presence_true_and_null_true
     create_table(:users) do |t|
@@ -6,7 +8,7 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
       validates :name, presence: true
     end
 
-    assert_equal({ 'users' => ['name'] }, run_task)
+    assert_equal({ "users" => ["name"] }, run_task)
   end
 
   def test_association_presence_true_and_null_true
@@ -17,7 +19,7 @@ class ActiveRecordDoctor::Tasks::MissingNonNullConstraintTest < Minitest::Test
       belongs_to :company, required: true
     end
 
-    assert_equal({ 'users' => ['company_id'] }, run_task)
+    assert_equal({ "users" => ["company_id"] }, run_task)
   end
 
   def test_presence_true_and_null_false

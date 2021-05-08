@@ -1,30 +1,33 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Find foreign keys that lack indexes (usually recommended for performance reasons).
     class UnindexedForeignKeys < Base
-      @description = 'Detect foreign keys without an index on them'
+      @description = "Detect foreign keys without an index on them"
 
       def run
-        success(hash_from_pairs(tables.select do |table|
-          "schema_migrations" != table
+        success(hash_from_pairs(tables.reject do |table|
+          table == "schema_migrations"
         end.map do |table|
           [
             table,
             connection.columns(table).select do |column|
-              foreign_key?(table, column) &&
+              foreign_key?(column) &&
                 !indexed?(table, column) &&
                 !indexed_as_polymorphic?(table, column)
             end.map(&:name)
           ]
-        end.select do |table, columns|
-          !columns.empty?
+        end.reject do |_table, columns|
+          columns.empty?
         end))
       end
 
       private
 
-      def foreign_key?(table, column)
+      def foreign_key?(column)
         column.name.end_with?("_id")
       end
 
@@ -35,7 +38,7 @@ module ActiveRecordDoctor
       end
 
       def indexed_as_polymorphic?(table, column)
-        type_column_name = column.name.sub(/_id\Z/, '_type')
+        type_column_name = column.name.sub(/_id\Z/, "_type")
         connection.indexes(table).any? do |index|
           index.columns == [type_column_name, column.name]
         end

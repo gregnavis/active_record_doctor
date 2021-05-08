@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Load all tasks
 class ActiveRecordDoctor::Printers::IOPrinterTest < Minitest::Test
   def test_all_tasks_have_printers
@@ -12,10 +14,12 @@ class ActiveRecordDoctor::Printers::IOPrinterTest < Minitest::Test
   end
 
   def test_unindexed_foreign_keys
-    assert_equal(<<EOF, unindexed_foreign_keys({ "users" => ["profile_id", "account_id"], "account" => ["group_id"] }))
+    # rubocop:disable Layout/LineLength
+    assert_equal(<<OUTPUT, unindexed_foreign_keys({ "users" => ["profile_id", "account_id"], "account" => ["group_id"] }))
 account group_id
 users account_id profile_id
-EOF
+OUTPUT
+    # rubocop:enable Layout/LineLength
   end
 
   private

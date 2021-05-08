@@ -1,13 +1,16 @@
+# frozen_string_literal: true
+
 require "active_record_doctor/tasks/base"
 
 module ActiveRecordDoctor
   module Tasks
+    # Find foreign-key like columns lacking an actual foreign key constraint.
     class MissingForeignKeys < Base
-      @description = 'Detect association columns without a foreign key constraint'
+      @description = "Detect association columns without a foreign key constraint"
 
       def run
-        success(hash_from_pairs(tables.select do |table|
-          "schema_migrations" != table
+        success(hash_from_pairs(tables.reject do |table|
+          table == "schema_migrations"
         end.map do |table|
           [
             table,
@@ -15,19 +18,19 @@ module ActiveRecordDoctor
               # We need to skip polymorphic associations as they can reference
               # multiple tables but a foreign key constraint can reference
               # a single predefined table.
-              id?(table, column) &&
+              named_like_foreign_key?(column) &&
                 !foreign_key?(table, column) &&
                 !polymorphic_foreign_key?(table, column)
             end.map(&:name)
           ]
-        end.select do |table, columns|
-          !columns.empty?
+        end.reject do |_table, columns|
+          columns.empty?
         end))
       end
 
       private
 
-      def id?(table, column)
+      def named_like_foreign_key?(column)
         column.name.end_with?("_id")
       end
 
@@ -38,7 +41,7 @@ module ActiveRecordDoctor
       end
 
       def polymorphic_foreign_key?(table, column)
-        type_column_name = column.name.sub(/_id\Z/, '_type')
+        type_column_name = column.name.sub(/_id\Z/, "_type")
         connection.columns(table).any? do |another_column|
           another_column.name == type_column_name
         end

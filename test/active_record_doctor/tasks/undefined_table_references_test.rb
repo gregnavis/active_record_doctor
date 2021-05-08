@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < Minitest::Test
   def test_table_exists
     # No columns needed, just the table.
