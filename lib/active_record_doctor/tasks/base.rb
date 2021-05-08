@@ -30,12 +30,7 @@ module ActiveRecordDoctor
       end
 
       def tables
-        @tables ||=
-          if ActiveRecord::VERSION::MAJOR == 5
-            connection.data_sources
-          else
-            connection.tables
-          end
+        connection.tables
       end
 
       def table_exists?(table_name)
@@ -44,7 +39,7 @@ module ActiveRecordDoctor
 
       def views
         @views ||=
-          if ActiveRecord::VERSION::MAJOR == 5
+          if connection.respond_to?(:views)
             connection.views
           elsif connection.is_a?(ActiveRecord::ConnectionAdapters::PostgreSQLAdapter)
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
@@ -61,25 +56,11 @@ module ActiveRecordDoctor
       end
 
       def eager_load!
-        # We call GC.start to make the test suite work. It's (probably) not
-        # needed for use during development. However, if we remove it then the
-        # test suite will start accumulating temporary model classes in the
-        # object space. Running the garbage collector gets rid of them.
-        GC.start
-
         Rails.application.eager_load!
       end
 
       def models
-        descendants(ActiveRecord::Base)
-      end
-
-      def descendants(superclass)
-        superclass.descendants
-      end
-
-      def descendant?(klass, superclass)
-        !klass.nil? && (klass.superclass == superclass || descendant?(klass.superclass, superclass))
+        ActiveRecord::Base.descendants
       end
     end
   end
