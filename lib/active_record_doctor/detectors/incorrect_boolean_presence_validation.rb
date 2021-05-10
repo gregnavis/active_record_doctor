@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Find instances of boolean column presence validations that use presence/absence instead of includes/excludes.
     class IncorrectBooleanPresenceValidation < Base
       @description = "Detect boolean columns with presence/absence instead of includes/excludes validators"

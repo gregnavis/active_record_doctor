@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Detect models with non-NULL columns that lack the corresponding model-level validator.
     class MissingPresenceValidation < Base
       @description = "Detect non-NULL columns without a presence validator"

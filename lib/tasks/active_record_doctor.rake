@@ -1,23 +1,23 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks"
-require "active_record_doctor/tasks/unindexed_foreign_keys"
-require "active_record_doctor/tasks/extraneous_indexes"
-require "active_record_doctor/tasks/missing_foreign_keys"
-require "active_record_doctor/tasks/undefined_table_references"
-require "active_record_doctor/tasks/unindexed_deleted_at"
-require "active_record_doctor/tasks/missing_unique_indexes"
-require "active_record_doctor/tasks/missing_presence_validation"
-require "active_record_doctor/tasks/missing_non_null_constraint"
-require "active_record_doctor/tasks/incorrect_boolean_presence_validation"
+require "active_record_doctor/detectors"
+require "active_record_doctor/detectors/unindexed_foreign_keys"
+require "active_record_doctor/detectors/extraneous_indexes"
+require "active_record_doctor/detectors/missing_foreign_keys"
+require "active_record_doctor/detectors/undefined_table_references"
+require "active_record_doctor/detectors/unindexed_deleted_at"
+require "active_record_doctor/detectors/missing_unique_indexes"
+require "active_record_doctor/detectors/missing_presence_validation"
+require "active_record_doctor/detectors/missing_non_null_constraint"
+require "active_record_doctor/detectors/incorrect_boolean_presence_validation"
 
 namespace :active_record_doctor do
-  def mount(task_class)
-    name = task_class.name.demodulize.underscore.to_sym
+  def mount(detector_class)
+    name = detector_class.name.demodulize.underscore.to_sym
 
-    desc task_class.description
+    desc detector_class.description
     task name => :environment do
-      result, success = task_class.run
+      result, success = detector_class.run
       success = true if success.nil?
 
       printer = ActiveRecordDoctor::Printers::IOPrinter.new
@@ -29,7 +29,7 @@ namespace :active_record_doctor do
     end
   end
 
-  ActiveRecordDoctor::Tasks.all.each do |task|
-    mount task
+  ActiveRecordDoctor::Detectors.all.each do |detector|
+    mount detector
   end
 end

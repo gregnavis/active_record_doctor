@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < Minitest::Test
+class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Test
   def test_table_exists
     # No columns needed, just the table.
     create_table(:users)
 
-    assert_equal([[], true], run_task)
+    assert_equal([[], true], run_detector)
   end
 
   def test_table_does_not_exist
@@ -15,7 +15,7 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < Minitest::Test
     # table as otherwise Temping will raise an error. Assertion errors are
     # signalled via exceptions which we shouldn't swallow if we don't want to
     # break the test suite hence the choice of begin/ensure.
-    assert_equal([[["ModelFactory::Models::User", "users"]], true], run_task)
+    assert_equal([[["ModelFactory::Models::User", "users"]], true], run_detector)
   end
 
   def test_view_instead_of_table
@@ -29,7 +29,7 @@ class ActiveRecordDoctor::Tasks::UndefinedTableReferencesTest < Minitest::Test
     # signalled via exceptions which we shouldn't swallow if we don't want to
     # break the test suite hence the choice of begin/ensure.
     begin
-      assert_equal([[], true], run_task)
+      assert_equal([[], true], run_detector)
     ensure
       ActiveRecord::Base.connection.execute("DROP VIEW users")
     end

@@ -15,7 +15,7 @@ ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL"))
 # the connection.
 ActiveRecord::Base.connection
 
-# We need to mock Rails because some tasks depend on .eager_load! This must
+# We need to mock Rails because some detectors depend on .eager_load! This must
 # happen AFTER loading active_record_doctor as otherwise it'd attempt to
 # install a Railtie.
 module Rails
@@ -61,14 +61,14 @@ class Minitest::Test
     ModelFactory.create_model(*args, &block)
   end
 
-  # Run the appropriate task. The task name is inferred from the test class.
-  def run_task
+  # Run the appropriate detector. The detector name is inferred from the test class.
+  def run_detector
     self.class.name.sub(/Test$/, "").constantize.run.first
   end
 
   # Assert results are equal without regards to the order of elements.
   def assert_result(expected_result)
-    assert_equal(expected_result.sort_by(&:to_s), run_task.sort_by(&:to_s))
+    assert_equal(expected_result.sort_by(&:to_s), run_detector.sort_by(&:to_s))
   end
 end
 

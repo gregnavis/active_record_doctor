@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
+class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   def test_missing_unique_index
     create_table(:users) do |t|
       t.string :email
@@ -92,7 +92,7 @@ class ActiveRecordDoctor::Tasks::MissingUniqueIndexesTest < Minitest::Test
 
     # There's no need for assert/refute as it's enough the line below doesn't
     # raise an exception.
-    run_task
+    run_detector
   end
 
   class DummyValidator < ActiveModel::Validator

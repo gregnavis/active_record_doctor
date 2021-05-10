@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
-class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
+class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::Test
   def test_null_column_is_not_reported_if_validation_absent
     create_table(:users) do |t|
       t.string :name
     end.create_model do
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_non_null_column_is_reported_if_validation_absent
@@ -16,7 +16,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
     end.create_model do
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["name"] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["name"] }, run_detector)
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
@@ -26,7 +26,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :name, presence: true
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_non_null_column_is_not_reported_if_association_validation_present
@@ -37,7 +37,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       belongs_to :company, required: true
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_non_null_boolean_is_reported_if_nil_included
@@ -47,7 +47,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_detector)
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
@@ -57,7 +57,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, inclusion: { in: [true, false] }
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_excluded
@@ -67,7 +67,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, exclusion: { in: [nil] }
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_non_null_boolean_is_reported_if_nil_not_excluded
@@ -77,7 +77,7 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :active, exclusion: { in: [false] }
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_task)
+    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_detector)
   end
 
   def test_timestamps_are_not_reported
@@ -87,13 +87,13 @@ class ActiveRecordDoctor::Tasks::MissingPresenceValidationTest < Minitest::Test
       validates :name, presence: true
     end
 
-    assert_equal({}, run_task)
+    assert_equal({}, run_detector)
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
     # No need to assert anything as merely not raising an exception is a success.
-    run_task
+    run_detector
   end
 end

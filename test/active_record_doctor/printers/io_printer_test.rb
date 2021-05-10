@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-# Load all tasks
+# Load all detectors
 class ActiveRecordDoctor::Printers::IOPrinterTest < Minitest::Test
-  def test_all_tasks_have_printers
-    ActiveRecordDoctor::Tasks::Base.subclasses.each do |task_class|
-      name = task_class.name.demodulize.underscore.to_sym
+  def test_all_detectors_have_printers
+    ActiveRecordDoctor::Detectors::Base.subclasses.each do |detector_class|
+      name = detector_class.name.demodulize.underscore.to_sym
 
       assert(
         ActiveRecordDoctor::Printers::IOPrinter.method_defined?(name),

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Find foreign-key like columns lacking an actual foreign key constraint.
     class MissingForeignKeys < Base
       @description = "Detect association columns without a foreign key constraint"

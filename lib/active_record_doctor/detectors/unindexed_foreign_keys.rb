@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Find foreign keys that lack indexes (usually recommended for performance reasons).
     class UnindexedForeignKeys < Base
       @description = "Detect foreign keys without an index on them"

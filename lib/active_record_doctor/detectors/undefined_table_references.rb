@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Find models referencing non-existent database tables or views.
     class UndefinedTableReferences < Base
       @description = "Detect models referencing undefined tables or views"

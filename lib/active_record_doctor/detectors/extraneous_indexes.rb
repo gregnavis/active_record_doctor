@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Detect indexes whose function can be overtaken by other indexes. For example, an index on columns A, B, and C
     # can also serve as an index on A and A, B.
     class ExtraneousIndexes < Base

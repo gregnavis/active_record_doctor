@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/tasks/base"
+require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
-  module Tasks
+  module Detectors
     # Detect model-level presence validators on columns that lack a non-NULL constraint thus allowing potentially
     # invalid insertions.
     class MissingNonNullConstraint < Base

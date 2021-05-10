@@ -56,7 +56,7 @@ Metrics/MethodLength:
   Enabled: false
 
 # ABC, cycolmatic complexity and perceived complexity fare rather poorly on our
-# task definitions as trying to satisfy them would mean breaking longish but
+# detector definitions as trying to satisfy them would mean breaking longish but
 # not cognitively demanding method definitions into multiple smaller methods
 # which would obscure what's going on by adding lots of indirection.
 

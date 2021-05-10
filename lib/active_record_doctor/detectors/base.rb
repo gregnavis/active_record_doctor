@@ -3,8 +3,8 @@
 require "active_record_doctor/printers/io_printer"
 
 module ActiveRecordDoctor
-  module Tasks
-    # Base class for all active_record_doctor tasks.
+  module Detectors
+    # Base class for all active_record_doctor detectors.
     class Base
       class << self
         attr_reader :description

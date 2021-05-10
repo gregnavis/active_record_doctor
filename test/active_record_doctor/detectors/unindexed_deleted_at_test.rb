@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ActiveRecordDoctor::Tasks::UnindexedDeletedAtTest < Minitest::Test
+class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_indexed_deleted_at_is_not_reported
     create_table(:users) do |t|
       t.string :first_name

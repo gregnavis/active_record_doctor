@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class ActiveRecordDoctor::Tasks::ExtraneousIndexesTest < Minitest::Test
+class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
   def test_index_on_primary_key_is_duplicate
     create_table(:users) do |t|
       t.index :id

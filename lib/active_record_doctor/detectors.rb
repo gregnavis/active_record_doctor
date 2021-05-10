@@ -4,10 +4,10 @@ require "active_support"
 require "active_support/core_ext/class/subclasses"
 
 module ActiveRecordDoctor
-  # Container module for all tasks, implemented as separate classes.
-  module Tasks
+  # Container module for all detectors, implemented as separate classes.
+  module Detectors
     def self.all
-      ActiveRecordDoctor::Tasks::Base.subclasses
+      ActiveRecordDoctor::Detectors::Base.subclasses
     end
   end
 end
