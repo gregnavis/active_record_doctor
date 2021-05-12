@@ -9,7 +9,8 @@ require "uri"
 require "active_record"
 
 # Connect to the database defined in the URL.
-ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL"))
+DEFAULT_DATABASE_URL = "postgres:///active_record_doctor_test"
+ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL", DEFAULT_DATABASE_URL))
 
 # We need to call #connection to enfore Active Record to actually establish
 # the connection.
