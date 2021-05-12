@@ -61,9 +61,21 @@ class Minitest::Test
     ModelFactory.create_model(*args, &block)
   end
 
+  # Return the detector class under test.
+  def detector_class
+    self.class.name.sub(/Test$/, "").constantize
+  end
+
   # Run the appropriate detector. The detector name is inferred from the test class.
   def run_detector
-    self.class.name.sub(/Test$/, "").constantize.run.first
+    detector_class.run.first
+  end
+
+  def run_task
+    output = StringIO.new
+    printer = ActiveRecord::Printers::IOPrinter.new(output)
+    success = ActiveRecordDoctor::Task.new(detector_class, printer).run
+    [success, output.string]
   end
 
   # Assert results are equal without regards to the order of elements.

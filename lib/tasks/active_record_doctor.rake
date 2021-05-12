@@ -10,22 +10,16 @@ require "active_record_doctor/detectors/missing_unique_indexes"
 require "active_record_doctor/detectors/missing_presence_validation"
 require "active_record_doctor/detectors/missing_non_null_constraint"
 require "active_record_doctor/detectors/incorrect_boolean_presence_validation"
+require "active_record_doctor/task"
 
 namespace :active_record_doctor do
   def mount(detector_class)
-    name = detector_class.name.demodulize.underscore.to_sym
+    task = ActiveRecordDoctor::Task.new(detector_class)
 
-    desc detector_class.description
-    task name => :environment do
-      result, success = detector_class.run
-      success = true if success.nil?
-
-      printer = ActiveRecordDoctor::Printers::IOPrinter.new
-      printer.public_send(name, result)
-
-      # nil doesn't indicate a failure but rather no explicit result. We assume
-      # success by default hence only false results in an erroneous exit code.
-      exit(1) if success == false
+    desc task.description
+    task task.name => :environment do
+      success = task.run
+      exit(1) unless success
     end
   end
 
