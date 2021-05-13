@@ -74,14 +74,16 @@ class Minitest::Test
 
   def run_task
     output = StringIO.new
-    printer = ActiveRecord::Printers::IOPrinter.new(output)
+    printer = ActiveRecordDoctor::Printers::IOPrinter.new(output)
     success = ActiveRecordDoctor::Task.new(detector_class, printer).run
     [success, output.string]
   end
 
-  # Assert results are equal without regards to the order of elements.
-  def assert_result(expected_result)
-    assert_equal(expected_result.sort_by(&:to_s), run_detector.sort_by(&:to_s))
+  def assert_success(expected_output)
+    success, actual_output = run_task
+
+    assert(success)
+    assert_equal(expected_output, actual_output)
   end
 end
 
@@ -89,7 +91,5 @@ end
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
-# Run each test method in a separate process so that we avoid leaking
-# temporary models defined by temping. I'm not entirely sure but it seems to
-# be a problem with Rails caching those classes aggressively.
+# Uncomment in case there's test case interference.
 Minitest.parallel_executor = Minitest::ForkExecutor.new

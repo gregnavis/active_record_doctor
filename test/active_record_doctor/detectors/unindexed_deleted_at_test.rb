@@ -11,7 +11,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
         where: "deleted_at IS NULL"
     end
 
-    assert_result([])
+    assert_success("")
   end
 
   def test_unindexed_deleted_at_is_reported
@@ -23,7 +23,10 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
         name: "index_profiles_on_first_name_and_last_name"
     end
 
-    assert_result(["index_profiles_on_first_name_and_last_name"])
+    assert_success(<<OUTPUT)
+The following indexes should include `deleted_at IS NULL`:
+  index_profiles_on_first_name_and_last_name
+OUTPUT
   end
 
   def test_indexed_discarded_at_is_not_reported
@@ -36,7 +39,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
         where: "discarded_at IS NULL"
     end
 
-    assert_result([])
+    assert_success("")
   end
 
   def test_unindexed_discarded_at_is_reported
@@ -48,6 +51,9 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
         name: "index_profiles_on_first_name_and_last_name"
     end
 
-    assert_result(["index_profiles_on_first_name_and_last_name"])
+    assert_success(<<OUTPUT)
+The following indexes should include `deleted_at IS NULL`:
+  index_profiles_on_first_name_and_last_name
+OUTPUT
   end
 end

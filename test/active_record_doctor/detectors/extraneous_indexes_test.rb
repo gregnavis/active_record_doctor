@@ -6,7 +6,10 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
       t.index :id
     end
 
-    assert_result([["index_users_on_id", [:primary_key, "users"]]])
+    assert_success(<<OUTPUT)
+The following indexes are extraneous and can be removed:
+  index_users_on_id (is a primary key of users)
+OUTPUT
   end
 
   def test_non_unique_version_of_index_is_duplicate
@@ -18,9 +21,10 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
     # Rails 4.2 compatibility - can't be pulled into the block above.
     ActiveRecord::Base.connection.add_index :users, :email, name: "index_users_on_email"
 
-    assert_result([
-      ["index_users_on_email", [:multi_column, "unique_index_on_users_email"]]
-    ])
+    assert_success(<<OUTPUT)
+The following indexes are extraneous and can be removed:
+  index_users_on_email (can be handled by unique_index_on_users_email)
+OUTPUT
   end
 
   def test_single_column_covered_by_unique_and_non_unique_multi_column_is_duplicate
@@ -35,16 +39,10 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
       t.index :last_name
     end
 
-    assert_result([
-      [
-        "index_users_on_last_name",
-        [
-          :multi_column,
-          "index_users_on_last_name_and_first_name_and_email",
-          "unique_index_on_users_last_name_and_first_name"
-        ]
-      ]
-    ])
+    assert_success(<<OUTPUT)
+The following indexes are extraneous and can be removed:
+  index_users_on_last_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
+OUTPUT
   end
 
   def test_multi_column_covered_by_unique_and_non_unique_multi_column_is_duplicate
@@ -61,15 +59,9 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
     # Rails 4.2 compatibility - can't be pulled into the block above.
     ActiveRecord::Base.connection.add_index :users, [:last_name, :first_name]
 
-    assert_result([
-      [
-        "index_users_on_last_name_and_first_name",
-        [
-          :multi_column,
-          "index_users_on_last_name_and_first_name_and_email",
-          "unique_index_on_users_last_name_and_first_name"
-        ]
-      ]
-    ])
+    assert_success(<<OUTPUT)
+The following indexes are extraneous and can be removed:
+  index_users_on_last_name_and_first_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
+OUTPUT
   end
 end

@@ -2,20 +2,20 @@
 
 class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Test
   def test_table_exists
-    # No columns needed, just the table.
-    create_table(:users)
+    create_table(:users) do
+    end.create_model do
+    end
 
-    assert_equal([[], true], run_detector)
+    assert_success("")
   end
 
   def test_table_does_not_exist
     create_model(:users)
 
-    # We wrap the assertion in begin/ensure because we must recreate the
-    # table as otherwise Temping will raise an error. Assertion errors are
-    # signalled via exceptions which we shouldn't swallow if we don't want to
-    # break the test suite hence the choice of begin/ensure.
-    assert_equal([[["ModelFactory::Models::User", "users"]], true], run_detector)
+    assert_success(<<OUTPUT)
+The following models reference undefined tables:
+  ModelFactory::Models::User (the table users is undefined)
+OUTPUT
   end
 
   def test_view_instead_of_table
@@ -24,12 +24,8 @@ class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Te
     ActiveRecord::Base.connection.execute("CREATE VIEW users AS SELECT 1")
     create_model(:users)
 
-    # We wrap the assertion in begin/ensure because we must recreate the
-    # table as otherwise Temping will raise an error. Assertion errors are
-    # signalled via exceptions which we shouldn't swallow if we don't want to
-    # break the test suite hence the choice of begin/ensure.
     begin
-      assert_equal([[], true], run_detector)
+      assert_success("")
     ensure
       ActiveRecord::Base.connection.execute("DROP VIEW users")
     end

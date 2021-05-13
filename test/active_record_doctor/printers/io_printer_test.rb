@@ -16,8 +16,9 @@ class ActiveRecordDoctor::Printers::IOPrinterTest < Minitest::Test
   def test_unindexed_foreign_keys
     # rubocop:disable Layout/LineLength
     assert_equal(<<OUTPUT, unindexed_foreign_keys({ "users" => ["profile_id", "account_id"], "account" => ["group_id"] }))
-account group_id
-users account_id profile_id
+The following foreign keys should be indexed for performance reasons:
+  account group_id
+  users account_id profile_id
 OUTPUT
     # rubocop:enable Layout/LineLength
   end

@@ -7,7 +7,10 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: false
     end
 
-    assert_equal({ "users" => ["company_id"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following columns lack a foreign key constraint:
+  users company_id
+OUTPUT
   end
 
   def test_present_foreign_key_is_not_reported
@@ -16,6 +19,6 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 end

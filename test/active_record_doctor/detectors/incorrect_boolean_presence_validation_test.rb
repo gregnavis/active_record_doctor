@@ -12,7 +12,10 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       validates :email, :active, presence: true
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_detector)
+    assert_success(<<OUTPUT)
+The presence of the following boolean columns is validated incorrectly:
+  ModelFactory::Models::User: active
+OUTPUT
   end
 
   def test_inclusion_is_not_reported
@@ -22,13 +25,12 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       validates :active, inclusion: { in: [true, false] }
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    # No need to assert anything as merely not raising an exception is a success.
-    run_detector
+    assert_success("")
   end
 end

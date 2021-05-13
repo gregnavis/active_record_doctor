@@ -7,7 +7,10 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: true, index: false
     end
 
-    assert_equal({ "users" => ["company_id"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following foreign keys should be indexed for performance reasons:
+  users company_id
+OUTPUT
   end
 
   def test_indexed_foreign_key_is_not_reported
@@ -16,6 +19,6 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: true, index: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 end

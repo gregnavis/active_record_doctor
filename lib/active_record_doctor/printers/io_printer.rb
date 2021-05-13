@@ -9,33 +9,37 @@ module ActiveRecordDoctor
       end
 
       def unindexed_foreign_keys(unindexed_foreign_keys)
+        return if unindexed_foreign_keys.empty?
+
+        @io.puts("The following foreign keys should be indexed for performance reasons:")
         @io.puts(unindexed_foreign_keys.sort.map do |table, columns|
-          "#{table} #{columns.sort.join(' ')}"
+          "  #{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
 
       def extraneous_indexes(extraneous_indexes)
-        if extraneous_indexes.empty?
-          @io.puts("No indexes are extraneous.")
-        else
-          @io.puts("The following indexes are extraneous and can be removed:")
-          extraneous_indexes.each do |index, details|
-            reason, *params = details
-            case reason
-            when :multi_column
-              @io.puts("  #{index} (can be handled by #{params.join(', ')})")
-            when :primary_key
-              @io.puts("  #{index} (is a primary key of #{params[0]})")
-            else
-              raise("unknown reason #{reason.inspect}")
-            end
+        return if extraneous_indexes.empty?
+
+        @io.puts("The following indexes are extraneous and can be removed:")
+        extraneous_indexes.each do |index, details|
+          reason, *params = details
+          case reason
+          when :multi_column
+            @io.puts("  #{index} (can be handled by #{params.join(', ')})")
+          when :primary_key
+            @io.puts("  #{index} (is a primary key of #{params[0]})")
+          else
+            raise("unknown reason #{reason.inspect}")
           end
         end
       end
 
       def missing_foreign_keys(missing_foreign_keys)
+        return if missing_foreign_keys.empty?
+
+        @io.puts("The following columns lack a foreign key constraint:")
         @io.puts(missing_foreign_keys.sort.map do |table, columns|
-          "#{table} #{columns.sort.join(' ')}"
+          "  #{table} #{columns.sort.join(' ')}"
         end.join("\n"))
       end
 

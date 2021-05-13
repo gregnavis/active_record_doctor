@@ -8,7 +8,10 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true
     end
 
-    assert_equal({ "users" => ["name"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following columns should be marked as `null: false`:
+  users: name
+OUTPUT
   end
 
   def test_association_presence_true_and_null_true
@@ -19,7 +22,10 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       belongs_to :company, required: true
     end
 
-    assert_equal({ "users" => ["company_id"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following columns should be marked as `null: false`:
+  users: company_id
+OUTPUT
   end
 
   def test_presence_true_and_null_false
@@ -29,7 +35,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_presence_false_and_null_true
@@ -45,7 +51,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: false
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_presence_false_and_null_false
@@ -55,7 +61,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: false
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_presence_true_with_if
@@ -65,7 +71,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true, if: -> { false }
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_presence_true_with_unless
@@ -75,7 +81,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true, unless: -> { false }
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_presence_true_with_allow_nil
@@ -85,13 +91,12 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true, allow_nil: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    # No need to assert anything as merely not raising an exception is a success.
-    run_detector
+    assert_success("")
   end
 end

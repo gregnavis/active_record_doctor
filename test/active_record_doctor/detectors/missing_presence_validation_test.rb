@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.create_model do
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_non_null_column_is_reported_if_validation_absent
@@ -16,7 +16,10 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.create_model do
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["name"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following models and columns should have presence validations:
+  ModelFactory::Models::User: name
+OUTPUT
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
@@ -26,7 +29,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :name, presence: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_non_null_column_is_not_reported_if_association_validation_present
@@ -37,7 +40,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       belongs_to :company, required: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_non_null_boolean_is_reported_if_nil_included
@@ -47,7 +50,10 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following models and columns should have presence validations:
+  ModelFactory::Models::User: active
+OUTPUT
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
@@ -57,7 +63,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :active, inclusion: { in: [true, false] }
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_excluded
@@ -67,7 +73,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :active, exclusion: { in: [nil] }
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_non_null_boolean_is_reported_if_nil_not_excluded
@@ -77,7 +83,10 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :active, exclusion: { in: [false] }
     end
 
-    assert_equal({ "ModelFactory::Models::User" => ["active"] }, run_detector)
+    assert_success(<<OUTPUT)
+The following models and columns should have presence validations:
+  ModelFactory::Models::User: active
+OUTPUT
   end
 
   def test_timestamps_are_not_reported
@@ -87,13 +96,12 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       validates :name, presence: true
     end
 
-    assert_equal({}, run_detector)
+    assert_success("")
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    # No need to assert anything as merely not raising an exception is a success.
-    run_detector
+    assert_success("")
   end
 end

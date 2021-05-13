@@ -9,9 +9,10 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: true
     end
 
-    assert_result([
-      ["users", [["email"]]]
-    ])
+    assert_success(<<OUTPUT)
+The following indexes should be created to back model-level uniqueness validations:
+  users: email
+OUTPUT
   end
 
   def test_present_unique_index
@@ -22,7 +23,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: true
     end
 
-    assert_result([])
+    assert_success("")
   end
 
   def test_missing_unique_index_with_scope
@@ -35,9 +36,10 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
-    assert_result([
-      ["users", [["company_id", "department_id", "email"]]]
-    ])
+    assert_success(<<OUTPUT)
+The following indexes should be created to back model-level uniqueness validations:
+  users: company_id, department_id, email
+OUTPUT
   end
 
   def test_present_unique_index_with_scope
@@ -50,7 +52,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
-    assert_result([])
+    assert_success("")
   end
 
   def test_column_order_is_ignored
@@ -63,7 +65,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: { scope: :organization_id }
     end
 
-    assert_result([])
+    assert_success("")
   end
 
   def test_conditions_is_skipped
@@ -90,9 +92,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates_with DummyValidator
     end
 
-    # There's no need for assert/refute as it's enough the line below doesn't
-    # raise an exception.
-    run_detector
+    assert_success("")
   end
 
   class DummyValidator < ActiveModel::Validator
@@ -109,6 +109,6 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: options
     end
 
-    assert_result([])
+    assert_success("")
   end
 end
