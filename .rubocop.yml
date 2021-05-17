@@ -79,6 +79,9 @@ Metrics/CyclomaticComplexity:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Metrics/ClassLength:
+  Enabled: false
+
 # In general, it's a good recommendation but there are two exceptions in
 # active_record_doctor where it harms readability. has_presence_validator?
 # is more intention revealing than presence_validator? Does the former take

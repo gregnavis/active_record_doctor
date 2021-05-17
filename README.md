@@ -13,6 +13,8 @@ can:
 * detect missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
 * detect incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
 * detect incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
+* detect primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
+* detect mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 
 More features coming soon!
 
@@ -311,6 +313,59 @@ The output of the command looks like this:
 The following associations might be using invalid dependent settings:
   Company: users loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`
   Post: comments skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+```
+
+### Detecting Primary Keys Having Short Integer Types
+
+Active Record 5.1 changed the default primary and foreign key type from INTEGER
+to BIGINT. The reason is to reduce the risk of running out of IDs on inserts.
+
+In order to detect primary keys using shorter integer types, for example created
+before migrating to 5.1, you can run the following command:
+
+```
+bundle exec rake active_record_doctor:short_primary_key_type
+```
+
+The output of the command looks like this:
+
+```
+The following primary keys have a short integer type:
+  companies id
+```
+
+The above means `comanies.id` should be migrated to a wider integer type. An
+example migration to accomplish this looks likes this:
+
+```ruby
+class ChangeCompaniesPrimaryKeyType < ActiveRecord::Migration[5.1]
+  def change
+    change_column :companies, :id, :bigint
+  end
+end
+```
+
+**IMPORTANT**. Running the above migration on a large table can cause downtime
+as all rows need to be rewritten.
+
+### Detecting Mismatched Foreign Key Types
+
+Foreign keys should be of the same type as the referenced primary key.
+Otherwise, there's a risk of bugs caused by IDs representable by one type but
+not the other.
+
+Running the command below will list all foreign keys whose type is different
+from the referenced primary key:
+
+```
+bundle exec rake active_record_doctor:mismatched_foreign_key_type
+```
+
+The output of the command looks like this:
+
+```
+The following foreign keys have different type than their paired primary keys:
+  companies user_id
 ```
 
 ## Ruby and Rails Compatibility Policy
