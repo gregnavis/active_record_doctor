@@ -31,6 +31,12 @@ Style/IfUnlessModifier:
 Style/SymbolProc:
   Enabled: false
 
+# We allow the old key-value syntax (key => value) in Rakefiles as that's how
+# we define task dependencies.
+Style/HashSyntax:
+  Exclude:
+    - '**/*.rake'
+
 # We pass an empty block in a few places to have a placeholder to add code to
 # in the future without having to dig through the code to determine whether a
 # block is allowed. Additionally, removing an empty block is **NOT** a

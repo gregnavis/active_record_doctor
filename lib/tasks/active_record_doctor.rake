@@ -14,17 +14,20 @@ require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/task"
 
 namespace :active_record_doctor do
-  def mount(detector_class)
-    task = ActiveRecordDoctor::Task.new(detector_class)
+  tasks = ActiveRecordDoctor::Detectors.all.map do |detector_class|
+    ActiveRecordDoctor::Task.new(detector_class)
+  end
 
+  tasks.each do |task|
     desc task.description
     task task.name => :environment do
-      success = task.run
-      exit(1) unless success
+      task.run or exit(1)
     end
   end
 
-  ActiveRecordDoctor::Detectors.all.each do |detector|
-    mount detector
+  desc "Run all active_record_doctor tasks"
+  task :all => :environment do
+    results = tasks.map { |task| task.run }
+    results.all? or exit(1)
   end
 end
