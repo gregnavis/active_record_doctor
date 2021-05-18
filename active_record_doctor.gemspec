@@ -16,19 +16,26 @@ Gem::Specification.new do |s|
   s.files = Dir["lib/**/*", "MIT-LICENSE.txt", "README.md"]
   s.test_files = Dir["test/**/*"]
 
-  s.required_ruby_version = ">= 2.1.0"
+  stage = ENV["TRAVIS_BUILD_STAGE_NAME"]
+  database = ENV.fetch("DATABASE", "postgres")
 
-  rails_version = ">= 4.2"
+  if stage.nil? || stage == "test"
+    s.required_ruby_version = ">= 2.1.0"
+    rails_version = ">= 4.2.0"
 
-  s.add_dependency "activerecord", rails_version
-  s.add_dependency "activesupport", rails_version
-  s.add_dependency "railties", rails_version
+    s.add_dependency "activerecord", rails_version
+    s.add_dependency "activesupport", rails_version
+    s.add_dependency "railties", rails_version
 
-  s.add_development_dependency "minitest-fork_executor", "~> 1.0"
-  s.add_development_dependency "pg", "~> 1.1"
-  s.add_development_dependency "rails", rails_version
+    s.add_development_dependency "minitest-fork_executor", "~> 1.0"
+    s.add_development_dependency "mysql2", "~> 0.5"
+    s.add_development_dependency "pg", "~> 1.1"
+    s.add_development_dependency "rake", "~> 13.0"
+  end
 
-  # We can't use rubocop for older Rubies so we just skip it and rely on
-  # linting performed with newer ones.
-  s.add_development_dependency "rubocop", "~> 1.14.0" unless ENV["SKIP_RUBOCOP"]
+  if stage.nil? || stage == "lint"
+    # We don't install rubocop in CI because we test against older Rubies that
+    # are incompatible with Rubocop.
+    s.add_development_dependency "rubocop", "~> 1.14.0"
+  end
 end

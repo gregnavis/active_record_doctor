@@ -8,9 +8,27 @@ module ModelFactory
   end
 
   def self.drop_all_tables
-    ActiveRecord::Base.connection.tables.each do |table_name|
+    connection = ActiveRecord::Base.connection
+    loop do
+      before = connection.tables.size
+      break if before.zero?
+
+      attempt_drop_all_tables(connection)
+      after = connection.tables.size
+
+      if before == after
+        raise("cannot delete temporary tables - most likely due to failing constraints")
+      end
+    end
+  end
+
+  def self.attempt_drop_all_tables(connection)
+    connection.tables.each do |table_name|
       ActiveRecord::Migration.suppress_messages do
-        ActiveRecord::Base.connection.drop_table(table_name, force: :cascade)
+        connection.drop_table(table_name, force: :cascade)
+      rescue ActiveRecord::InvalidForeignKey
+        # The table cannot be dropped due to foreign key constraints so
+        # we'll try to drop it on another attempt.
       end
     end
   end

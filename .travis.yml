@@ -1,81 +1,110 @@
 # The current settings are based on:
 #
-# https://www.jetbrains.com/lp/devecosystem-2019/ruby/
+# https://www.jetbrains.com/lp/devecosystem-2020/ruby/
+
+os: linux
+dist: xenial
 language: ruby
 
 env:
-  global:
-    - DATABASE_URL=postgres://postgres:@localhost:5432/active_record_doctor_test
+  - DATABASE=postgres
+  - DATABASE=mysql
 
-# Supporting Ruby 2.1+ covers almost the whole market. Over 10% of apps are on
-# Rails 4.2 so we'll continue to support it.
-matrix:
+rvm:
+  # Supporting Ruby 2.1+ covers almost the whole market.
+  - 2.1.0
+  - 2.2.10
+  - 2.3.8
+  - 2.4.10
+  - 2.5.9
+  - 2.6.7
+  - 2.7.3
+  - 3.0.1
+
+gemfile:
+  # About 7% of apps are on Rails 4.2 so we'll continue to support it.
+  - gemfiles/Gemfile.rails-4.2.x
+  - gemfiles/Gemfile.rails-5.0.x
+  - gemfiles/Gemfile.rails-5.1.x
+  - gemfiles/Gemfile.rails-5.2.x
+  - gemfiles/Gemfile.rails-6.0.x
+  - gemfiles/Gemfile.rails-6.1.x
+
+stages:
+  - lint
+  - test
+
+jobs:
   include:
-    - rvm: 2.1.10
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.2.10
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.3.8
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.4.10
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.5.9
-      gemfile: gemfiles/Gemfile.rails-4.2.x
-    - rvm: 2.6.7
-      gemfile: gemfiles/Gemfile.rails-4.2.x
+    - stage: lint
+      name: rubocop
+      rvm: 3.0.1
+      gemfile: Gemfile
+      before_install: skip
+      before_script: skip
+      script: bundle exec rubocop
 
-    # We skip 2.7.1 since it ships with Bundler 2 and Rails 4.2 explicitly
+  exclude:
+    # We skip 2.7 since it ships with Bundler 2 and Rails 4.2 explicitly
     # depends upon Bundler 1. The build should be fixable but we're assuming
     # most Rails 4.2 apps simply won't update to Ruby 2.7.
+    - gemfile: gemfiles/Gemfile.rails-4.2.x
+      rvm: 2.7.3
+    - gemfile: gemfiles/Gemfile.rails-4.2.x
+      rvm: 3.0.1
 
-    - rvm: 2.2.10
-      gemfile: gemfiles/Gemfile.rails-5.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.3.8
-      gemfile: gemfiles/Gemfile.rails-5.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.4.10
-      gemfile: gemfiles/Gemfile.rails-5.2.x
-      env: SKIP_RUBOCOP=
-    - rvm: 2.5.9
-      gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.6.7
-      gemfile: gemfiles/Gemfile.rails-5.2.x
-    - rvm: 2.7.3
-      gemfile: gemfiles/Gemfile.rails-5.2.x
+    - gemfile: gemfiles/Gemfile.rails-5.0.x
+      rvm: 2.1.0
+    - gemfile: gemfiles/Gemfile.rails-5.0.x
+      rvm: 3.0.1
 
-    - rvm: 2.5.9
-      gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 2.6.7
-      gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 2.7.3
-      gemfile: gemfiles/Gemfile.rails-6.0.x
-    - rvm: 3.0.1
-      gemfile: gemfiles/Gemfile.rails-6.0.x
+    - gemfile: gemfiles/Gemfile.rails-5.1.x
+      rvm: 2.1.0
+    - gemfile: gemfiles/Gemfile.rails-5.1.x
+      rvm: 3.0.1
 
-    - rvm: 2.5.9
-      gemfile: gemfiles/Gemfile.rails-6.1.x
-    - rvm: 2.6.7
-      gemfile: gemfiles/Gemfile.rails-6.1.x
-    - rvm: 2.7.3
-      gemfile: gemfiles/Gemfile.rails-6.1.x
-    - rvm: 3.0.1
-      gemfile: gemfiles/Gemfile.rails-6.1.x
+    - gemfile: gemfiles/Gemfile.rails-5.2.x
+      rvm: 2.1.0
+    - gemfile: gemfiles/Gemfile.rails-5.2.x
+      rvm: 3.0.1
+
+    - gemfile: gemfiles/Gemfile.rails-6.0.x
+      rvm: 2.1.0
+    - gemfile: gemfiles/Gemfile.rails-6.0.x
+      rvm: 2.2.10
+    - gemfile: gemfiles/Gemfile.rails-6.0.x
+      rvm: 2.3.8
+    - gemfile: gemfiles/Gemfile.rails-6.0.x
+      rvm: 2.4.10
+
+    - gemfile: gemfiles/Gemfile.rails-6.1.x
+      rvm: 2.1.0
+    - gemfile: gemfiles/Gemfile.rails-6.1.x
+      rvm: 2.2.10
+    - gemfile: gemfiles/Gemfile.rails-6.1.x
+      rvm: 2.3.8
+    - gemfile: gemfiles/Gemfile.rails-6.1.x
+      rvm: 2.4.10
 
 services:
   - postgresql
+  - mysql
 
 before_install:
   - gem uninstall -v '>=2' -i $(rvm gemdir)@global -ax bundler || true
   - gem install bundler -v '1.17.3'
 
-before_script:
-  - createdb active_record_doctor_test
+before_script: |
+  case $DATABASE in
+  postgres)
+    createdb active_record_doctor_test
+    ;;
+  mysql)
+    mysql -e 'CREATE DATABASE IF NOT EXISTS active_record_doctor_test'
+    ;;
+  *)
+    echo "Unknown database setting"
+    exit 1
+  esac
 
-script:
-  - "[[ -v SKIP_RUBOCOP ]] || bundle exec rubocop"
-  - bundle exec rake
+script: bundle exec rake

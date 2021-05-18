@@ -9,7 +9,23 @@ require "uri"
 require "active_record"
 
 # Connect to the database defined in the URL.
-DEFAULT_DATABASE_URL = "postgres:///active_record_doctor_test"
+case ENV["DATABASE"]
+when "postgresql"
+  require "pg"
+  DEFAULT_DATABASE_URL = "postgres:///active_record_doctor_test"
+when "mysql"
+  require "mysql2"
+  DEFAULT_DATABASE_URL = "mysql2:///active_record_doctor_test"
+when nil
+  # rubocop:disable Style/StderrPuts
+  $stderr.puts(<<ERROR)
+The DATABASE environment variable is not set. It must be set before running the
+test suite. Valid values are "mysql" and "postgresql".
+ERROR
+  # rubocop:enable Style/StderrPuts
+  exit(1)
+else raise("unrecognized database #{ENV['DATABASE']}")
+end
 ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL", DEFAULT_DATABASE_URL))
 
 # We need to call #connection to enfore Active Record to actually establish
@@ -54,6 +70,14 @@ class Minitest::Test
 
   private
 
+  PARTIAL_INDEXES_ADAPTERS = [
+    "PostgreSQL"
+  ].freeze
+
+  def supports_partial_indexes?
+    PARTIAL_INDEXES_ADAPTERS.include?(ActiveRecord::Base.connection.adapter_name)
+  end
+
   def create_table(*args, &block)
     ModelFactory.create_table(*args, &block)
   end
@@ -82,15 +106,15 @@ class Minitest::Test
   def assert_problems(expected_output)
     success, actual_output = run_task
 
-    refute(success)
     assert_equal(expected_output, actual_output)
+    refute(success)
   end
 
   def refute_problems
     success, actual_output = run_task
 
-    assert(success)
     assert_equal("", actual_output)
+    assert(success)
   end
 end
 
