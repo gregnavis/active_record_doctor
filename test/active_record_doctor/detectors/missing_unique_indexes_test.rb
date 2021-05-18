@@ -9,7 +9,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: true
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes should be created to back model-level uniqueness validations:
   users: email
 OUTPUT
@@ -23,7 +23,7 @@ OUTPUT
       validates :email, uniqueness: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_missing_unique_index_with_scope
@@ -36,7 +36,7 @@ OUTPUT
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes should be created to back model-level uniqueness validations:
   users: company_id, department_id, email
 OUTPUT
@@ -52,7 +52,7 @@ OUTPUT
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_column_order_is_ignored
@@ -65,7 +65,7 @@ OUTPUT
       validates :email, uniqueness: { scope: :organization_id }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_conditions_is_skipped
@@ -92,7 +92,7 @@ OUTPUT
       validates_with DummyValidator
     end
 
-    assert_success("")
+    refute_problems
   end
 
   class DummyValidator < ActiveModel::Validator
@@ -109,6 +109,6 @@ OUTPUT
       validates :email, uniqueness: options
     end
 
-    assert_success("")
+    refute_problems
   end
 end

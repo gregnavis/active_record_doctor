@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: true, index: false
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following foreign keys should be indexed for performance reasons:
   users company_id
 OUTPUT
@@ -19,6 +19,6 @@ OUTPUT
       t.references :company, foreign_key: true, index: true
     end
 
-    assert_success("")
+    refute_problems
   end
 end

@@ -6,7 +6,7 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
       t.index :id
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes are extraneous and can be removed:
   index_users_on_id (is a primary key of users)
 OUTPUT
@@ -21,7 +21,7 @@ OUTPUT
     # Rails 4.2 compatibility - can't be pulled into the block above.
     ActiveRecord::Base.connection.add_index :users, :email, name: "index_users_on_email"
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes are extraneous and can be removed:
   index_users_on_email (can be handled by unique_index_on_users_email)
 OUTPUT
@@ -39,7 +39,7 @@ OUTPUT
       t.index :last_name
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes are extraneous and can be removed:
   index_users_on_last_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
 OUTPUT
@@ -59,7 +59,7 @@ OUTPUT
     # Rails 4.2 compatibility - can't be pulled into the block above.
     ActiveRecord::Base.connection.add_index :users, [:last_name, :first_name]
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following indexes are extraneous and can be removed:
   index_users_on_last_name_and_first_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
 OUTPUT

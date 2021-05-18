@@ -11,7 +11,7 @@ module ActiveRecordDoctor
       def run
         eager_load!
 
-        success(hash_from_pairs(models.reject do |model|
+        problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
             model.table_name == "schema_migrations" ||
             !table_exists?(model.table_name)

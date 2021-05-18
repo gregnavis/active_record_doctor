@@ -10,7 +10,7 @@ module ActiveRecordDoctor
       @description = "Detect extraneous indexes"
 
       def run
-        success(subindexes_of_multi_column_indexes + indexed_primary_keys)
+        problems(subindexes_of_multi_column_indexes + indexed_primary_keys)
       end
 
       private

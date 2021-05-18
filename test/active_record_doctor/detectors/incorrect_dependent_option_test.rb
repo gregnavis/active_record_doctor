@@ -13,7 +13,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
       belongs_to :company
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following associations might be using invalid dependent settings:
   ModelFactory::Models::Company: users loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`
 OUTPUT
@@ -36,7 +36,7 @@ OUTPUT
       end
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_skipping_callbacks_suggests_destroy
@@ -56,7 +56,7 @@ OUTPUT
       end
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following associations might be using invalid dependent settings:
   ModelFactory::Models::Company: users skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
 OUTPUT
@@ -79,7 +79,7 @@ OUTPUT
       end
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_works_on_has_one
@@ -94,7 +94,7 @@ OUTPUT
       belongs_to :company
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following associations might be using invalid dependent settings:
   ModelFactory::Models::Company: owner loads the associated model before deleting it - consider using `dependent: :delete`
 OUTPUT
@@ -112,6 +112,6 @@ OUTPUT
       belongs_to :company
     end
 
-    assert_success("")
+    refute_problems
   end
 end

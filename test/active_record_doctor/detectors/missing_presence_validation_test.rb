@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.create_model do
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_non_null_column_is_reported_if_validation_absent
@@ -16,7 +16,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.create_model do
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following models and columns should have presence validations:
   ModelFactory::Models::User: name
 OUTPUT
@@ -29,7 +29,7 @@ OUTPUT
       validates :name, presence: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_non_null_column_is_not_reported_if_association_validation_present
@@ -40,7 +40,7 @@ OUTPUT
       belongs_to :company, required: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_non_null_boolean_is_reported_if_nil_included
@@ -50,7 +50,7 @@ OUTPUT
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following models and columns should have presence validations:
   ModelFactory::Models::User: active
 OUTPUT
@@ -63,7 +63,7 @@ OUTPUT
       validates :active, inclusion: { in: [true, false] }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_excluded
@@ -73,7 +73,7 @@ OUTPUT
       validates :active, exclusion: { in: [nil] }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_non_null_boolean_is_reported_if_nil_not_excluded
@@ -83,7 +83,7 @@ OUTPUT
       validates :active, exclusion: { in: [false] }
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following models and columns should have presence validations:
   ModelFactory::Models::User: active
 OUTPUT
@@ -96,12 +96,12 @@ OUTPUT
       validates :name, presence: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    assert_success("")
+    refute_problems
   end
 end

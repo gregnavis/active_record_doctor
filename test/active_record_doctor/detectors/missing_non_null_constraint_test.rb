@@ -8,7 +8,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following columns should be marked as `null: false`:
   users: name
 OUTPUT
@@ -22,7 +22,7 @@ OUTPUT
       belongs_to :company, required: true
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following columns should be marked as `null: false`:
   users: company_id
 OUTPUT
@@ -35,7 +35,7 @@ OUTPUT
       validates :name, presence: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_presence_false_and_null_true
@@ -51,7 +51,7 @@ OUTPUT
       validates :name, presence: false
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_presence_false_and_null_false
@@ -61,7 +61,7 @@ OUTPUT
       validates :name, presence: false
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_presence_true_with_if
@@ -71,7 +71,7 @@ OUTPUT
       validates :name, presence: true, if: -> { false }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_presence_true_with_unless
@@ -81,7 +81,7 @@ OUTPUT
       validates :name, presence: true, unless: -> { false }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_presence_true_with_allow_nil
@@ -91,12 +91,12 @@ OUTPUT
       validates :name, presence: true, allow_nil: true
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    assert_success("")
+    refute_problems
   end
 end

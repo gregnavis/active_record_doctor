@@ -14,7 +14,7 @@ module ActiveRecordDoctor
       @description = "Detect unindexed deleted_at columns"
 
       def run
-        success(connection.tables.select do |table|
+        problems(connection.tables.select do |table|
           connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
         end.flat_map do |table|
           connection.indexes(table).reject do |index|

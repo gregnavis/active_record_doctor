@@ -79,11 +79,18 @@ class Minitest::Test
     [success, output.string]
   end
 
-  def assert_success(expected_output)
+  def assert_problems(expected_output)
+    success, actual_output = run_task
+
+    refute(success)
+    assert_equal(expected_output, actual_output)
+  end
+
+  def refute_problems
     success, actual_output = run_task
 
     assert(success)
-    assert_equal(expected_output, actual_output)
+    assert_equal("", actual_output)
   end
 end
 

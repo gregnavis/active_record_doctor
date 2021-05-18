@@ -14,7 +14,7 @@ module ActiveRecordDoctor
       def run
         eager_load!
 
-        success(hash_from_pairs(models.reject do |model|
+        problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil?
         end.map do |model|
           [

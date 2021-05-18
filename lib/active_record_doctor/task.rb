@@ -19,11 +19,10 @@ module ActiveRecordDoctor
     end
 
     def run
-      result, success = @detector_class.run
-      success = true if success.nil?
-      @printer.public_send(name, result)
+      problems, options = @detector_class.run
+      @printer.public_send(name, problems, options)
 
-      success
+      problems.empty?
     end
   end
 end

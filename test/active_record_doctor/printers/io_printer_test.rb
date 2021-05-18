@@ -27,7 +27,7 @@ OUTPUT
 
   def unindexed_foreign_keys(argument)
     io = StringIO.new
-    ActiveRecordDoctor::Printers::IOPrinter.new(io).unindexed_foreign_keys(argument)
+    ActiveRecordDoctor::Printers::IOPrinter.new(io).unindexed_foreign_keys(argument, {})
     io.string
   end
 end

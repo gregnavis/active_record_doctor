@@ -20,8 +20,8 @@ module ActiveRecordDoctor
 
       private
 
-      def success(result)
-        [result, true]
+      def problems(problems, options = {})
+        [problems, options]
       end
 
       def connection

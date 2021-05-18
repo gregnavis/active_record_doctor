@@ -25,10 +25,7 @@ module ActiveRecordDoctor
           [model.name, model.table_name]
         end
 
-        success([
-          offending_models, # Actual results
-          !existing_views.nil? # true if views were checked, false otherwise
-        ])
+        problems(offending_models, views_checked: !existing_views.nil?)
       end
     end
   end

@@ -9,7 +9,7 @@ module ActiveRecordDoctor
       @description = "Detect foreign keys without an index on them"
 
       def run
-        success(hash_from_pairs(tables.reject do |table|
+        problems(hash_from_pairs(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [

@@ -12,7 +12,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       validates :email, :active, presence: true
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The presence of the following boolean columns is validated incorrectly:
   ModelFactory::Models::User: active
 OUTPUT
@@ -25,12 +25,12 @@ OUTPUT
       validates :active, inclusion: { in: [true, false] }
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
 
-    assert_success("")
+    refute_problems
   end
 end

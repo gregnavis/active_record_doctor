@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
       t.references :company, foreign_key: false
     end
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following columns lack a foreign key constraint:
   users company_id
 OUTPUT
@@ -19,6 +19,6 @@ OUTPUT
       t.references :company, foreign_key: true
     end
 
-    assert_success("")
+    refute_problems
   end
 end

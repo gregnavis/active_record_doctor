@@ -6,13 +6,13 @@ class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Te
     end.create_model do
     end
 
-    assert_success("")
+    refute_problems
   end
 
   def test_table_does_not_exist
     create_model(:users)
 
-    assert_success(<<OUTPUT)
+    assert_problems(<<OUTPUT)
 The following models reference undefined tables:
   ModelFactory::Models::User (the table users is undefined)
 OUTPUT
@@ -25,7 +25,7 @@ OUTPUT
     create_model(:users)
 
     begin
-      assert_success("")
+      refute_problems
     ensure
       ActiveRecord::Base.connection.execute("DROP VIEW users")
     end

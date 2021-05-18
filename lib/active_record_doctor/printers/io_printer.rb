@@ -8,7 +8,7 @@ module ActiveRecordDoctor
         @io = io
       end
 
-      def unindexed_foreign_keys(unindexed_foreign_keys)
+      def unindexed_foreign_keys(unindexed_foreign_keys, _options)
         return if unindexed_foreign_keys.empty?
 
         @io.puts("The following foreign keys should be indexed for performance reasons:")
@@ -17,7 +17,7 @@ module ActiveRecordDoctor
         end.join("\n"))
       end
 
-      def extraneous_indexes(extraneous_indexes)
+      def extraneous_indexes(extraneous_indexes, _options)
         return if extraneous_indexes.empty?
 
         @io.puts("The following indexes are extraneous and can be removed:")
@@ -34,7 +34,7 @@ module ActiveRecordDoctor
         end
       end
 
-      def missing_foreign_keys(missing_foreign_keys)
+      def missing_foreign_keys(missing_foreign_keys, _options)
         return if missing_foreign_keys.empty?
 
         @io.puts("The following columns lack a foreign key constraint:")
@@ -43,10 +43,10 @@ module ActiveRecordDoctor
         end.join("\n"))
       end
 
-      def undefined_table_references((models, views_checked))
+      def undefined_table_references(models, options)
         return if models.empty?
 
-        unless views_checked
+        unless options.fetch(:views_checked)
           @io.puts(<<WARNING)
 WARNING: Models backed by database views are supported only in Rails 5+ OR
 Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
@@ -61,7 +61,7 @@ WARNING
         end
       end
 
-      def unindexed_deleted_at(indexes)
+      def unindexed_deleted_at(indexes, _options)
         return if indexes.empty?
 
         @io.puts("The following indexes should include `deleted_at IS NULL`:")
@@ -70,7 +70,7 @@ WARNING
         end
       end
 
-      def missing_unique_indexes(indexes)
+      def missing_unique_indexes(indexes, _options)
         return if indexes.empty?
 
         @io.puts("The following indexes should be created to back model-level uniqueness validations:")
@@ -81,7 +81,7 @@ WARNING
         end
       end
 
-      def missing_presence_validation(missing_presence_validators)
+      def missing_presence_validation(missing_presence_validators, _options)
         return if missing_presence_validators.empty?
 
         @io.puts("The following models and columns should have presence validations:")
@@ -90,7 +90,7 @@ WARNING
         end
       end
 
-      def missing_non_null_constraint(missing_non_null_constraints)
+      def missing_non_null_constraint(missing_non_null_constraints, _options)
         return if missing_non_null_constraints.empty?
 
         @io.puts("The following columns should be marked as `null: false`:")
@@ -99,7 +99,7 @@ WARNING
         end
       end
 
-      def incorrect_boolean_presence_validation(incorrect_boolean_presence_validations)
+      def incorrect_boolean_presence_validation(incorrect_boolean_presence_validations, _options)
         return if incorrect_boolean_presence_validations.empty?
 
         @io.puts("The presence of the following boolean columns is validated incorrectly:")
@@ -108,7 +108,7 @@ WARNING
         end
       end
 
-      def incorrect_dependent_option(problems)
+      def incorrect_dependent_option(problems, _options)
         return if problems.empty?
 
         @io.puts("The following associations might be using invalid dependent settings:")
