@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "active_record_doctor/printers/io_printer"
-
 module ActiveRecordDoctor
   module Detectors
     # Base class for all active_record_doctor detectors.
@@ -12,10 +10,6 @@ module ActiveRecordDoctor
         def run
           new.run
         end
-      end
-
-      def initialize(printer = ActiveRecordDoctor::Printers::IOPrinter.new)
-        @printer = printer
       end
 
       private
