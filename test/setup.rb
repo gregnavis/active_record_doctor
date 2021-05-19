@@ -70,12 +70,12 @@ class Minitest::Test
 
   private
 
-  PARTIAL_INDEXES_ADAPTERS = [
-    "PostgreSQL"
-  ].freeze
+  def postgresql?
+    ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+  end
 
-  def supports_partial_indexes?
-    PARTIAL_INDEXES_ADAPTERS.include?(ActiveRecord::Base.connection.adapter_name)
+  def mysql?
+    ActiveRecord::Base.connection.adapter_name == "Mysql2"
   end
 
   def create_table(*args, &block)

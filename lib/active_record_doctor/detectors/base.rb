@@ -44,7 +44,7 @@ module ActiveRecordDoctor
         @views ||=
           if connection.respond_to?(:views)
             connection.views
-          elsif connection.is_a?(ActiveRecord::ConnectionAdapters::PostgreSQLAdapter)
+          elsif connection.adapter_name == "PostgreSQL"
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
               SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
             SQL

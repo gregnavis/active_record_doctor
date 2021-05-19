@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_indexed_deleted_at_is_not_reported
-    return unless supports_partial_indexes?
+    skip("MySQL doesn't support partial indexes") if mysql?
 
     create_table(:users) do |t|
       t.string :first_name
@@ -17,7 +17,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   end
 
   def test_unindexed_deleted_at_is_reported
-    return unless supports_partial_indexes?
+    skip("MySQL doesn't support partial indexes") if mysql?
 
     create_table(:users) do |t|
       t.string :first_name
@@ -34,7 +34,7 @@ OUTPUT
   end
 
   def test_indexed_discarded_at_is_not_reported
-    return unless supports_partial_indexes?
+    skip("MySQL doesn't support partial indexes") if mysql?
 
     create_table(:users) do |t|
       t.string :first_name
@@ -49,7 +49,7 @@ OUTPUT
   end
 
   def test_unindexed_discarded_at_is_reported
-    return unless supports_partial_indexes?
+    skip("MySQL doesn't support partial indexes") if mysql?
 
     create_table(:users) do |t|
       t.string :first_name
