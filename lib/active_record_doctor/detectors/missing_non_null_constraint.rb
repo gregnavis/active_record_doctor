@@ -10,8 +10,6 @@ module ActiveRecordDoctor
       @description = "Detect presence validators not backed by a non-NULL constraint"
 
       def run
-        eager_load!
-
         problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
           model.table_name == "schema_migrations" ||

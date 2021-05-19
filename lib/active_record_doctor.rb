@@ -19,4 +19,14 @@ require "active_record_doctor/task"
 require "active_record_doctor/version"
 
 module ActiveRecordDoctor # :nodoc:
+  def self.run
+    results = tasks.map { |task| task.run }
+    results.all?
+  end
+
+  def self.tasks
+    Detectors.all.map do |detector_class|
+      ActiveRecordDoctor::Task.new(detector_class)
+    end
+  end
 end

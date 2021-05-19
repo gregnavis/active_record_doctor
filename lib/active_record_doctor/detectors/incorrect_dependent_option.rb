@@ -12,8 +12,6 @@ module ActiveRecordDoctor
       # rubocop:enable Layout/LineLength
 
       def run
-        eager_load!
-
         problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil?
         end.map do |model|

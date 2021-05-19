@@ -14,20 +14,26 @@ require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/task"
 
 namespace :active_record_doctor do
-  tasks = ActiveRecordDoctor::Detectors.all.map do |detector_class|
-    ActiveRecordDoctor::Task.new(detector_class)
-  end
+  tasks = ActiveRecordDoctor.tasks
 
   tasks.each do |task|
     desc task.description
     task task.name => :environment do
+      load_models
       task.run or exit(1)
     end
   end
 
   desc "Run all active_record_doctor tasks"
   task :all => :environment do
-    results = tasks.map { |task| task.run }
-    results.all? or exit(1)
+    load_models
+    success = ActiveRecordDoctor.run
+    success or exit(1)
+  end
+
+  private
+
+  def load_models
+    Rails.application.eager_load!
   end
 end

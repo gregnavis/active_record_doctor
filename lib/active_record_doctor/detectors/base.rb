@@ -58,10 +58,6 @@ module ActiveRecordDoctor
         Hash[*pairs.flatten(1)]
       end
 
-      def eager_load!
-        Rails.application.eager_load!
-      end
-
       def models
         ActiveRecord::Base.descendants
       end
