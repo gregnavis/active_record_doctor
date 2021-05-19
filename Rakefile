@@ -25,6 +25,9 @@ Rake::TestTask.new(:test) do |t|
   t.ruby_opts = ["-rsetup"]
   t.pattern = "test/**/*_test.rb"
   t.verbose = false
+
+  # Hide warnings emitted by our dependencies.
+  t.warning = false
 end
 
 task default: :test

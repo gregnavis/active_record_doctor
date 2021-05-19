@@ -17,20 +17,16 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   stage = ENV["TRAVIS_BUILD_STAGE_NAME"]
-  database = ENV.fetch("DATABASE", "postgres")
+
+  s.required_ruby_version = ">= 2.1.0"
 
   if stage.nil? || stage == "test"
-    s.required_ruby_version = ">= 2.1.0"
-    rails_version = ">= 4.2.0"
+    s.add_dependency "activerecord", ">= 4.2.0"
 
-    s.add_dependency "activerecord", rails_version
-    s.add_dependency "activesupport", rails_version
-    s.add_dependency "railties", rails_version
-
-    s.add_development_dependency "minitest-fork_executor", "~> 1.0"
-    s.add_development_dependency "mysql2", "~> 0.5"
-    s.add_development_dependency "pg", "~> 1.1"
-    s.add_development_dependency "rake", "~> 13.0"
+    s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
+    s.add_development_dependency "mysql2", "~> 0.5.3"
+    s.add_development_dependency "pg", "~> 1.1.4"
+    s.add_development_dependency "rake", "~> 13.0.3"
   end
 
   if stage.nil? || stage == "lint"
