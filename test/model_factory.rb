@@ -27,7 +27,7 @@ module ModelFactory
       ActiveRecord::Migration.suppress_messages do
         begin
           connection.drop_table(table_name, force: :cascade)
-        rescue ActiveRecord::InvalidForeignKey
+        rescue ActiveRecord::InvalidForeignKey, ActiveRecord::StatementInvalid
           # The table cannot be dropped due to foreign key constraints so
           # we'll try to drop it on another attempt.
         end
