@@ -25,10 +25,12 @@ module ModelFactory
   def self.attempt_drop_all_tables(connection)
     connection.tables.each do |table_name|
       ActiveRecord::Migration.suppress_messages do
-        connection.drop_table(table_name, force: :cascade)
-      rescue ActiveRecord::InvalidForeignKey
-        # The table cannot be dropped due to foreign key constraints so
-        # we'll try to drop it on another attempt.
+        begin
+          connection.drop_table(table_name, force: :cascade)
+        rescue ActiveRecord::InvalidForeignKey
+          # The table cannot be dropped due to foreign key constraints so
+          # we'll try to drop it on another attempt.
+        end
       end
     end
   end

@@ -37,6 +37,10 @@ Style/HashSyntax:
   Exclude:
     - '**/*.rake'
 
+# We support older Rubies where those begins are required.
+Style/RedundantBegin:
+  Enabled: false
+
 # We pass an empty block in a few places to have a placeholder to add code to
 # in the future without having to dig through the code to determine whether a
 # block is allowed. Additionally, removing an empty block is **NOT** a
