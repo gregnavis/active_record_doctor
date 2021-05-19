@@ -19,8 +19,10 @@ module ActiveRecordDoctor
         offending_models = models.select do |model|
           model.table_name.present? &&
             !tables.include?(model.table_name) &&
-            existing_views &&
-            !existing_views.include?(model.table_name)
+            (
+              existing_views.nil? ||
+                !existing_views.include?(model.table_name)
+            )
         end.map do |model|
           [model.name, model.table_name]
         end
