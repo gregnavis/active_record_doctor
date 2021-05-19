@@ -7,7 +7,7 @@ dist: xenial
 language: ruby
 
 env:
-  - DATABASE=postgres
+  - DATABASE=postgresql
   - DATABASE=mysql
 
 rvm:
@@ -96,7 +96,7 @@ before_install:
 
 before_script: |
   case $DATABASE in
-  postgres)
+  postgresql)
     createdb active_record_doctor_test
     ;;
   mysql)
