@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
     s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
     s.add_development_dependency "mysql2", "~> 0.5.3"
     s.add_development_dependency "pg", "~> 1.1.4"
-    s.add_development_dependency "rake", "~> 13.0.3"
+    s.add_development_dependency "rake", "~> 12.3.3"
   end
 
   if stage.nil? || stage == "lint"
