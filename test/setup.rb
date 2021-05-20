@@ -7,26 +7,13 @@
 require "uri"
 
 require "active_record"
+require "pg"
+require "mysql2"
 
-# Connect to the database defined in the URL.
-case ENV["DATABASE"]
-when "postgresql"
-  require "pg"
-  DEFAULT_DATABASE_URL = "postgres:///active_record_doctor_test"
-when "mysql"
-  require "mysql2"
-  DEFAULT_DATABASE_URL = "mysql2:///active_record_doctor_test"
-when nil
-  # rubocop:disable Style/StderrPuts
-  $stderr.puts(<<ERROR)
-The DATABASE environment variable is not set. It must be set before running the
-test suite. Valid values are "mysql" and "postgresql".
-ERROR
-  # rubocop:enable Style/StderrPuts
-  exit(1)
-else raise("unrecognized database #{ENV['DATABASE']}")
-end
-ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL", DEFAULT_DATABASE_URL))
+adapter = ENV.fetch("ADAPTER")
+ActiveRecord::Base.establish_connection(adapter: adapter, database: "active_record_doctor_test")
+
+puts "Using #{adapter}"
 
 # We need to call #connection to enfore Active Record to actually establish
 # the connection.

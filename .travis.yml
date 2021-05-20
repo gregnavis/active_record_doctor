@@ -6,10 +6,6 @@ os: linux
 dist: xenial
 language: ruby
 
-env:
-  - DATABASE=postgresql
-  - DATABASE=mysql
-
 rvm:
   # Supporting Ruby 2.1+ covers almost the whole market.
   - 2.1.0
@@ -95,16 +91,7 @@ before_install:
   - gem install bundler -v '1.17.3'
 
 before_script: |
-  case $DATABASE in
-  postgresql)
-    createdb active_record_doctor_test
-    ;;
-  mysql)
-    mysql -e 'CREATE DATABASE IF NOT EXISTS active_record_doctor_test'
-    ;;
-  *)
-    echo "Unknown database setting"
-    exit 1
-  esac
+  createdb active_record_doctor_test
+  mysql -e 'CREATE DATABASE IF NOT EXISTS active_record_doctor_test'
 
 script: bundle exec rake
