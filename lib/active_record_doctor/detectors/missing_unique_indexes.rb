@@ -10,8 +10,6 @@ module ActiveRecordDoctor
       @description = "Detect columns covered by a uniqueness validator without a unique index"
 
       def run
-        eager_load!
-
         problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil?
         end.map do |model|

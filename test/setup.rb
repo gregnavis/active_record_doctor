@@ -32,20 +32,6 @@ ActiveRecord::Base.establish_connection(ENV.fetch("DATABASE_URL", DEFAULT_DATABA
 # the connection.
 ActiveRecord::Base.connection
 
-# We need to mock Rails because some detectors depend on .eager_load! This must
-# happen AFTER loading active_record_doctor as otherwise it'd attempt to
-# install a Railtie.
-module Rails
-  class TestApplication
-    def eager_load!
-    end
-  end
-
-  def self.application
-    @application ||= TestApplication.new
-  end
-end
-
 # Load Active Record Doctor.
 require "active_record_doctor"
 

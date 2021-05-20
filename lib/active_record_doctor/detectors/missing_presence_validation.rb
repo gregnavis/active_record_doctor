@@ -9,8 +9,6 @@ module ActiveRecordDoctor
       @description = "Detect non-NULL columns without a presence validator"
 
       def run
-        eager_load!
-
         problems(hash_from_pairs(models.reject do |model|
           model.table_name.nil? ||
           model.table_name == "schema_migrations" ||

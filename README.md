@@ -37,6 +37,27 @@ bundle install
 
 ## Usage
 
+To run all checks at once, in the root directory of a Rails project run
+`bundle exec rake active_record_doctor:all`. To run specific checks, see below.
+
+### Non Rails projects
+
+For any other framework or pure ruby, you can copy the following code and create a file `active_record_doctor_runner.rb`.
+
+```ruby
+# First of all, you need to load all models
+# The following example is for Rails, but it can be anything
+require_relative "config/environment"
+Rails.application.eager_load!
+
+# Now run checks
+require "active_record_doctor"
+success = ActiveRecordDoctor.run
+success or exit(1)
+```
+
+Now, just run the command: `bundle exec ruby active_record_doctor_runner.rb`.
+
 ### Indexing Unindexed Foreign Keys
 
 Foreign keys should be indexed unless it's proven ineffective. However, Rails
