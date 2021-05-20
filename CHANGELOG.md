@@ -1,3 +1,15 @@
+# Version 1.8.0
+
+* New feature: `incorrect_dependency_option` can detect cases sub-optimal or
+  dangerous use of `:delete_all` or `:destroy` on associations (thanks to Dusan
+  Orlovic for the contribution).
+* New feature: `all` runs all tasks and exits with a zero status if there were
+  no errors.
+* New feature: support for MySQL!
+* Bug fix: `add_index` in Rails 6 now correctly adds version numbers to
+  migrations (thanks to Tatsuya Hoshino for the fix).
+* Removed unnecessary dependencies on `railties` and `activesupport`.
+
 # Version 1.7.2
 
 * All rake tasks added by active_record_doctor have a description so that they
