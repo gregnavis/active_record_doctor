@@ -20,14 +20,23 @@ Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
 
-Rake::TestTask.new(:test) do |t|
-  t.libs = ["lib", "test"]
-  t.ruby_opts = ["-rsetup"]
-  t.pattern = "test/**/*_test.rb"
-  t.verbose = false
+namespace :test do
+  ["postgresql", "mysql2"].each do |adapter|
+    Rake::TestTask.new(adapter) do |t|
+      t.deps = ["set_#{adapter}_env"]
+      t.libs = ["lib", "test"]
+      t.ruby_opts = ["-rsetup"]
+      t.pattern = "test/**/*_test.rb"
+      t.verbose = false
 
-  # Hide warnings emitted by our dependencies.
-  t.warning = false
+      # Hide warnings emitted by our dependencies.
+      t.warning = false
+    end
+
+    task("set_#{adapter}_env") { ENV["ADAPTER"] = adapter }
+  end
 end
+
+task test: ["test:postgresql", "test:mysql2"]
 
 task default: :test
