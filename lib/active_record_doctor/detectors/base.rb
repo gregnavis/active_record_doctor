@@ -34,6 +34,15 @@ module ActiveRecordDoctor
         connection.table_exists?(table_name)
       end
 
+      def primary_key(table_name)
+        primary_key_name = connection.primary_key(table_name)
+        column(table_name, primary_key_name)
+      end
+
+      def column(table_name, column_name)
+        connection.columns(table_name).find { |column| column.name == column_name }
+      end
+
       def views
         @views ||=
           if connection.respond_to?(:views)

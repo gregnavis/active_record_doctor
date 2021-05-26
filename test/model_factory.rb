@@ -39,12 +39,11 @@ module ModelFactory
     Models.empty
   end
 
-  def self.create_table(table_name, &block)
+  def self.create_table(table_name, options = {}, &block)
     table_name = table_name.to_sym
     ActiveRecord::Migration.suppress_messages do
-      ActiveRecord::Migration.create_table(table_name, &block)
+      ActiveRecord::Migration.create_table(table_name, **options, &block)
     end
-
     # Return a proxy object allowing the caller to chain #create_model
     # right after creating a table so that it can be followed by the model
     # definition.

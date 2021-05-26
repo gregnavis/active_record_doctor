@@ -128,6 +128,24 @@ WARNING
           end
         end
       end
+
+      def short_primary_key_type(problematic_primary_keys, _options)
+        return if problematic_primary_keys.empty?
+
+        @io.puts("The following primary keys have a short integer type:")
+        problematic_primary_keys.each do |table, primary_key|
+          @io.puts("  #{table} #{primary_key}")
+        end
+      end
+
+      def mismatched_foreign_key_type(problematic_foreign_keys, _options)
+        return if problematic_foreign_keys.empty?
+
+        @io.puts("The following foreign keys have different type than their paired primary keys:")
+        @io.puts(problematic_foreign_keys.sort.map do |table, foreign_keys|
+          "  #{table} #{foreign_keys.sort.join(' ')}"
+        end.join("\n"))
+      end
     end
   end
 end
