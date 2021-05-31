@@ -4,7 +4,7 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find has_many/has_one associations with dependent options not taking the
+    # Find has_many/has_one/belongs_to associations with dependent options not taking the
     # related model's callbacks into account.
     class IncorrectDependentOption < Base
       # rubocop:disable Layout/LineLength
@@ -29,18 +29,21 @@ module ActiveRecordDoctor
       private
 
       def associations_with_incorrect_dependent_options(model)
-        reflections = model.reflect_on_all_associations(:has_many) + model.reflect_on_all_associations(:has_one)
+        reflections = model.reflect_on_all_associations(:has_many) +
+                      model.reflect_on_all_associations(:has_one) +
+                      model.reflect_on_all_associations(:belongs_to)
+
         reflections.map do |reflection|
-          if callback_action(reflection) == :invoke && !defines_destroy_callbacks?(reflection.klass)
+          if callback_action(reflection) == :invoke && deletable?(reflection.klass)
             suggestion =
               case reflection.macro
               when :has_many then :suggest_delete_all
-              when :has_one then :suggest_delete
+              when :has_one, :belongs_to then :suggest_delete
               else raise("unsupported association type #{reflection.macro}")
               end
 
             [reflection.name, suggestion]
-          elsif callback_action(reflection) == :skip && defines_destroy_callbacks?(reflection.klass)
+          elsif callback_action(reflection) == :skip && !deletable?(reflection.klass)
             [reflection.name, :suggest_destroy]
           end
         end.compact
@@ -48,9 +51,21 @@ module ActiveRecordDoctor
 
       def callback_action(reflection)
         case reflection.options[:dependent]
-        when :delete_all then :skip
+        when :delete, :delete_all then :skip
         when :destroy then :invoke
         end
+      end
+
+      def deletable?(model)
+        !defines_destroy_callbacks?(model) &&
+          dependent_models(model).all? do |dependent_model|
+            foreign_key = foreign_key(dependent_model.table_name, model.table_name)
+
+            foreign_key.nil? ||
+              foreign_key.on_delete == :nullify || (
+                foreign_key.on_delete == :cascade && deletable?(dependent_model)
+              )
+          end
       end
 
       def defines_destroy_callbacks?(model)
@@ -65,6 +80,18 @@ module ActiveRecordDoctor
           model._destroy_callbacks.present? ||
           model._commit_callbacks.present? ||
           model._rollback_callbacks.present?
+      end
+
+      def dependent_models(model)
+        reflections = model.reflect_on_all_associations(:has_many) +
+                      model.reflect_on_all_associations(:has_one)
+        reflections.map(&:klass)
+      end
+
+      def foreign_key(from_table, to_table)
+        connection.foreign_keys(from_table).find do |foreign_key|
+          foreign_key.to_table == to_table
+        end
       end
     end
   end

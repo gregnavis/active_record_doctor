@@ -100,6 +100,126 @@ The following associations might be using invalid dependent settings:
 OUTPUT
   end
 
+  def test_works_on_belongs_to
+    create_table(:companies) do
+    end.create_model do
+      has_many :users
+    end
+
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company, dependent: :destroy
+    end
+
+    assert_problems(<<OUTPUT)
+The following associations might be using invalid dependent settings:
+  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+OUTPUT
+  end
+
+  def test_no_foreign_key_on_second_level_association
+    create_table(:companies) do
+    end.create_model do
+      has_many :users
+      has_many :projects
+    end
+
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company, dependent: :destroy
+    end
+
+    create_table(:projects) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company
+    end
+
+    assert_problems(<<OUTPUT)
+The following associations might be using invalid dependent settings:
+  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+OUTPUT
+  end
+
+  def test_nullify_foreign_key_on_second_level_association
+    create_table(:companies) do
+    end.create_model do
+      has_many :users
+      has_many :projects
+    end
+
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company, dependent: :destroy
+    end
+
+    create_table(:projects) do |t|
+      t.references :company, foreign_key: { on_delete: :nullify }
+    end.create_model do
+      belongs_to :company
+    end
+
+    assert_problems(<<OUTPUT)
+The following associations might be using invalid dependent settings:
+  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+OUTPUT
+  end
+
+  def test_cascade_foreign_key_and_callbacks_on_second_level_association
+    create_table(:companies) do
+    end.create_model do
+      has_many :users
+      has_many :projects
+    end
+
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company, dependent: :delete
+    end
+
+    create_table(:projects) do |t|
+      t.references :company, foreign_key: { on_delete: :cascade }
+    end.create_model do
+      belongs_to :company
+
+      before_destroy :log
+
+      def log
+      end
+    end
+
+    assert_problems(<<OUTPUT)
+The following associations might be using invalid dependent settings:
+  ModelFactory::Models::User: company skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+OUTPUT
+  end
+
+  def test_cascade_foreign_key_and_no_callbacks_on_second_level_association
+    create_table(:companies) do
+    end.create_model do
+      has_many :users
+      has_many :projects
+    end
+
+    create_table(:users) do |t|
+      t.references :company
+    end.create_model do
+      belongs_to :company, dependent: :delete
+    end
+
+    create_table(:projects) do |t|
+      t.references :company, foreign_key: { on_delete: :cascade }
+    end.create_model do
+      belongs_to :company
+    end
+
+    refute_problems
+  end
+
   def test_no_dependent_suggests_nothing
     create_table(:companies) do
     end.create_model do
