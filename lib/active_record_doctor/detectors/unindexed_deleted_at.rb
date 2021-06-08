@@ -13,7 +13,7 @@ module ActiveRecordDoctor
 
       @description = "Detect unindexed deleted_at columns"
 
-      def run
+      def detect
         problems(connection.tables.select do |table|
           connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
         end.flat_map do |table|

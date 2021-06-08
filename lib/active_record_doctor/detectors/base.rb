@@ -12,6 +12,10 @@ module ActiveRecordDoctor
         end
       end
 
+      def run
+        detect
+      end
+
       private
 
       def problems(problems, options = {})

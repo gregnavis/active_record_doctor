@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class MismatchedForeignKeyType < Base
       @description = "Check whether primary keys and foreign keys use the same type"
 
-      def run
+      def detect
         problems(hash_from_pairs(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|

@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class IncorrectBooleanPresenceValidation < Base
       @description = "Detect boolean columns with presence/absence instead of includes/excludes validators"
 
-      def run
+      def detect
         eager_load!
 
         problems(hash_from_pairs(models.reject do |model|

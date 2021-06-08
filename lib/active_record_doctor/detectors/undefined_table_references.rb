@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class UndefinedTableReferences < Base
       @description = "Detect models referencing undefined tables or views"
 
-      def run
+      def detect
         eager_load!
 
         # If we can't list views due to old Rails version or unsupported

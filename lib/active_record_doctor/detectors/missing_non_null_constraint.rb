@@ -9,7 +9,7 @@ module ActiveRecordDoctor
     class MissingNonNullConstraint < Base
       @description = "Detect presence validators not backed by a non-NULL constraint"
 
-      def run
+      def detect
         eager_load!
 
         problems(hash_from_pairs(models.reject do |model|

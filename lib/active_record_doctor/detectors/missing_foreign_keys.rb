@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class MissingForeignKeys < Base
       @description = "Detect association columns without a foreign key constraint"
 
-      def run
+      def detect
         problems(hash_from_pairs(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|

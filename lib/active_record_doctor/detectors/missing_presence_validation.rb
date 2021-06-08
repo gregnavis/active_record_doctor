@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class MissingPresenceValidation < Base
       @description = "Detect non-NULL columns without a presence validator"
 
-      def run
+      def detect
         eager_load!
 
         problems(hash_from_pairs(models.reject do |model|

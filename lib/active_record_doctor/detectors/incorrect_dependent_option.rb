@@ -11,7 +11,7 @@ module ActiveRecordDoctor
       @description = "Detect associations that should use a different dependent option based on callbacks on the related model"
       # rubocop:enable Layout/LineLength
 
-      def run
+      def detect
         eager_load!
 
         problems(hash_from_pairs(models.reject do |model|

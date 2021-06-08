@@ -11,7 +11,7 @@ module ActiveRecordDoctor
 
       @description = "Detect primary keys with short integer types"
 
-      def run
+      def detect
         problems(hash_from_pairs(tables.reject do |table|
           table == "schema_migrations" || valid_type?(primary_key(table))
         end.map do |table|

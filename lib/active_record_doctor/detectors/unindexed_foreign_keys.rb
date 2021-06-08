@@ -8,7 +8,7 @@ module ActiveRecordDoctor
     class UnindexedForeignKeys < Base
       @description = "Detect foreign keys without an index on them"
 
-      def run
+      def detect
         problems(hash_from_pairs(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|

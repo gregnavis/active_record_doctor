@@ -9,7 +9,7 @@ module ActiveRecordDoctor
     class MissingUniqueIndexes < Base
       @description = "Detect columns covered by a uniqueness validator without a unique index"
 
-      def run
+      def detect
         eager_load!
 
         problems(hash_from_pairs(models.reject do |model|
