@@ -9,10 +9,18 @@ module ActiveRecordDoctor
     class MissingUniqueIndexes < Base
       @description = "Detect columns covered by a uniqueness validator without a unique index"
 
+      private
+
+      def message(table:, columns:)
+        # rubocop:disable Layout/LineLength
+        "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
+        # rubocop:enable Layout/LineLength
+      end
+
       def detect
         eager_load!
 
-        problems(hash_from_pairs(models.reject do |model|
+        problems(models.reject do |model|
           model.table_name.nil?
         end.map do |model|
           [
@@ -32,10 +40,15 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table_name, indexes|
           indexes.empty?
-        end))
+        end.flat_map do |table_name, indexes|
+          indexes.map do |columns|
+            {
+              table: table_name,
+              columns: columns
+            }
+          end
+        end)
       end
-
-      private
 
       def supported_validator?(validator)
         validator.options[:if].nil? &&

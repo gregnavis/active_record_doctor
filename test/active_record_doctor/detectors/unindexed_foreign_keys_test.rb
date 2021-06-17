@@ -10,8 +10,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-The following foreign keys should be indexed for performance reasons:
-  users company_id
+add an index on users.company_id - foreign keys are often used in database lookups and should be indexed for performance reasons
 OUTPUT
   end
 

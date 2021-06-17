@@ -10,8 +10,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-The following indexes should be created to back model-level uniqueness validations:
-  users: email
+add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
 OUTPUT
   end
 
@@ -37,8 +36,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following indexes should be created to back model-level uniqueness validations:
-  users: company_id, department_id, email
+add a unique index on users(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
 OUTPUT
   end
 

@@ -6,10 +6,16 @@ module ActiveRecordDoctor
   module Detectors
     # Find foreign-key like columns lacking an actual foreign key constraint.
     class MissingForeignKeys < Base
+      private
+
       @description = "Detect association columns without a foreign key constraint"
 
+      def message(table:, column:)
+        "create a foreign key on #{table}.#{column} - looks like an association without a foreign key constraint"
+      end
+
       def detect
-        problems(hash_from_pairs(tables.reject do |table|
+        problems(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [
@@ -25,10 +31,12 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table, columns|
           columns.empty?
-        end))
+        end.flat_map do |table, columns|
+          columns.map do |column|
+            { table: table, column: column }
+          end
+        end)
       end
-
-      private
 
       def named_like_foreign_key?(column)
         column.name.end_with?("_id")

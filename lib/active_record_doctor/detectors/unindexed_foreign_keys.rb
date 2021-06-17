@@ -8,8 +8,16 @@ module ActiveRecordDoctor
     class UnindexedForeignKeys < Base
       @description = "Detect foreign keys without an index on them"
 
+      private
+
+      def message(table:, column:)
+        # rubocop:disable Layout/LineLength
+        "add an index on #{table}.#{column} - foreign keys are often used in database lookups and should be indexed for performance reasons"
+        # rubocop:enable Layout/LineLength
+      end
+
       def detect
-        problems(hash_from_pairs(tables.reject do |table|
+        problems(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [
@@ -20,12 +28,15 @@ module ActiveRecordDoctor
                 !indexed_as_polymorphic?(table, column)
             end.map(&:name)
           ]
-        end.reject do |_table, columns|
-          columns.empty?
-        end))
+        end.flat_map do |table, columns|
+          columns.map do |column|
+            {
+              table: table,
+              column: column
+            }
+          end
+        end)
       end
-
-      private
 
       def foreign_key?(column)
         column.name.end_with?("_id")

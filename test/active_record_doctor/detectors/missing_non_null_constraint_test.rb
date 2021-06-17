@@ -9,8 +9,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     end
 
     assert_problems(<<OUTPUT)
-The following columns should be marked as `null: false`:
-  users: name
+add `NOT NULL` to users.name - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
 OUTPUT
   end
 
@@ -23,8 +22,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following columns should be marked as `null: false`:
-  users: company_id
+add `NOT NULL` to users.company_id - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
 OUTPUT
   end
 

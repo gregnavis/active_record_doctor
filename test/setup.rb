@@ -84,23 +84,18 @@ class Minitest::Test
   end
 
   def run_task
-    output = StringIO.new
-    printer = ActiveRecordDoctor::Printers::IOPrinter.new(output)
-    success = ActiveRecordDoctor::Task.new(detector_class, printer).run
-    [success, output.string]
+    ActiveRecordDoctor::Task.new(detector_class).run
   end
 
   def assert_problems(expected_output)
-    success, actual_output = run_task
-
-    assert_equal(expected_output, actual_output)
+    success = nil
+    assert_output(expected_output) { success = run_task }
     refute(success)
   end
 
   def refute_problems
-    success, actual_output = run_task
-
-    assert_equal("", actual_output)
+    success = nil
+    assert_output("") { success = run_task }
     assert(success)
   end
 end

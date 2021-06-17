@@ -13,8 +13,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     end
 
     assert_problems(<<OUTPUT)
-The presence of the following boolean columns is validated incorrectly:
-  ModelFactory::Models::User: active
+replace the `presence` validator on ModelFactory::Models::User.active with `inclusion` - `presence` can't be used on booleans
 OUTPUT
   end
 

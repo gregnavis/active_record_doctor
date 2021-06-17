@@ -14,8 +14,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::Company: users loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`
+use `dependent: :delete_all` or similar on ModelFactory::Models::Company.users - associated models have no validations and can be deleted in bulk
 OUTPUT
   end
 
@@ -57,8 +56,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::Company: users skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+use `dependent: :destroy` or similar on ModelFactory::Models::Company.users - the associated model has callbacks that are currently skipped
 OUTPUT
   end
 
@@ -95,8 +93,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::Company: owner loads the associated model before deleting it - consider using `dependent: :delete`
+use `dependent: :delete` or similar on ModelFactory::Models::Company.owner - the associated model has no callbacks and can be deleted without loading
 OUTPUT
   end
 
@@ -113,8 +110,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
 OUTPUT
   end
 
@@ -138,8 +134,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
 OUTPUT
   end
 
@@ -163,8 +158,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::User: company loads the associated model before deleting it - consider using `dependent: :delete`
+use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
 OUTPUT
   end
 
@@ -193,8 +187,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following associations might be using invalid dependent settings:
-  ModelFactory::Models::User: company skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+use `dependent: :destroy` or similar on ModelFactory::Models::User.company - the associated model has callbacks that are currently skipped
 OUTPUT
   end
 

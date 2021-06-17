@@ -17,8 +17,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end
 
     assert_problems(<<OUTPUT)
-The following models and columns should have presence validations:
-  ModelFactory::Models::User: name
+add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
 OUTPUT
   end
 
@@ -51,8 +50,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following models and columns should have presence validations:
-  ModelFactory::Models::User: active
+add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
 OUTPUT
   end
 
@@ -84,8 +82,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following models and columns should have presence validations:
-  ModelFactory::Models::User: active
+add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
 OUTPUT
   end
 

@@ -7,8 +7,7 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-The following indexes are extraneous and can be removed:
-  index_users_on_id (is a primary key of users)
+remove index_users_on_id - coincides with the primary key on the table
 OUTPUT
   end
 
@@ -22,8 +21,7 @@ OUTPUT
     ActiveRecord::Base.connection.add_index :users, :email, name: "index_users_on_email"
 
     assert_problems(<<OUTPUT)
-The following indexes are extraneous and can be removed:
-  index_users_on_email (can be handled by unique_index_on_users_email)
+remove index_users_on_email - can be replaced by unique_index_on_users_email
 OUTPUT
   end
 
@@ -40,8 +38,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following indexes are extraneous and can be removed:
-  index_users_on_last_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
+remove index_users_on_last_name - can be replaced by index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
 OUTPUT
   end
 
@@ -60,8 +57,7 @@ OUTPUT
     ActiveRecord::Base.connection.add_index :users, [:last_name, :first_name]
 
     assert_problems(<<OUTPUT)
-The following indexes are extraneous and can be removed:
-  index_users_on_last_name_and_first_name (can be handled by index_users_on_last_name_and_first_name_and_email, unique_index_on_users_last_name_and_first_name)
+remove index_users_on_last_name_and_first_name - can be replaced by index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
 OUTPUT
   end
 end

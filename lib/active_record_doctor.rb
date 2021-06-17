@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "active_record_doctor/printers"
-require "active_record_doctor/printers/io_printer"
 require "active_record_doctor/railtie" if defined?(Rails) && defined?(Rails::Railtie)
 require "active_record_doctor/detectors"
 require "active_record_doctor/detectors/base"

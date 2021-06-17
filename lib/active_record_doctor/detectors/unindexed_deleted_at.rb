@@ -13,6 +13,14 @@ module ActiveRecordDoctor
 
       @description = "Detect unindexed deleted_at columns"
 
+      private
+
+      def message(index:)
+        # rubocop:disable Layout/LineLength
+        "consider adding `WHERE deleted_at IS NULL` to #{index} - a partial index can speed lookups of soft-deletable models"
+        # rubocop:enable Layout/LineLength
+      end
+
       def detect
         problems(connection.tables.select do |table|
           connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
@@ -20,7 +28,9 @@ module ActiveRecordDoctor
           connection.indexes(table).reject do |index|
             index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
           end.map do |index|
-            index.name
+            {
+              index: index.name
+            }
           end
         end)
       end

@@ -28,8 +28,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-The following indexes should include `deleted_at IS NULL`:
-  index_profiles_on_first_name_and_last_name
+consider adding `WHERE deleted_at IS NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
 OUTPUT
   end
 
@@ -60,8 +59,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-The following indexes should include `deleted_at IS NULL`:
-  index_profiles_on_first_name_and_last_name
+consider adding `WHERE deleted_at IS NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
 OUTPUT
   end
 end

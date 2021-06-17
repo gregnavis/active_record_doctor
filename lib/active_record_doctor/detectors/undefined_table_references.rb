@@ -8,6 +8,12 @@ module ActiveRecordDoctor
     class UndefinedTableReferences < Base
       @description = "Detect models referencing undefined tables or views"
 
+      private
+
+      def message(model:, table:)
+        "#{model} references a non-existent table or view named #{table}"
+      end
+
       def detect
         eager_load!
 
@@ -15,8 +21,16 @@ module ActiveRecordDoctor
         # database then existing_views is nil. We inform the caller we haven't
         # consulted views so that it can display an appropriate warning.
         existing_views = views
+        if existing_views.nil?
+          warning(<<WARNING)
+WARNING: Models backed by database views are supported only in Rails 5+ OR
+Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
+will be erroneously reported below as not having their underlying tables/views.
+Consider upgrading Rails or disabling this task temporarily.
+WARNING
+        end
 
-        offending_models = models.select do |model|
+        problems(models.select do |model|
           model.table_name.present? &&
             !tables.include?(model.table_name) &&
             (
@@ -24,10 +38,11 @@ module ActiveRecordDoctor
                 !existing_views.include?(model.table_name)
             )
         end.map do |model|
-          [model.name, model.table_name]
-        end
-
-        problems(offending_models, views_checked: !existing_views.nil?)
+          {
+            model: model.name,
+            table: model.table_name
+          }
+        end)
       end
     end
   end

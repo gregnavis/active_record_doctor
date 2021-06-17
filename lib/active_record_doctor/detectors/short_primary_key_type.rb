@@ -11,15 +11,22 @@ module ActiveRecordDoctor
 
       @description = "Detect primary keys with short integer types"
 
-      def detect
-        problems(hash_from_pairs(tables.reject do |table|
-          table == "schema_migrations" || valid_type?(primary_key(table))
-        end.map do |table|
-          [table, primary_key(table).name]
-        end))
+      private
+
+      def message(table:, column:)
+        "change the type of #{table}.#{column} to #{VALID_TYPES.join(' or ')}"
       end
 
-      private
+      def detect
+        problems(tables.reject do |table|
+          table == "schema_migrations" || valid_type?(primary_key(table))
+        end.map do |table|
+          {
+            table: table,
+            column: primary_key(table).name
+          }
+        end)
+      end
 
       def valid_type?(column)
         VALID_TYPES.any? do |type|

@@ -8,10 +8,16 @@ module ActiveRecordDoctor
     class MissingPresenceValidation < Base
       @description = "Detect non-NULL columns without a presence validator"
 
+      private
+
+      def message(column:, model:)
+        "add a `presence` validator to #{model}.#{column} - it's NOT NULL but lacks a validator"
+      end
+
       def detect
         eager_load!
 
-        problems(hash_from_pairs(models.reject do |model|
+        problems(models.reject do |model|
           model.table_name.nil? ||
           model.table_name == "schema_migrations" ||
           !table_exists?(model.table_name)
@@ -25,10 +31,15 @@ module ActiveRecordDoctor
           ]
         end.reject do |_model_name, columns|
           columns.empty?
-        end))
+        end.flat_map do |model_name, columns|
+          columns.map do |column|
+            {
+              column: column,
+              model: model_name
+            }
+          end
+        end)
       end
-
-      private
 
       def validator_needed?(model, column)
         ![model.primary_key, "created_at", "updated_at"].include?(column.name) &&

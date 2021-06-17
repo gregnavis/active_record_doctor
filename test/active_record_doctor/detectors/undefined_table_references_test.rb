@@ -18,13 +18,11 @@ WARNING: Models backed by database views are supported only in Rails 5+ OR
 Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
 will be erroneously reported below as not having their underlying tables/views.
 Consider upgrading Rails or disabling this task temporarily.
-The following models reference undefined tables:
-  ModelFactory::Models::User (the table users is undefined)
+ModelFactory::Models::User references a non-existent table or view named users
 OUTPUT
     else
       assert_problems(<<OUTPUT)
-The following models reference undefined tables:
-  ModelFactory::Models::User (the table users is undefined)
+ModelFactory::Models::User references a non-existent table or view named users
 OUTPUT
     end
   end

@@ -12,14 +12,39 @@ module ActiveRecordDoctor
         end
       end
 
+      def initialize
+        @problems = []
+      end
+
       def run
+        @problems = []
+
         detect
+        @problems.each do |problem|
+          puts(message(**problem))
+        end
+
+        success = @problems.empty?
+        @problems = nil
+        success
       end
 
       private
 
-      def problems(problems, options = {})
-        [problems, options]
+      def detect
+        raise("#detect should be implemented by a subclass")
+      end
+
+      def message(**_attrs)
+        raise("#message should be implemented by a subclass")
+      end
+
+      def problem!(**attrs)
+        @problems << attrs
+      end
+
+      def problems(problems)
+        problems.each { |problem| problem!(**problem) }
       end
 
       def connection
@@ -59,10 +84,6 @@ module ActiveRecordDoctor
             # We don't support this Rails/database combination yet.
             nil
           end
-      end
-
-      def hash_from_pairs(pairs)
-        Hash[*pairs.flatten(1)]
       end
 
       def eager_load!

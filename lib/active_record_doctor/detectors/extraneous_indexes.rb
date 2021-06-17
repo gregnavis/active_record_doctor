@@ -9,11 +9,19 @@ module ActiveRecordDoctor
     class ExtraneousIndexes < Base
       @description = "Detect extraneous indexes"
 
+      private
+
+      def message(extraneous_index:, replacement_indexes:)
+        if replacement_indexes.nil?
+          "remove #{extraneous_index} - coincides with the primary key on the table"
+        else
+          "remove #{extraneous_index} - can be replaced by #{replacement_indexes.join(' or ')}"
+        end
+      end
+
       def detect
         problems(subindexes_of_multi_column_indexes + indexed_primary_keys)
       end
-
-      private
 
       def subindexes_of_multi_column_indexes
         tables.reject do |table|
@@ -27,15 +35,12 @@ module ActiveRecordDoctor
           indexes.reject do |index|
             maximum_indexes.include?(index)
           end.map do |extraneous_index|
-            [
-              extraneous_index.name,
-              [
-                :multi_column,
-                maximum_indexes.select do |maximum_index|
-                  cover?(maximum_index, extraneous_index)
-                end.map(&:name).sort
-              ].flatten(1)
-            ]
+            {
+              extraneous_index: extraneous_index.name,
+              replacement_indexes: maximum_indexes.select do |maximum_index|
+                cover?(maximum_index, extraneous_index)
+              end.map(&:name).sort
+            }
           end
         end
       end
@@ -50,9 +55,12 @@ module ActiveRecordDoctor
               index.columns == ["id"]
             end
           ]
-        end.flat_map do |table, indexes|
+        end.flat_map do |_table, indexes|
           indexes.map do |index|
-            [index.name, [:primary_key, table]]
+            {
+              extraneous_index: index.name,
+              replacement_indexes: nil
+            }
           end
         end
       end

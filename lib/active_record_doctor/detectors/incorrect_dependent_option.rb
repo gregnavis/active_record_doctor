@@ -11,10 +11,25 @@ module ActiveRecordDoctor
       @description = "Detect associations that should use a different dependent option based on callbacks on the related model"
       # rubocop:enable Layout/LineLength
 
+      private
+
+      def message(model:, association:, problem:)
+        # rubocop:disable Layout/LineLength
+        case problem
+        when :suggest_destroy
+          "use `dependent: :destroy` or similar on #{model}.#{association} - the associated model has callbacks that are currently skipped"
+        when :suggest_delete
+          "use `dependent: :delete` or similar on #{model}.#{association} - the associated model has no callbacks and can be deleted without loading"
+        when :suggest_delete_all
+          "use `dependent: :delete_all` or similar on #{model}.#{association} - associated models have no validations and can be deleted in bulk"
+        end
+        # rubocop:enable Layout/LineLength
+      end
+
       def detect
         eager_load!
 
-        problems(hash_from_pairs(models.reject do |model|
+        problems(models.reject do |model|
           model.table_name.nil?
         end.map do |model|
           [
@@ -23,10 +38,16 @@ module ActiveRecordDoctor
           ]
         end.reject do |_model_name, associations|
           associations.empty?
-        end))
+        end.flat_map do |model_name, associations|
+          associations.map do |(association, problem)|
+            {
+              model: model_name,
+              association: association,
+              problem: problem
+            }
+          end
+        end)
       end
-
-      private
 
       def associations_with_incorrect_dependent_options(model)
         reflections = model.reflect_on_all_associations(:has_many) +

@@ -11,8 +11,7 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     end
 
     assert_problems(<<OUTPUT)
-The following foreign keys have different type than their paired primary keys:
-  users company_id
+users.company_id references a column of different type - foreign keys should be of the same type as the referenced column
 OUTPUT
   end
 

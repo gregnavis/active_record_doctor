@@ -6,12 +6,18 @@ module ActiveRecordDoctor
   module Detectors
     # Find instances of boolean column presence validations that use presence/absence instead of includes/excludes.
     class IncorrectBooleanPresenceValidation < Base
-      @description = "Detect boolean columns with presence/absence instead of includes/excludes validators"
+      @description = "Detect boolean columns with presence instead of includes validators"
+
+      private
+
+      def message(model:, column:)
+        "replace the `presence` validator on #{model}.#{column} with `inclusion` - `presence` can't be used on booleans"
+      end
 
       def detect
         eager_load!
 
-        problems(hash_from_pairs(models.reject do |model|
+        problems(models.reject do |model|
           model.table_name.nil? ||
             model.table_name == "schema_migrations" ||
             !table_exists?(model.table_name)
@@ -25,10 +31,15 @@ module ActiveRecordDoctor
           ]
         end.reject do |_model_name, columns|
           columns.empty?
-        end))
+        end.flat_map do |model_name, columns|
+          columns.map do |column|
+            {
+              model: model_name,
+              column: column
+            }
+          end
+        end)
       end
-
-      private
 
       def has_presence_validator?(model, column)
         model.validators.any? do |validator|

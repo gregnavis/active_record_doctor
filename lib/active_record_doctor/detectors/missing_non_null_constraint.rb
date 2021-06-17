@@ -9,28 +9,38 @@ module ActiveRecordDoctor
     class MissingNonNullConstraint < Base
       @description = "Detect presence validators not backed by a non-NULL constraint"
 
+      private
+
+      def message(column:, model:, table:)
+        "add `NOT NULL` to #{table}.#{column} - #{model} validates its presence but it's not non-NULL in the database"
+      end
+
       def detect
         eager_load!
 
-        problems(hash_from_pairs(models.reject do |model|
+        problems(models.reject do |model|
           model.table_name.nil? ||
           model.table_name == "schema_migrations" ||
           !table_exists?(model.table_name)
         end.map do |model|
           [
-            model.table_name,
+            model,
             connection.columns(model.table_name).select do |column|
               validator_needed?(model, column) &&
                 has_mandatory_presence_validator?(model, column) &&
                 column.null
             end.map(&:name)
           ]
-        end.reject do |_model_name, columns|
-          columns.empty?
-        end))
+        end.flat_map do |model, columns|
+          columns.map do |column|
+            {
+              column: column,
+              model: model.name,
+              table: model.table_name
+            }
+          end
+        end)
       end
-
-      private
 
       def validator_needed?(model, column)
         ![model.primary_key, "created_at", "updated_at"].include?(column.name)

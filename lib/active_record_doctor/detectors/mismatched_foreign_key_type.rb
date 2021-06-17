@@ -8,8 +8,16 @@ module ActiveRecordDoctor
     class MismatchedForeignKeyType < Base
       @description = "Check whether primary keys and foreign keys use the same type"
 
+      private
+
+      def message(table:, column:)
+        # rubocop:disable Layout/LineLength
+        "#{table}.#{column} references a column of different type - foreign keys should be of the same type as the referenced column"
+        # rubocop:enable Layout/LineLength
+      end
+
       def detect
-        problems(hash_from_pairs(tables.reject do |table|
+        problems(tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [
@@ -18,10 +26,15 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table, foreign_keys|
           foreign_keys.empty?
-        end))
+        end.flat_map do |table, foreign_keys|
+          foreign_keys.map do |foreign_key|
+            {
+              table: table,
+              column: foreign_key
+            }
+          end
+        end)
       end
-
-      private
 
       def mismatched_foreign_keys(table)
         connection.foreign_keys(table).reject do |foreign_key|

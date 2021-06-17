@@ -8,8 +8,7 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-The following columns lack a foreign key constraint:
-  users company_id
+create a foreign key on users.company_id - looks like an association without a foreign key constraint
 OUTPUT
   end
 
