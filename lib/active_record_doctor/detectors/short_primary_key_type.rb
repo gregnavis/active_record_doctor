@@ -18,14 +18,14 @@ module ActiveRecordDoctor
       end
 
       def detect
-        problems(tables.reject do |table|
+        tables.reject do |table|
           table == "schema_migrations" || valid_type?(primary_key(table))
-        end.map do |table|
-          {
+        end.each do |table|
+          problem!(
             table: table,
             column: primary_key(table).name
-          }
-        end)
+          )
+        end
       end
 
       def valid_type?(column)

@@ -18,10 +18,10 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        problems(models.reject do |model|
+        models.reject do |model|
           model.table_name.nil? ||
-          model.table_name == "schema_migrations" ||
-          !table_exists?(model.table_name)
+            model.table_name == "schema_migrations" ||
+            !table_exists?(model.table_name)
         end.map do |model|
           [
             model,
@@ -31,15 +31,15 @@ module ActiveRecordDoctor
                 column.null
             end.map(&:name)
           ]
-        end.flat_map do |model, columns|
-          columns.map do |column|
-            {
+        end.each do |model, columns|
+          columns.each do |column|
+            problem!(
               column: column,
               model: model.name,
               table: model.table_name
-            }
+            )
           end
-        end)
+        end
       end
 
       def validator_needed?(model, column)

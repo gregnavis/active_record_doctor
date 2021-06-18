@@ -29,7 +29,7 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        problems(models.reject do |model|
+        models.reject do |model|
           model.table_name.nil?
         end.map do |model|
           [
@@ -38,15 +38,15 @@ module ActiveRecordDoctor
           ]
         end.reject do |_model_name, associations|
           associations.empty?
-        end.flat_map do |model_name, associations|
-          associations.map do |(association, problem)|
-            {
+        end.each do |model_name, associations|
+          associations.each do |(association, problem)|
+            problem!(
               model: model_name,
               association: association,
               problem: problem
-            }
+            )
           end
-        end)
+        end
       end
 
       def associations_with_incorrect_dependent_options(model)

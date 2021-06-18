@@ -30,19 +30,19 @@ Consider upgrading Rails or disabling this task temporarily.
 WARNING
         end
 
-        problems(models.select do |model|
+        models.select do |model|
           model.table_name.present? &&
             !tables.include?(model.table_name) &&
             (
               existing_views.nil? ||
                 !existing_views.include?(model.table_name)
             )
-        end.map do |model|
-          {
+        end.each do |model|
+          problem!(
             model: model.name,
             table: model.table_name
-          }
-        end)
+          )
+        end
       end
     end
   end

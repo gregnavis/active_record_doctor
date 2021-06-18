@@ -20,13 +20,14 @@ module ActiveRecordDoctor
       end
 
       def detect
-        problems(subindexes_of_multi_column_indexes + indexed_primary_keys)
+        subindexes_of_multi_column_indexes
+        indexed_primary_keys
       end
 
       def subindexes_of_multi_column_indexes
         tables.reject do |table|
           table == "schema_migrations"
-        end.flat_map do |table|
+        end.each do |table|
           indexes = indexes(table)
           maximum_indexes = indexes.select do |index|
             maximal?(indexes, index)
@@ -34,13 +35,13 @@ module ActiveRecordDoctor
 
           indexes.reject do |index|
             maximum_indexes.include?(index)
-          end.map do |extraneous_index|
-            {
+          end.each do |extraneous_index|
+            problem!(
               extraneous_index: extraneous_index.name,
               replacement_indexes: maximum_indexes.select do |maximum_index|
                 cover?(maximum_index, extraneous_index)
               end.map(&:name).sort
-            }
+            )
           end
         end
       end
@@ -55,12 +56,12 @@ module ActiveRecordDoctor
               index.columns == ["id"]
             end
           ]
-        end.flat_map do |_table, indexes|
-          indexes.map do |index|
-            {
+        end.each do |_table, indexes|
+          indexes.each do |index|
+            problem!(
               extraneous_index: index.name,
               replacement_indexes: nil
-            }
+            )
           end
         end
       end

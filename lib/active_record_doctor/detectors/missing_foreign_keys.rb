@@ -15,7 +15,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        problems(tables.reject do |table|
+        tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [
@@ -31,11 +31,14 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table, columns|
           columns.empty?
-        end.flat_map do |table, columns|
-          columns.map do |column|
-            { table: table, column: column }
+        end.each do |table, columns|
+          columns.each do |column|
+            problem!(
+              table: table,
+              column: column
+            )
           end
-        end)
+        end
       end
 
       def named_like_foreign_key?(column)

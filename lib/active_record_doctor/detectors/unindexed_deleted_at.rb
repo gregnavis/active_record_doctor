@@ -22,17 +22,17 @@ module ActiveRecordDoctor
       end
 
       def detect
-        problems(connection.tables.select do |table|
+        connection.tables.select do |table|
           connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
-        end.flat_map do |table|
+        end.each do |table|
           connection.indexes(table).reject do |index|
             index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
-          end.map do |index|
-            {
+          end.each do |index|
+            problem!(
               index: index.name
-            }
+            )
           end
-        end)
+        end
       end
     end
   end

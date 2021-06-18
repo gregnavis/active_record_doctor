@@ -43,10 +43,6 @@ module ActiveRecordDoctor
         @problems << attrs
       end
 
-      def problems(problems)
-        problems.each { |problem| problem!(**problem) }
-      end
-
       def connection
         @connection ||= ActiveRecord::Base.connection
       end

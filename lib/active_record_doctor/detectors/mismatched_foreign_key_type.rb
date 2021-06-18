@@ -17,7 +17,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        problems(tables.reject do |table|
+        tables.reject do |table|
           table == "schema_migrations"
         end.map do |table|
           [
@@ -26,14 +26,14 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table, foreign_keys|
           foreign_keys.empty?
-        end.flat_map do |table, foreign_keys|
-          foreign_keys.map do |foreign_key|
-            {
+        end.each do |table, foreign_keys|
+          foreign_keys.each do |foreign_key|
+            problem!(
               table: table,
               column: foreign_key
-            }
+            )
           end
-        end)
+        end
       end
 
       def mismatched_foreign_keys(table)

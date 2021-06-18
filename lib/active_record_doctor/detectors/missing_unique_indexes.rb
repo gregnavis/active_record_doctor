@@ -20,7 +20,7 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        problems(models.reject do |model|
+        models.reject do |model|
           model.table_name.nil?
         end.map do |model|
           [
@@ -40,14 +40,14 @@ module ActiveRecordDoctor
           ]
         end.reject do |_table_name, indexes|
           indexes.empty?
-        end.flat_map do |table_name, indexes|
-          indexes.map do |columns|
-            {
+        end.each do |table_name, indexes|
+          indexes.each do |columns|
+            problem!(
               table: table_name,
               columns: columns
-            }
+            )
           end
-        end)
+        end
       end
 
       def supported_validator?(validator)
