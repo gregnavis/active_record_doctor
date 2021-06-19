@@ -29,45 +29,28 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        models.reject do |model|
-          model.table_name.nil?
-        end.map do |model|
-          [
-            model.name,
-            associations_with_incorrect_dependent_options(model)
-          ]
-        end.reject do |_model_name, associations|
-          associations.empty?
-        end.each do |model_name, associations|
-          associations.each do |(association, problem)|
-            problem!(
-              model: model_name,
-              association: association,
-              problem: problem
-            )
+        models.each do |model|
+          next if model.table_name.nil?
+
+          associations = model.reflect_on_all_associations(:has_many) +
+                         model.reflect_on_all_associations(:has_one) +
+                         model.reflect_on_all_associations(:belongs_to)
+
+          associations.each do |association|
+            if callback_action(association) == :invoke && deletable?(association.klass)
+              suggestion =
+                case association.macro
+                when :has_many then :suggest_delete_all
+                when :has_one, :belongs_to then :suggest_delete
+                else raise("unsupported association type #{association.macro}")
+                end
+
+              problem!(model: model.name, association: association.name, problem: suggestion)
+            elsif callback_action(association) == :skip && !deletable?(association.klass)
+              problem!(model: model.name, association: association.name, problem: :suggest_destroy)
+            end
           end
         end
-      end
-
-      def associations_with_incorrect_dependent_options(model)
-        reflections = model.reflect_on_all_associations(:has_many) +
-                      model.reflect_on_all_associations(:has_one) +
-                      model.reflect_on_all_associations(:belongs_to)
-
-        reflections.map do |reflection|
-          if callback_action(reflection) == :invoke && deletable?(reflection.klass)
-            suggestion =
-              case reflection.macro
-              when :has_many then :suggest_delete_all
-              when :has_one, :belongs_to then :suggest_delete
-              else raise("unsupported association type #{reflection.macro}")
-              end
-
-            [reflection.name, suggestion]
-          elsif callback_action(reflection) == :skip && !deletable?(reflection.klass)
-            [reflection.name, :suggest_destroy]
-          end
-        end.compact
       end
 
       def callback_action(reflection)

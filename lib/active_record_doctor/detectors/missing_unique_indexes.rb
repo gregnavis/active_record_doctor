@@ -20,32 +20,19 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        models.reject do |model|
-          model.table_name.nil?
-        end.map do |model|
-          [
-            model.table_name,
-            model.validators.select do |validator|
-              table_name = model.table_name
-              scope = validator.options.fetch(:scope, [])
+        models.each do |model|
+          next if model.table_name.nil?
 
-              validator.is_a?(ActiveRecord::Validations::UniquenessValidator) &&
-                supported_validator?(validator) &&
-                !unique_index?(table_name, validator.attributes, scope)
-            end.map do |validator|
-              scope = Array(validator.options.fetch(:scope, []))
-              attributes = validator.attributes
-              (scope + attributes).map(&:to_s)
-            end
-          ]
-        end.reject do |_table_name, indexes|
-          indexes.empty?
-        end.each do |table_name, indexes|
-          indexes.each do |columns|
-            problem!(
-              table: table_name,
-              columns: columns
-            )
+          model.validators.each do |validator|
+            scope = Array(validator.options.fetch(:scope, []))
+
+            next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
+            next unless supported_validator?(validator)
+            next if unique_index?(model.table_name, validator.attributes, scope)
+
+            columns = (scope + validator.attributes).map(&:to_s)
+
+            problem!(table: model.table_name, columns: columns)
           end
         end
       end

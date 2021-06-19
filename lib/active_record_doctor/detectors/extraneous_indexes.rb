@@ -25,39 +25,36 @@ module ActiveRecordDoctor
       end
 
       def subindexes_of_multi_column_indexes
-        tables.reject do |table|
-          table == "schema_migrations"
-        end.each do |table|
+        tables.each do |table|
+          next if table == "schema_migrations"
+
           indexes = indexes(table)
-          maximum_indexes = indexes.select do |index|
+          maximal_indexes = indexes.select do |index|
             maximal?(indexes, index)
           end
 
-          indexes.reject do |index|
-            maximum_indexes.include?(index)
-          end.each do |extraneous_index|
+          indexes.each do |index|
+            next if maximal_indexes.include?(index)
+
+            replacement_indexes = maximal_indexes.select do |maximum_index|
+              cover?(maximum_index, index)
+            end.map(&:name).sort
+
             problem!(
-              extraneous_index: extraneous_index.name,
-              replacement_indexes: maximum_indexes.select do |maximum_index|
-                cover?(maximum_index, extraneous_index)
-              end.map(&:name).sort
+              extraneous_index: index.name,
+              replacement_indexes: replacement_indexes
             )
           end
         end
       end
 
       def indexed_primary_keys
-        @indexed_primary_keys ||= tables.reject do |table|
-          table == "schema_migrations"
-        end.map do |table|
-          [
-            table,
-            indexes(table).select do |index|
-              index.columns == ["id"]
-            end
-          ]
-        end.each do |_table, indexes|
-          indexes.each do |index|
+        tables.each do |table|
+          next if table == "schema_migrations"
+
+          indexes(table).each do |index|
+            next if index.columns != ["id"]
+
             problem!(
               extraneous_index: index.name,
               replacement_indexes: nil

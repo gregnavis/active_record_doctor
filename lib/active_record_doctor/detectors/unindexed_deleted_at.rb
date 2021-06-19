@@ -22,15 +22,13 @@ module ActiveRecordDoctor
       end
 
       def detect
-        connection.tables.select do |table|
-          connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
-        end.each do |table|
-          connection.indexes(table).reject do |index|
-            index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
-          end.each do |index|
-            problem!(
-              index: index.name
-            )
+        tables.each do |table|
+          next unless connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
+
+          connection.indexes(table).each do |index|
+            next if index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
+
+            problem!(index: index.name)
           end
         end
       end

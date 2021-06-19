@@ -17,23 +17,15 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables.reject do |table|
-          table == "schema_migrations"
-        end.map do |table|
-          [
-            table,
-            connection.columns(table).select do |column|
-              foreign_key?(column) &&
-                !indexed?(table, column) &&
-                !indexed_as_polymorphic?(table, column)
-            end.map(&:name)
-          ]
-        end.each do |table, columns|
-          columns.each do |column|
-            problem!(
-              table: table,
-              column: column
-            )
+        tables.each do |table|
+          next if table == "schema_migrations"
+
+          connection.columns(table).each do |column|
+            next unless foreign_key?(column)
+            next if indexed?(table, column)
+            next if indexed_as_polymorphic?(table, column)
+
+            problem!(table: table, column: column.name)
           end
         end
       end

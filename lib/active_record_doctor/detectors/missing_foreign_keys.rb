@@ -15,28 +15,18 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables.reject do |table|
-          table == "schema_migrations"
-        end.map do |table|
-          [
-            table,
-            connection.columns(table).select do |column|
-              # We need to skip polymorphic associations as they can reference
-              # multiple tables but a foreign key constraint can reference
-              # a single predefined table.
-              named_like_foreign_key?(column) &&
-                !foreign_key?(table, column) &&
-                !polymorphic_foreign_key?(table, column)
-            end.map(&:name)
-          ]
-        end.reject do |_table, columns|
-          columns.empty?
-        end.each do |table, columns|
-          columns.each do |column|
-            problem!(
-              table: table,
-              column: column
-            )
+        tables.each do |table|
+          next if table == "schema_migrations"
+
+          connection.columns(table).each do |column|
+            # We need to skip polymorphic associations as they can reference
+            # multiple tables but a foreign key constraint can reference
+            # a single predefined table.
+            next unless named_like_foreign_key?(column)
+            next if foreign_key?(table, column)
+            next if polymorphic_foreign_key?(table, column)
+
+            problem!(table: table, column: column.name)
           end
         end
       end

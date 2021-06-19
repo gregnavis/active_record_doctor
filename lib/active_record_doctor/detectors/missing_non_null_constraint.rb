@@ -18,23 +18,18 @@ module ActiveRecordDoctor
       def detect
         eager_load!
 
-        models.reject do |model|
-          model.table_name.nil? ||
-            model.table_name == "schema_migrations" ||
-            !table_exists?(model.table_name)
-        end.map do |model|
-          [
-            model,
-            connection.columns(model.table_name).select do |column|
-              validator_needed?(model, column) &&
-                has_mandatory_presence_validator?(model, column) &&
-                column.null
-            end.map(&:name)
-          ]
-        end.each do |model, columns|
-          columns.each do |column|
+        models.each do |model|
+          next if model.table_name.nil?
+          next if model.table_name == "schema_migrations"
+          next unless table_exists?(model.table_name)
+
+          connection.columns(model.table_name).each do |column|
+            next unless validator_needed?(model, column)
+            next unless has_mandatory_presence_validator?(model, column)
+            next unless column.null
+
             problem!(
-              column: column,
+              column: column.name,
               model: model.name,
               table: model.table_name
             )
