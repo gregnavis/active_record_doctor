@@ -56,7 +56,12 @@ MIGRATION
     end
 
     def add_index(table, column)
-      "    add_index :#{table}, :#{column}"
+      index_name = Class.new.extend(ActiveRecord::ConnectionAdapters::SchemaStatements).index_name table, column
+      if index_name.size > ActiveRecord::Base.connection.allowed_index_name_length
+        "    add_index :#{table}, :#{column}, name: '#{index_name.first ActiveRecord::Base.connection.allowed_index_name_length}'"
+      else
+        "    add_index :#{table}, :#{column}"
+      end
     end
 
     def migration_version
