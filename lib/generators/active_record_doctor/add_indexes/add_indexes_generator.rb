@@ -61,7 +61,7 @@ MIGRATION
 
     def migration_version
       if ActiveRecord::VERSION::STRING >= "5.1"
-        "[#{version}]"
+        "[#{ActiveRecord::Migration.current_version}]"
       else
         ""
       end
