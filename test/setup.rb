@@ -78,11 +78,6 @@ class Minitest::Test
     self.class.name.sub(/Test$/, "").constantize
   end
 
-  # Run the appropriate detector. The detector name is inferred from the test class.
-  def run_detector
-    detector_class.run.first
-  end
-
   def run_task
     ActiveRecordDoctor::Task.new(detector_class).run
   end
