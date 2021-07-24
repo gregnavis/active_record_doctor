@@ -5,10 +5,10 @@ module ActiveRecordDoctor
     # Base class for all active_record_doctor detectors.
     class Base
       class << self
-        attr_reader :description
+        attr_reader :description, :config
 
-        def run
-          new.run
+        def run(config)
+          new(config).run
         end
 
         def underscored_name
@@ -16,8 +16,9 @@ module ActiveRecordDoctor
         end
       end
 
-      def initialize
+      def initialize(config)
         @problems = []
+        @config = config
       end
 
       def run
@@ -34,6 +35,17 @@ module ActiveRecordDoctor
       end
 
       private
+
+      def config(key)
+        default_value =
+          begin
+            self.class.config.fetch(key).fetch(:default)
+          rescue KeyError
+            raise "#{self.class.name} must provide a default value for #{key}"
+          end
+
+        @config.fetch(key, default_value)
+      end
 
       def detect
         raise("#detect should be implemented by a subclass")

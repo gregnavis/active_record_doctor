@@ -8,6 +8,16 @@ module ActiveRecordDoctor
     # can also serve as an index on A and A, B.
     class ExtraneousIndexes < Base
       @description = "Detect extraneous indexes"
+      @config = {
+        ignore_tables: {
+          description: "Tables whose indexes should not be checked",
+          default: ["schema_migrations"]
+        },
+        ignore_indexes: {
+          description: "Indexes that should not be considered extraneous",
+          default: []
+        }
+      }
 
       private
 
@@ -26,7 +36,7 @@ module ActiveRecordDoctor
 
       def subindexes_of_multi_column_indexes
         tables.each do |table|
-          next if table == "schema_migrations"
+          next if config(:ignore_tables).include?(table)
 
           indexes = indexes(table)
           maximal_indexes = indexes.select do |index|
@@ -40,6 +50,8 @@ module ActiveRecordDoctor
               cover?(maximum_index, index)
             end.map(&:name).sort
 
+            next if config(:ignore_indexes).include?(index.name)
+
             problem!(
               extraneous_index: index.name,
               replacement_indexes: replacement_indexes
@@ -50,10 +62,12 @@ module ActiveRecordDoctor
 
       def indexed_primary_keys
         tables.each do |table|
-          next if table == "schema_migrations"
+          next if config(:ignore_tables).include?(table)
 
           indexes(table).each do |index|
             next if index.columns != ["id"]
+
+            next if config(:ignore_indexes).include?(index.name)
 
             problem!(
               extraneous_index: index.name,

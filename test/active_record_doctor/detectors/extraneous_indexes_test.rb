@@ -60,4 +60,37 @@ OUTPUT
 remove index_users_on_last_name_and_first_name - can be replaced by index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
 OUTPUT
   end
+
+  def test_config_ignore_tables
+    # The detector recognizes two kinds of errors and both must take
+    # ignore_tables into account. We trigger those errors by indexing the
+    # primary key (the first extraneous index) and then indexing email twice
+    # (index2... is the other extraneous index).
+    create_table(:users) do |t|
+      t.index :id
+      t.string :email
+
+      t.index :email, name: "index1_on_users_email"
+      t.index :email, name: "index2_on_users_email"
+    end
+
+    config(ignore_tables: ["users"])
+
+    refute_problems
+  end
+
+  def test_config_ignore_indexes
+    create_table(:users) do |t|
+      t.index :id
+      t.string :email
+      t.string :api_key
+
+      t.index :email, name: "index_on_users_email"
+      t.index [:email, :api_key], name: "index_on_users_email_and_api_key"
+    end
+
+    config(ignore_indexes: ["index_users_on_id", "index_on_users_email"])
+
+    refute_problems
+  end
 end

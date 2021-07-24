@@ -49,6 +49,8 @@ class Minitest::Test
     # Ensure all remnants of previous test runs, most likely in form of tables,
     # are removed.
     ModelFactory.cleanup
+
+    @config = {}
   end
 
   def teardown
@@ -56,6 +58,10 @@ class Minitest::Test
   end
 
   private
+
+  def config(config)
+    @config = config
+  end
 
   def postgresql?
     ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
@@ -80,13 +86,13 @@ class Minitest::Test
 
   def assert_problems(expected_output)
     success = nil
-    assert_output(expected_output) { success = detector.run }
+    assert_output(expected_output) { success = detector.run(@config) }
     refute(success)
   end
 
   def refute_problems
     success = nil
-    assert_output("") { success = detector.run }
+    assert_output("") { success = detector.run(@config) }
     assert(success)
   end
 end
