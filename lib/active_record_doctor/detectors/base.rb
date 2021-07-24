@@ -10,6 +10,10 @@ module ActiveRecordDoctor
         def run
           new.run
         end
+
+        def underscored_name
+          name.demodulize.underscore.to_sym
+        end
       end
 
       def initialize

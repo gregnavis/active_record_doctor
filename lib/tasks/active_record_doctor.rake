@@ -13,23 +13,20 @@ require "active_record_doctor/detectors/incorrect_boolean_presence_validation"
 require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/detectors/short_primary_key_type"
 require "active_record_doctor/detectors/mismatched_foreign_key_type"
-require "active_record_doctor/task"
 
 namespace :active_record_doctor do
-  tasks = ActiveRecordDoctor::Detectors.all.map do |detector_class|
-    ActiveRecordDoctor::Task.new(detector_class)
-  end
+  detectors = ActiveRecordDoctor::Detectors.all
 
-  tasks.each do |task|
-    desc task.description
-    task task.name => :environment do
-      task.run or exit(1)
+  detectors.each do |detector|
+    desc detector.description
+    task detector.underscored_name => :environment do
+      detector.run or exit(1)
     end
   end
 
-  desc "Run all active_record_doctor tasks"
+  desc "Run all active_record_doctor detectors"
   task :all => :environment do
-    results = tasks.map { |task| task.run }
+    results = detectors.map(&:run)
     results.all? or exit(1)
   end
 end

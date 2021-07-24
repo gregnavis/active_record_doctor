@@ -73,24 +73,20 @@ class Minitest::Test
     ModelFactory.create_model(*args, &block)
   end
 
-  # Return the detector class under test.
-  def detector_class
+  # Return the detector under test.
+  def detector
     self.class.name.sub(/Test$/, "").constantize
-  end
-
-  def run_task
-    ActiveRecordDoctor::Task.new(detector_class).run
   end
 
   def assert_problems(expected_output)
     success = nil
-    assert_output(expected_output) { success = run_task }
+    assert_output(expected_output) { success = detector.run }
     refute(success)
   end
 
   def refute_problems
     success = nil
-    assert_output("") { success = run_task }
+    assert_output("") { success = detector.run }
     assert(success)
   end
 end

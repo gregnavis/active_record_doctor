@@ -16,7 +16,6 @@ require "active_record_doctor/detectors/unindexed_foreign_keys"
 require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/detectors/short_primary_key_type"
 require "active_record_doctor/detectors/mismatched_foreign_key_type"
-require "active_record_doctor/task"
 require "active_record_doctor/version"
 
 module ActiveRecordDoctor # :nodoc:
