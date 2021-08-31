@@ -53,7 +53,7 @@ module ModelFactory
   def self.create_model(table_name, &block)
     table_name = table_name.to_sym
     klass = Class.new(ActiveRecord::Base, &block)
-    klass_name = table_name.to_s.classify
+    klass_name = table_name.to_s.singularize.classify
     Models.const_set(klass_name, klass)
   end
 

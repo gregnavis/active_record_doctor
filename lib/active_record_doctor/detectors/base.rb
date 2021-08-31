@@ -87,7 +87,8 @@ module ActiveRecordDoctor
       end
 
       def models
-        ActiveRecord::Base.descendants
+        # Ignore auto-generated models by Active Record has_and_belongs_to_many macro
+        ActiveRecord::Base.descendants.reject { |model| model.name.start_with?("HABTM_") }
       end
     end
   end
