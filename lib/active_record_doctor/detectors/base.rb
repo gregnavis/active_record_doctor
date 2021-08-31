@@ -143,7 +143,7 @@ module ActiveRecordDoctor
 
       def models(except: [])
         ActiveRecord::Base.descendants.reject do |model|
-          except.include?(model.name)
+          model.name.start_with?("HABTM_") || except.include?(model.name)
         end
       end
 

@@ -90,9 +90,23 @@ module ModelFactory
 
   def self.create_model(table_name, &block)
     table_name = table_name.to_sym
-    klass = Class.new(ActiveRecord::Base, &block)
+
+    # Normally, when a class is defined via `class MyClass < MySuperclass` the
+    # .name class method returns the name of the class when called from within
+    # the class body. However, anonymous classes defined via Class.new DO NOT
+    # HAVE NAMES. They're assigned names when they're assigned to a constant.
+    # If we evaluated the class body, passed via block here, in the class
+    # definition below then some macros would break
+    # (e.g. has_and_belongs_to_many) due to nil name.
+    #
+    # We solve the problem by defining an empty model class first, assigning to
+    # a constant to ensure a name is assigned, and then reopening the class to
+    # give it a non-trivial body.
+    klass = Class.new(ActiveRecord::Base)
     klass_name = table_name.to_s.classify
     Models.const_set(klass_name, klass)
+
+    klass.class_eval(&block) if block_given?
   end
 
   class ModelDefinitionProxy

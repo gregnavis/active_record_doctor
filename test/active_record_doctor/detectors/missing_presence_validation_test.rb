@@ -42,6 +42,23 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_not_null_column_is_not_reported_if_habtm_association
+    create_table(:users).create_model do
+      has_and_belongs_to_many :projects, class_name: "ModelFactory::Models::Project"
+    end
+
+    create_table(:projects_users) do |t|
+      t.bigint :project_id, null: false
+      t.bigint :user_id, null: false
+    end
+
+    create_table(:projects).create_model do
+      has_and_belongs_to_many :users, class_name: "ModelFactory::Models::User"
+    end
+
+    refute_problems
+  end
+
   def test_non_null_boolean_is_reported_if_nil_included
     create_table(:users) do |t|
       t.boolean :active, null: false
