@@ -74,7 +74,12 @@ OUTPUT
       t.index :email, name: "index2_on_users_email"
     end
 
-    config(ignore_tables: ["users"])
+    config_file(<<CONFIG)
+ActiveRecordDoctor.configure do |config|
+  config.detector :extraneous_indexes,
+    ignore_tables: ["users"]
+end
+CONFIG
 
     refute_problems
   end
@@ -89,7 +94,12 @@ OUTPUT
       t.index [:email, :api_key], name: "index_on_users_email_and_api_key"
     end
 
-    config(ignore_indexes: ["index_users_on_id", "index_on_users_email"])
+    config_file(<<CONFIG)
+ActiveRecordDoctor.configure do |config|
+  config.detector :extraneous_indexes,
+    ignore_indexes: ["index_users_on_id", "index_on_users_email"]
+end
+CONFIG
 
     refute_problems
   end

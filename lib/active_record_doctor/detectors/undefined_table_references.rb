@@ -15,8 +15,6 @@ module ActiveRecordDoctor
       end
 
       def detect
-        eager_load!
-
         # If we can't list views due to old Rails version or unsupported
         # database then existing_views is nil. We inform the caller we haven't
         # consulted views so that it can display an appropriate warning.

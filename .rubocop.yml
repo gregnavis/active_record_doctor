@@ -41,6 +41,19 @@ Style/HashSyntax:
 Style/RedundantBegin:
   Enabled: false
 
+# We expect #raise to receive an instance of the exception to raise instead of
+# passing in a message as the second parameter. That's because we'd like to be
+# able to pass arbitrary parameters to the exception being raised for later
+# inspection and processing.
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+# There's a tremendous difference between warn and $stderr.puts. We use the
+# latter to report some exceptions in a user-friendly manner and don't want to
+# mix them up with warnings.
+Style/StderrPuts:
+  Enabled: false
+
 # We pass an empty block in a few places to have a placeholder to add code to
 # in the future without having to dig through the code to determine whether a
 # block is allowed. Additionally, removing an empty block is **NOT** a

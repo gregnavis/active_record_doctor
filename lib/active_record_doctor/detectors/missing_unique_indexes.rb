@@ -18,8 +18,6 @@ module ActiveRecordDoctor
       end
 
       def detect
-        eager_load!
-
         models.each do |model|
           next if model.table_name.nil?
 

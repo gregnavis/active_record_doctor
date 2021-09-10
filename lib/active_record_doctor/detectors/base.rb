@@ -14,6 +14,10 @@ module ActiveRecordDoctor
         def underscored_name
           name.demodulize.underscore.to_sym
         end
+
+        def recognized_settings
+          config.keys
+        end
       end
 
       def initialize(config)
@@ -96,10 +100,6 @@ module ActiveRecordDoctor
             # We don't support this Rails/database combination yet.
             nil
           end
-      end
-
-      def eager_load!
-        Rails.application.eager_load!
       end
 
       def models

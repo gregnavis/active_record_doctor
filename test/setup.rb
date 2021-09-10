@@ -19,20 +19,6 @@ puts "Using #{adapter}"
 # the connection.
 ActiveRecord::Base.connection
 
-# We need to mock Rails because some detectors depend on .eager_load! This must
-# happen AFTER loading active_record_doctor as otherwise it'd attempt to
-# install a Railtie.
-module Rails
-  class TestApplication
-    def eager_load!
-    end
-  end
-
-  def self.application
-    @application ||= TestApplication.new
-  end
-end
-
 # Load Active Record Doctor.
 require "active_record_doctor"
 
@@ -49,18 +35,30 @@ class Minitest::Test
     # Ensure all remnants of previous test runs, most likely in form of tables,
     # are removed.
     ModelFactory.cleanup
-
-    @config = {}
   end
 
   def teardown
+    @config_path = nil
+
+    if @previous_dir
+      Dir.chdir(@previous_dir)
+      @previous_dir = nil
+    end
+
     ModelFactory.cleanup
   end
 
   private
 
-  def config(config)
-    @config = config
+  attr_reader :config_path
+
+  def config_file(content)
+    @previous_dir = Dir.pwd
+
+    directory = Dir.mktmpdir("active_record_doctor")
+    @config_path = File.join(directory, ".active_record_doctor")
+    File.write(@config_path, content)
+    Dir.chdir(directory)
   end
 
   def postgresql?
@@ -79,20 +77,30 @@ class Minitest::Test
     ModelFactory.create_model(*args, &block)
   end
 
-  # Return the detector under test.
   def detector
     self.class.name.sub(/Test$/, "").constantize
   end
 
+  def runner
+    config =
+      if @config_path
+        ActiveRecordDoctor.load_config(@config_path)
+      else
+        ActiveRecordDoctor::Config.new(nil, {})
+      end
+
+    ActiveRecordDoctor::Runner.new(config)
+  end
+
   def assert_problems(expected_output)
     success = nil
-    assert_output(expected_output) { success = detector.run(@config) }
+    assert_output(expected_output) { success = runner.run(detector) }
     refute(success)
   end
 
   def refute_problems
     success = nil
-    assert_output("") { success = detector.run(@config) }
+    assert_output("") { success = runner.run(detector) }
     assert(success)
   end
 end
