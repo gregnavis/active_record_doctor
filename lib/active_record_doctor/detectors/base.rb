@@ -63,6 +63,10 @@ module ActiveRecordDoctor
         @problems << attrs
       end
 
+      def warning(message)
+        puts(message)
+      end
+
       def connection
         @connection ||= ActiveRecord::Base.connection
       end

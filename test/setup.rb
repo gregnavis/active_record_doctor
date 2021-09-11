@@ -10,8 +10,15 @@ require "active_record"
 require "pg"
 require "mysql2"
 
-adapter = ENV.fetch("ADAPTER")
-ActiveRecord::Base.establish_connection(adapter: adapter, database: "active_record_doctor_test")
+adapter = ENV.fetch("DATABASE_ADAPTER")
+ActiveRecord::Base.establish_connection(
+  adapter: adapter,
+  host: ENV["DATABASE_HOST"],
+  port: ENV["DATABASE_PORT"],
+  username: ENV["DATABASE_USERNAME"],
+  password: ENV["DATABASE_PASSWORD"],
+  database: "active_record_doctor_test"
+)
 
 puts "Using #{adapter}"
 
@@ -98,9 +105,9 @@ class Minitest::Test
     refute(success)
   end
 
-  def refute_problems
+  def refute_problems(expected_output = "")
     success = nil
-    assert_output("") { success = runner.run(detector) }
+    assert_output(expected_output) { success = runner.run(detector) }
     assert(success)
   end
 end

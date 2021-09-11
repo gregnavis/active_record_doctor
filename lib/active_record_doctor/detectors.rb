@@ -3,7 +3,7 @@
 require "active_support"
 require "active_support/core_ext/class/subclasses"
 
-module ActiveRecordDoctor
+module ActiveRecordDoctor # :nodoc:
   def self.detectors
     @detectors ||=
       begin

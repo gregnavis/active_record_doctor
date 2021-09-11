@@ -18,6 +18,15 @@ end
 
 Bundler::GemHelper.install_tasks
 
+begin
+  require "rubocop/rake_task"
+rescue LoadError
+  # We don't mind not having Rubocop in CI when testing against an older version
+  # of Ruby and Rails.
+else
+  RuboCop::RakeTask.new
+end
+
 require "rake/testtask"
 
 namespace :test do
@@ -33,7 +42,7 @@ namespace :test do
       t.warning = false
     end
 
-    task("set_#{adapter}_env") { ENV["ADAPTER"] = adapter }
+    task("set_#{adapter}_env") { ENV["DATABASE_ADAPTER"] = adapter }
   end
 end
 

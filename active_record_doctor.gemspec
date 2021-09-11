@@ -16,22 +16,18 @@ Gem::Specification.new do |s|
   s.files = Dir["lib/**/*", "MIT-LICENSE.txt", "README.md"]
   s.test_files = Dir["test/**/*"]
 
-  stage = ENV["TRAVIS_BUILD_STAGE_NAME"]
-
   s.required_ruby_version = ">= 2.1.0"
 
-  if stage.nil? || stage == "test"
-    s.add_dependency "activerecord", ">= 4.2.0"
+  s.add_dependency "activerecord", ">= 4.2.0"
 
-    s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
-    s.add_development_dependency "mysql2", "~> 0.5.3"
-    s.add_development_dependency "pg", "~> 1.1.4"
-    s.add_development_dependency "rake", "~> 12.3.3"
-  end
+  s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
+  s.add_development_dependency "mysql2", "~> 0.5.3"
+  s.add_development_dependency "pg", "~> 1.1.4"
+  s.add_development_dependency "rake", "~> 12.3.3"
 
-  if stage.nil? || stage == "lint"
-    # We don't install rubocop in CI because we test against older Rubies that
-    # are incompatible with Rubocop.
+  # We don't install rubocop in CI because we test against older Rubies that
+  # are incompatible with Rubocop.
+  if ENV["CI"].nil? || ENV["LINT"]
     s.add_development_dependency "rubocop", "~> 1.14.0"
   end
 end

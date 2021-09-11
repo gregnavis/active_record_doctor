@@ -20,8 +20,7 @@ More features coming soon!
 
 Want to suggest a feature? Just shoot me [an email](mailto:contact@gregnavis.com).
 
-[<img src="https://travis-ci.org/gregnavis/active_record_doctor.svg?branch=master" alt="Build Status" />](https://travis-ci.org/gregnavis/active_record_doctor)
-
+[![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml)
 ## Installation
 
 The preferred installation method is adding `active_record_doctor` to your
