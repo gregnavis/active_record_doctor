@@ -16,9 +16,9 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.create_model do
     end
 
-    assert_problems(<<OUTPUT)
-add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
+    OUTPUT
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
@@ -49,9 +49,9 @@ OUTPUT
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
-    assert_problems(<<OUTPUT)
-add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
+    OUTPUT
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
@@ -81,9 +81,9 @@ OUTPUT
       validates :active, exclusion: { in: [false] }
     end
 
-    assert_problems(<<OUTPUT)
-add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
+    OUTPUT
   end
 
   def test_timestamps_are_not_reported
@@ -98,6 +98,53 @@ OUTPUT
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
+
+    refute_problems
+  end
+
+  def test_config_ignore_models
+    create_table(:users) do |t|
+      t.string :name, null: false
+    end.create_model do
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_models: ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_models
+    create_table(:users) do |t|
+      t.string :name, null: false
+    end.create_model do
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_models, ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_attributes
+    create_table(:users) do |t|
+      t.string :name, null: false
+    end.create_model do
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_attributes: ["ModelFactory::Models::User.name"]
+      end
+    CONFIG
 
     refute_problems
   end

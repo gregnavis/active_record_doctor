@@ -4,18 +4,16 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Detect indexes whose function can be overtaken by other indexes. For example, an index on columns A, B, and C
-    # can also serve as an index on A and A, B.
-    class ExtraneousIndexes < Base
-      @description = "Detect extraneous indexes"
+    class ExtraneousIndexes < Base # :nodoc:
+      @description = "identify indexes that can be dropped without degrading performance"
       @config = {
         ignore_tables: {
-          description: "Tables whose indexes should not be checked",
-          default: ["schema_migrations"]
+          description: "tables whose indexes should never be reported as extraneous",
+          global: true
         },
         ignore_indexes: {
-          description: "Indexes that should not be considered extraneous",
-          default: []
+          description: "indexes that should never be reported as extraneous",
+          global: true
         }
       }
 
@@ -35,13 +33,9 @@ module ActiveRecordDoctor
       end
 
       def subindexes_of_multi_column_indexes
-        tables.each do |table|
-          next if config(:ignore_tables).include?(table)
-
+        tables(except: config(:ignore_tables)).each do |table|
           indexes = indexes(table)
-          maximal_indexes = indexes.select do |index|
-            maximal?(indexes, index)
-          end
+          maximal_indexes = indexes.select { |index| maximal?(indexes, index) }
 
           indexes.each do |index|
             next if maximal_indexes.include?(index)
@@ -52,27 +46,18 @@ module ActiveRecordDoctor
 
             next if config(:ignore_indexes).include?(index.name)
 
-            problem!(
-              extraneous_index: index.name,
-              replacement_indexes: replacement_indexes
-            )
+            problem!(extraneous_index: index.name, replacement_indexes: replacement_indexes)
           end
         end
       end
 
       def indexed_primary_keys
-        tables.each do |table|
-          next if config(:ignore_tables).include?(table)
-
+        tables(except: config(:ignore_tables)).each do |table|
           indexes(table).each do |index|
+            next if config(:ignore_indexes).include?(index.name)
             next if index.columns != ["id"]
 
-            next if config(:ignore_indexes).include?(index.name)
-
-            problem!(
-              extraneous_index: index.name,
-              replacement_indexes: nil
-            )
+            problem!(extraneous_index: index.name, replacement_indexes: nil)
           end
         end
       end

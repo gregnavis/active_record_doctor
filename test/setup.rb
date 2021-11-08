@@ -33,15 +33,22 @@ require "active_record_doctor"
 require "minitest"
 require "minitest/autorun"
 require "minitest/fork_executor"
-
 require_relative "model_factory"
+
+# Filter out Minitest backtrace while allowing backtrace from other libraries
+# to be shown.
+Minitest.backtrace_filter = Minitest::BacktraceFilter.new
+
+# Uncomment in case there's test case interference.
+Minitest.parallel_executor = Minitest::ForkExecutor.new
 
 # Prepare the test class.
 class Minitest::Test
+  include ModelFactory
+
   def setup
-    # Ensure all remnants of previous test runs, most likely in form of tables,
-    # are removed.
-    ModelFactory.cleanup
+    # Delete remnants (models and tables) of previous test case runs.
+    cleanup_models
   end
 
   def teardown
@@ -52,7 +59,9 @@ class Minitest::Test
       @previous_dir = nil
     end
 
-    ModelFactory.cleanup
+    # Ensure all remnants of previous test runs, most likely in form of tables,
+    # are removed.
+    cleanup_models
   end
 
   private
@@ -66,6 +75,8 @@ class Minitest::Test
     @config_path = File.join(directory, ".active_record_doctor")
     File.write(@config_path, content)
     Dir.chdir(directory)
+
+    @config_path
   end
 
   def postgresql?
@@ -76,45 +87,30 @@ class Minitest::Test
     ActiveRecord::Base.connection.adapter_name == "Mysql2"
   end
 
-  def create_table(*args, &block)
-    ModelFactory.create_table(*args, &block)
+  def detector_name
+    self.class.name.sub(/Test$/, "").demodulize.underscore.to_sym
   end
 
-  def create_model(*args, &block)
-    ModelFactory.create_model(*args, &block)
+  def run_detector
+    io = StringIO.new
+    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    success = runner.run_one(detector_name)
+    [success, io.string]
   end
 
-  def detector
-    self.class.name.sub(/Test$/, "").constantize
-  end
-
-  def runner
-    config =
-      if @config_path
-        ActiveRecordDoctor.load_config(@config_path)
-      else
-        ActiveRecordDoctor::Config.new(nil, {})
-      end
-
-    ActiveRecordDoctor::Runner.new(config)
+  def load_config
+    ActiveRecordDoctor.load_config_with_defaults(@config_path)
   end
 
   def assert_problems(expected_output)
-    success = nil
-    assert_output(expected_output) { success = runner.run(detector) }
-    refute(success)
+    success, output = run_detector
+    assert_equal(expected_output, output)
+    refute(success, "Expected the detector to return failure.")
   end
 
   def refute_problems(expected_output = "")
-    success = nil
-    assert_output(expected_output) { success = runner.run(detector) }
-    assert(success)
+    success, output = run_detector
+    assert_equal(expected_output, output)
+    assert(success, "Expected the detector to return success.")
   end
 end
-
-# Filter out Minitest backtrace while allowing backtrace from other libraries
-# to be shown.
-Minitest.backtrace_filter = Minitest::BacktraceFilter.new
-
-# Uncomment in case there's test case interference.
-Minitest.parallel_executor = Minitest::ForkExecutor.new

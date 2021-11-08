@@ -8,9 +8,9 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       validates :name, presence: true
     end
 
-    assert_problems(<<OUTPUT)
-add `NOT NULL` to users.name - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to users.name - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
+    OUTPUT
   end
 
   def test_association_presence_true_and_null_true
@@ -21,9 +21,9 @@ OUTPUT
       belongs_to :company, required: true
     end
 
-    assert_problems(<<OUTPUT)
-add `NOT NULL` to users.company_id - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to users.company_id - ModelFactory::Models::User validates its presence but it's not non-NULL in the database
+    OUTPUT
   end
 
   def test_presence_true_and_null_false
@@ -94,6 +94,56 @@ OUTPUT
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
+
+    refute_problems
+  end
+
+  def test_config_ignore_models
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
+      validates :name, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_non_null_constraint,
+          ignore_models: ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_models
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
+      validates :name, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_models, ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_attributes
+    create_table(:users) do |t|
+      t.string :name, null: true
+    end.create_model do
+      validates :name, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_non_null_constraint,
+          ignore_attributes: ["ModelFactory::Models::User.name"]
+      end
+    CONFIG
 
     refute_problems
   end

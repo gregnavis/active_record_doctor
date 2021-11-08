@@ -4,31 +4,49 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find unindexed deleted_at columns.
-    class UnindexedDeletedAt < Base
-      PATTERN = [
-        "deleted_at",
-        "discarded_at"
-      ].join("|").freeze
-
-      @description = "Detect unindexed deleted_at columns"
+    class UnindexedDeletedAt < Base # :nodoc:
+      @description = "detect indexes that exclude deletion timestamp columns"
+      @config = {
+        ignore_tables: {
+          description: "tables whose indexes should not be checked",
+          global: true
+        },
+        ignore_columns: {
+          description: "specific columns, written as table.column, that should not be reported as unindexed"
+        },
+        ignore_indexes: {
+          description: "specific indexes that should not be reported as excluding a timestamp column"
+        },
+        column_names: {
+          description: "deletion timestamp column names"
+        }
+      }
 
       private
 
-      def message(index:)
+      def message(index:, column_name:)
         # rubocop:disable Layout/LineLength
-        "consider adding `WHERE deleted_at IS NULL` to #{index} - a partial index can speed lookups of soft-deletable models"
+        "consider adding `WHERE #{column_name} IS NULL` to #{index} - a partial index can speed lookups of soft-deletable models"
         # rubocop:enable Layout/LineLength
       end
 
       def detect
-        tables.each do |table|
-          next unless connection.columns(table).any? { |column| column.name =~ /^#{PATTERN}$/ }
+        tables(except: config(:ignore_tables)).each do |table|
+          timestamp_columns = connection.columns(table).reject do |column|
+            config(:ignore_columns).include?("#{table}.#{column.name}")
+          end.select do |column|
+            config(:column_names).include?(column.name)
+          end
 
-          connection.indexes(table).each do |index|
-            next if index.where =~ /\b#{PATTERN}\s+IS\s+NULL\b/i
+          next if timestamp_columns.empty?
 
-            problem!(index: index.name)
+          timestamp_columns.each do |timestamp_column|
+            indexes(table, except: config(:ignore_indexes)).each do |index|
+              # TODO: whole word
+              next if index.where =~ /\b#{timestamp_column.name}\s+IS\s+NULL\b/i
+
+              problem!(index: index.name, column_name: timestamp_column.name)
+            end
           end
         end
       end

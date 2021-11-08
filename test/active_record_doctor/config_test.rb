@@ -1,117 +1,116 @@
 # frozen_string_literal: true
 
 class ActiveRecordDoctor::ConfigTest < Minitest::Test
-  def test_config_absent
-    assert_raises(ActiveRecordDoctor::Error::ConfigurationError) do
-      load_config
-    end
+  def test_merge_globals_empty
+    config1 = ActiveRecordDoctor::Config.new({}, {})
+    config2 = ActiveRecordDoctor::Config.new({}, {})
+
+    config = config1.merge(config2)
+
+    assert_equal({}, config.globals)
   end
 
-  def test_config_not_called
-    config_file("")
+  def test_merge_globals_in_config1
+    config1 = ActiveRecordDoctor::Config.new(
+      { config1_global: "config1:config1_global" },
+      {}
+    )
+    config2 = ActiveRecordDoctor::Config.new({}, {})
 
-    assert_raises(ActiveRecordDoctor::Error::ConfigureNotCalled) do
-      load_config
-    end
-  end
+    config = config1.merge(config2)
 
-  def test_config_raises_exception
-    config_file("1/0")
-
-    assert_raises(ActiveRecordDoctor::Error::ConfigurationError) do
-      load_config
-    end
-  end
-
-  def test_config_called_twice
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure { |config| }
-ActiveRecordDoctor.configure { |config| }
-CONFIG
-
-    assert_raises(ActiveRecordDoctor::Error::ConfigureCalledTwice) do
-      load_config
-    end
-  end
-
-  def test_init_called_twice
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.init do
-  end
-  config.init do
-  end
-end
-CONFIG
-
-    assert_raises(ActiveRecordDoctor::Error::InitConfiguredTwice) do
-      load_config
-    end
-  end
-
-  def test_detector_configured_twice
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :extraneous_indexes, {}
-  config.detector :extraneous_indexes, {}
-end
-CONFIG
-
-    assert_raises(ActiveRecordDoctor::Error::DetectorConfiguredTwice) do
-      load_config
-    end
-  end
-
-  def test_unrecognized_detector_name
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :other_performance_issues, {}
-end
-CONFIG
-
-    assert_raises(ActiveRecordDoctor::Error::UnrecognizedDetectorName) do
-      load_config
-    end
-  end
-
-  def test_unrecognized_detector_setting
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :extraneous_indexes, {
-    delay: 1
-  }
-end
-CONFIG
-
-    assert_raises(ActiveRecordDoctor::Error::UnrecognizedDetectorSettings) do
-      load_config
-    end
-  end
-
-  def test_config_valid
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :extraneous_indexes,
-    ignore_tables: []
-end
-CONFIG
-
-    config = load_config
-
-    assert_nil(config.init)
     assert_equal(
-      config.detectors,
-      {
-        extraneous_indexes: {
-          ignore_tables: []
-        }
-      }
+      { config1_global: "config1:config1_global" },
+      config.globals
     )
   end
 
-  private
+  def test_merge_globals_in_config2
+    config1 = ActiveRecordDoctor::Config.new({}, {})
+    config2 = ActiveRecordDoctor::Config.new(
+      { config2_global: "config2:config2_global" },
+      {}
+    )
 
-  def load_config
-    ActiveRecordDoctor.load_config(@config_path)
+    config = config1.merge(config2)
+
+    assert_equal(
+      { config2_global: "config2:config2_global" },
+      config.globals
+    )
+  end
+
+  def test_merge_globals_in_config1_and_config2
+    config1 = ActiveRecordDoctor::Config.new(
+      {
+        config1_global: "config1:config1_global",
+        shared_global: "config1:shared_global"
+      },
+      {}
+    )
+    config2 = ActiveRecordDoctor::Config.new(
+      {
+        config2_global: "config2:config2_global",
+        shared_global: "config2:shared_global"
+      },
+      {}
+    )
+
+    config = config1.merge(config2)
+
+    assert_equal(
+      {
+        config1_global: "config1:config1_global",
+        shared_global: "config2:shared_global",
+        config2_global: "config2:config2_global"
+      },
+      config.globals
+    )
+  end
+
+  def test_merge_detectors
+    config1 = ActiveRecordDoctor::Config.new(
+      {},
+      {
+        config1_detector: {
+          config1_setting: "config1:config1_detector.config1_setting"
+        },
+        shared_detector: {
+          config1_setting: "config1:shared_detector.config1_setting",
+          shared_setting: "config1:shared_detector.shared_setting"
+        }
+      }
+    )
+    config2 = ActiveRecordDoctor::Config.new(
+      {},
+      {
+        config2_detector: {
+          config2_setting: "config2:config2_detector.config2_setting"
+        },
+        shared_detector: {
+          config2_setting: "config2:shared_detector.config2_setting",
+          shared_setting: "config2:shared_detector.shared_setting"
+        }
+      }
+    )
+
+    config = config1.merge(config2)
+
+    assert_equal(
+      {
+        config1_detector: {
+          config1_setting: "config1:config1_detector.config1_setting"
+        },
+        config2_detector: {
+          config2_setting: "config2:config2_detector.config2_setting"
+        },
+        shared_detector: {
+          config1_setting: "config1:shared_detector.config1_setting",
+          config2_setting: "config2:shared_detector.config2_setting",
+          shared_setting: "config2:shared_detector.shared_setting"
+        }
+      },
+      config.detectors
+    )
   end
 end

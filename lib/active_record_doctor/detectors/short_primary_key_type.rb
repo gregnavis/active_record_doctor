@@ -4,31 +4,36 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find primary keys having short integer types.
-    # Starting from rails 5.1, the default type is :bigint.
-    class ShortPrimaryKeyType < Base
-      VALID_TYPES = ["bigint", "bigserial", "uuid"].freeze
-
-      @description = "Detect primary keys with short integer types"
+    class ShortPrimaryKeyType < Base # :nodoc:
+      @description = "detect primary keys with short integer types"
+      @config = {
+        ignore_tables: {
+          description: "tables whose primary keys should not be checked",
+          global: true
+        }
+      }
 
       private
 
       def message(table:, column:)
-        "change the type of #{table}.#{column} to #{VALID_TYPES.join(' or ')}"
+        "change the type of #{table}.#{column} to bigint"
       end
 
       def detect
-        tables.each do |table|
-          next if table == "schema_migrations"
-          next if valid_type?(primary_key(table))
+        tables(except: config(:ignore_tables)).each do |table|
+          column = primary_key(table)
+          next if column.nil?
+          next if bigint?(column)
 
-          problem!(table: table, column: primary_key(table).name)
+          problem!(table: table, column: column.name)
         end
       end
 
-      def valid_type?(column)
-        VALID_TYPES.any? do |type|
-          column.sql_type == type
+      def bigint?(column)
+        if column.respond_to?(:bigint?)
+          column.bigint?
+        else
+          /\Abigint\b/.match?(column.sql_type)
         end
       end
     end

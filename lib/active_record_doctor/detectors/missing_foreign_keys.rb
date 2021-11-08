@@ -4,21 +4,29 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find foreign-key like columns lacking an actual foreign key constraint.
-    class MissingForeignKeys < Base
-      private
+    class MissingForeignKeys < Base # :nodoc:
+      @description = "detect foreign-key-like columns lacking an actual foreign key constraint"
+      @config = {
+        ignore_tables: {
+          description: "tables whose columns should not be checked",
+          global: true
+        },
+        ignore_columns: {
+          description: "columns, written as table.column, that should not be checked"
+        }
+      }
 
-      @description = "Detect association columns without a foreign key constraint"
+      private
 
       def message(table:, column:)
         "create a foreign key on #{table}.#{column} - looks like an association without a foreign key constraint"
       end
 
       def detect
-        tables.each do |table|
-          next if table == "schema_migrations"
-
+        tables(except: config(:ignore_tables)).each do |table|
           connection.columns(table).each do |column|
+            next if config(:ignore_columns).include?("#{table}.#{column.name}")
+
             # We need to skip polymorphic associations as they can reference
             # multiple tables but a foreign key constraint can reference
             # a single predefined table.

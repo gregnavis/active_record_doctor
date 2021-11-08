@@ -9,9 +9,9 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       validates :email, uniqueness: true
     end
 
-    assert_problems(<<OUTPUT)
-add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add a unique index on ModelFactory::Models::User(email) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
   end
 
   def test_present_unique_index
@@ -35,9 +35,9 @@ OUTPUT
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
 
-    assert_problems(<<OUTPUT)
-add a unique index on users(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      add a unique index on ModelFactory::Models::User(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
   end
 
   def test_present_unique_index_with_scope
@@ -89,6 +89,57 @@ OUTPUT
     end.create_model do
       validates_with DummyValidator
     end
+
+    refute_problems
+  end
+
+  def test_config_ignore_models
+    create_table(:users) do |t|
+      t.string :email
+    end.create_model do
+      validates :email, uniqueness: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_models: ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_models
+    create_table(:users) do |t|
+      t.string :email
+    end.create_model do
+      validates :email, uniqueness: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_models, ["ModelFactory::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_columns
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :role
+    end.create_model do
+      validates :email, :role, uniqueness: { scope: :organization_id }
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_columns: ["ModelFactory::Models::User(organization_id, email, role)"]
+      end
+    CONFIG
 
     refute_problems
   end

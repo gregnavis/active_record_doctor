@@ -7,22 +7,31 @@ module ActiveRecordDoctor
       class << self
         attr_reader :description, :config
 
-        def run(config)
-          new(config).run
+        def run(config, io)
+          new(config, io).run
         end
 
         def underscored_name
           name.demodulize.underscore.to_sym
         end
 
-        def recognized_settings
-          config.keys
+        def locals_and_globals
+          locals = []
+          globals = []
+
+          config.each do |key, metadata|
+            locals << key
+            globals << key if metadata[:global]
+          end
+
+          [locals, globals]
         end
       end
 
-      def initialize(config)
+      def initialize(config, io)
         @problems = []
         @config = config
+        @io = io
       end
 
       def run
@@ -30,7 +39,7 @@ module ActiveRecordDoctor
 
         detect
         @problems.each do |problem|
-          puts(message(**problem))
+          @io.puts(message(**problem))
         end
 
         success = @problems.empty?
@@ -41,14 +50,15 @@ module ActiveRecordDoctor
       private
 
       def config(key)
-        default_value =
-          begin
-            self.class.config.fetch(key).fetch(:default)
-          rescue KeyError
-            raise "#{self.class.name} must provide a default value for #{key}"
-          end
+        local = @config.detectors.fetch(underscored_name).fetch(key)
+        return local if !self.class.config.fetch(key)[:global]
 
-        @config.fetch(key, default_value)
+        global = @config.globals[key]
+        return local if global.nil?
+
+        # Right now, all globals are arrays so we can merge them here. Once
+        # we add non-array globals we'll need to support per-global merging.
+        Array.new(local).concat(global)
       end
 
       def detect
@@ -71,20 +81,45 @@ module ActiveRecordDoctor
         @connection ||= ActiveRecord::Base.connection
       end
 
-      def indexes(table_name)
-        connection.indexes(table_name)
+      def indexes(table_name, except: [])
+        connection.indexes(table_name).reject do |index|
+          except.include?(index.name)
+        end
       end
 
-      def tables
-        connection.tables
+      def tables(except: [])
+        tables =
+          if ActiveRecord::VERSION::STRING >= "5.1"
+            connection.tables
+          else
+            connection.data_sources
+          end
+
+        tables.reject do |table|
+          except.include?(table)
+        end
       end
 
       def table_exists?(table_name)
-        connection.table_exists?(table_name)
+        if ActiveRecord::VERSION::STRING >= "5.1"
+          connection.table_exists?(table_name)
+        else
+          connection.data_source_exists?(table_name)
+        end
+      end
+
+      def tables_and_views
+        if connection.respond_to?(:data_sources)
+          connection.data_sources
+        else
+          connection.tables
+        end
       end
 
       def primary_key(table_name)
         primary_key_name = connection.primary_key(table_name)
+        return nil if primary_key_name.nil?
+
         column(table_name, primary_key_name)
       end
 
@@ -100,14 +135,20 @@ module ActiveRecordDoctor
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
               SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
             SQL
-          else # rubocop:disable Style/EmptyElse
+          else
             # We don't support this Rails/database combination yet.
             nil
           end
       end
 
-      def models
-        ActiveRecord::Base.descendants
+      def models(except: [])
+        ActiveRecord::Base.descendants.reject do |model|
+          except.include?(model.name)
+        end
+      end
+
+      def underscored_name
+        self.class.underscored_name
       end
     end
   end

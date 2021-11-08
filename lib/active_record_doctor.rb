@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "active_record_doctor/railtie" if defined?(Rails) && defined?(Rails::Railtie)
-require "active_record_doctor/config"
 require "active_record_doctor/detectors"
 require "active_record_doctor/detectors/base"
 require "active_record_doctor/detectors/missing_presence_validation"
@@ -17,8 +16,11 @@ require "active_record_doctor/detectors/incorrect_dependent_option"
 require "active_record_doctor/detectors/short_primary_key_type"
 require "active_record_doctor/detectors/mismatched_foreign_key_type"
 require "active_record_doctor/errors"
+require "active_record_doctor/help"
 require "active_record_doctor/runner"
 require "active_record_doctor/version"
+require "active_record_doctor/config"
+require "active_record_doctor/config/loader"
 
 module ActiveRecordDoctor # :nodoc:
 end

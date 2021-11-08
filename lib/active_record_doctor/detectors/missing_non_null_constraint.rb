@@ -4,10 +4,17 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Detect model-level presence validators on columns that lack a non-NULL constraint thus allowing potentially
-    # invalid insertions.
-    class MissingNonNullConstraint < Base
-      @description = "Detect presence validators not backed by a non-NULL constraint"
+    class MissingNonNullConstraint < Base # :nodoc:
+      @description = "detect presence validators not backed by a non-NULL constraint"
+      @config = {
+        ignore_models: {
+          description: "models whose presence validators should not be checked",
+          global: true
+        },
+        ignore_attributes: {
+          description: "attributes, written as Model.attribute, whose presence validators should not be checked"
+        }
+      }
 
       private
 
@@ -16,12 +23,12 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models.each do |model|
+        models(except: config(:ignore_models)).each do |model|
           next if model.table_name.nil?
-          next if model.table_name == "schema_migrations"
           next unless table_exists?(model.table_name)
 
           connection.columns(model.table_name).each do |column|
+            next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
             next unless validator_needed?(model, column)
             next unless has_mandatory_presence_validator?(model, column)
             next unless column.null

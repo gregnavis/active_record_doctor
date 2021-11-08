@@ -52,70 +52,71 @@ jobs:
           - 3306:3306
     strategy:
       matrix:
-        ruby-version:
-          # We can't test against previous versions of Ruby without extra
-          # effort to make mysql2 work. See the link above for more information
-          # about the issue we run into:
-          #
-          #   https://github.com/ruby/setup-ruby/issues/150
-          - 2.4.10
-          - 2.5.9
-          - 2.6.8
-          - 2.7.4
-          - 3.0.2
-        gemfile:
-          - gemfiles/Gemfile.rails-4.2.x
-          - gemfiles/Gemfile.rails-5.0.x
-          - gemfiles/Gemfile.rails-5.1.x
-          - gemfiles/Gemfile.rails-5.2.x
-          - gemfiles/Gemfile.rails-6.0.x
-          - gemfiles/Gemfile.rails-6.1.x
-        bundler:
-          - 1.17.3
-          # Newer Rubies can't use Bundler v1 so we rely on the default v2
-          # version instead.
-          - null
-        exclude:
-          # We skip 2.7+ since Rails 4.2 explicitly depends on Bundler 1 which
-          # conflicts with the version shipped with those Rubies.
-          - gemfile: gemfiles/Gemfile.rails-4.2.x
-            ruby-version: 2.7.4
-          - gemfile: gemfiles/Gemfile.rails-4.2.x
-            ruby-version: 3.0.2
-
-          - gemfile: gemfiles/Gemfile.rails-5.0.x
-            ruby-version: 3.0.2
-          - gemfile: gemfiles/Gemfile.rails-5.1.x
-            ruby-version: 3.0.2
-          - gemfile: gemfiles/Gemfile.rails-5.2.x
-            ruby-version: 3.0.2
-
-          - gemfile: gemfiles/Gemfile.rails-6.0.x
-            ruby-version: 2.4.10
-          - gemfile: gemfiles/Gemfile.rails-6.1.x
-            ruby-version: 2.4.10
-
-          # Exclude conflicting Ruby-Bundler version pairs.
+        # We can't test against previous versions of Ruby without extra
+        # effort to make mysql2 work. See the link above for more information
+        # about the issue we run into:
+        #
+        #   https://github.com/ruby/setup-ruby/issues/150
+        include:
           - ruby-version: 2.4.10
-            bundler: null
+            gemfile: gemfiles/Gemfile.rails-4.2.x
+            bundler: 1.17.3
           - ruby-version: 2.5.9
-            bundler: null
+            gemfile: gemfiles/Gemfile.rails-4.2.x
+            bundler: 1.17.3
           - ruby-version: 2.6.8
-            bundler: null
+            gemfile: gemfiles/Gemfile.rails-4.2.x
+            bundler: 1.17.3
+
+          - ruby-version: 2.4.10
+            gemfile: gemfiles/Gemfile.rails-5.0.x
+          - ruby-version: 2.5.9
+            gemfile: gemfiles/Gemfile.rails-5.0.x
+          - ruby-version: 2.6.8
+            gemfile: gemfiles/Gemfile.rails-5.0.x
           - ruby-version: 2.7.4
-            bundler: 1.17.3
+            gemfile: gemfiles/Gemfile.rails-5.0.x
+
+          - ruby-version: 2.4.10
+            gemfile: gemfiles/Gemfile.rails-5.1.x
+          - ruby-version: 2.5.9
+            gemfile: gemfiles/Gemfile.rails-5.1.x
+          - ruby-version: 2.6.8
+            gemfile: gemfiles/Gemfile.rails-5.1.x
+          - ruby-version: 2.7.4
+            gemfile: gemfiles/Gemfile.rails-5.1.x
+
+          - ruby-version: 2.4.10
+            gemfile: gemfiles/Gemfile.rails-5.2.x
+          - ruby-version: 2.5.9
+            gemfile: gemfiles/Gemfile.rails-5.2.x
+          - ruby-version: 2.6.8
+            gemfile: gemfiles/Gemfile.rails-5.2.x
+          - ruby-version: 2.7.4
+            gemfile: gemfiles/Gemfile.rails-5.2.x
+
+          - ruby-version: 2.5.9
+            gemfile: gemfiles/Gemfile.rails-6.0.x
+          - ruby-version: 2.6.8
+            gemfile: gemfiles/Gemfile.rails-6.0.x
+          - ruby-version: 2.7.4
+            gemfile: gemfiles/Gemfile.rails-6.0.x
           - ruby-version: 3.0.2
-            bundler: 1.17.3
+            gemfile: gemfiles/Gemfile.rails-6.0.x
 
-    env:
-      BUNDLE_GEMFILE: ${{ matrix.gemfile }}
-
+          - ruby-version: 2.5.9
+            gemfile: gemfiles/Gemfile.rails-6.1.x
+          - ruby-version: 2.6.8
+            gemfile: gemfiles/Gemfile.rails-6.1.x
+          - ruby-version: 2.7.4
+            gemfile: gemfiles/Gemfile.rails-6.1.x
+          - ruby-version: 3.0.2
+            gemfile: gemfiles/Gemfile.rails-6.1.x
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          bundler: ${{ matrix.bundler }}
           bundler-cache: true
       - name: Run the test suite against PostgreSQL
         run: bundle exec rake test:postgresql

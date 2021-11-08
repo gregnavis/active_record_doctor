@@ -74,17 +74,57 @@ OUTPUT
       t.index :email, name: "index2_on_users_email"
     end
 
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :extraneous_indexes,
-    ignore_tables: ["users"]
-end
-CONFIG
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :extraneous_indexes,
+          ignore_tables: ["users"]
+      end
+    CONFIG
 
     refute_problems
   end
 
-  def test_config_ignore_indexes
+  def test_config_global_ignore_tables
+    create_table(:users) do |t|
+      t.index :id
+      t.string :email
+
+      t.index :email, name: "index1_on_users_email"
+      t.index :email, name: "index2_on_users_email"
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_tables, ["users"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_global_ignore_indexes
+    create_table(:users) do |t|
+      t.index :id
+      t.string :email
+
+      t.index :email, name: "index1_on_users_email"
+      t.index :email, name: "index2_on_users_email"
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_indexes, [
+          "index1_on_users_email",
+          "index2_on_users_email",
+          "index_users_on_id",
+        ]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_detector_ignore_indexes
     create_table(:users) do |t|
       t.index :id
       t.string :email
@@ -94,12 +134,12 @@ CONFIG
       t.index [:email, :api_key], name: "index_on_users_email_and_api_key"
     end
 
-    config_file(<<CONFIG)
-ActiveRecordDoctor.configure do |config|
-  config.detector :extraneous_indexes,
-    ignore_indexes: ["index_users_on_id", "index_on_users_email"]
-end
-CONFIG
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :extraneous_indexes,
+          ignore_indexes: ["index_users_on_id", "index_on_users_email"]
+      end
+    CONFIG
 
     refute_problems
   end

@@ -4,9 +4,17 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Check whether primary keys and foreign keys use the same type.
-    class MismatchedForeignKeyType < Base
-      @description = "Check whether primary keys and foreign keys use the same type"
+    class MismatchedForeignKeyType < Base # :nodoc:
+      @description = "detect foreign key type mismatches"
+      @config = {
+        ignore_tables: {
+          description: "tables whose foreign keys should not be checked",
+          global: true
+        },
+        ignore_columns: {
+          description: "foreign keys, written as table.column, that should not be checked"
+        }
+      }
 
       private
 
@@ -17,11 +25,12 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables.each do |table|
-          next if table == "schema_migrations"
-
+        tables(except: config(:ignore_tables)).each do |table|
           connection.foreign_keys(table).each do |foreign_key|
             from_column = column(table, foreign_key.column)
+
+            next if config(:ignore_columns).include?("#{table}.#{from_column.name}")
+
             to_table = foreign_key.to_table
             primary_key = primary_key(to_table)
 

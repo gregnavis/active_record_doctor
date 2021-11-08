@@ -4,12 +4,17 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find has_many/has_one/belongs_to associations with dependent options not taking the
-    # related model's callbacks into account.
-    class IncorrectDependentOption < Base
-      # rubocop:disable Layout/LineLength
-      @description = "Detect associations that should use a different dependent option based on callbacks on the related model"
-      # rubocop:enable Layout/LineLength
+    class IncorrectDependentOption < Base # :nodoc:
+      @description = "detect associations with incorrect dependent options"
+      @config = {
+        ignore_models: {
+          description: "models whose associations should not be checked",
+          global: true
+        },
+        ignore_associations: {
+          description: "associations, written as Model.association, that should not be checked"
+        }
+      }
 
       private
 
@@ -27,7 +32,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models.each do |model|
+        models(except: config(:ignore_models)).each do |model|
           next if model.table_name.nil?
 
           associations = model.reflect_on_all_associations(:has_many) +
@@ -35,6 +40,8 @@ module ActiveRecordDoctor
                          model.reflect_on_all_associations(:belongs_to)
 
           associations.each do |association|
+            next if config(:ignore_associations).include?("#{model.name}.#{association.name}")
+
             if callback_action(association) == :invoke && deletable?(association.klass)
               suggestion =
                 case association.macro

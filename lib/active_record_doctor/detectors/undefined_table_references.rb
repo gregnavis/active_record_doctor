@@ -4,9 +4,14 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find models referencing non-existent database tables or views.
-    class UndefinedTableReferences < Base
-      @description = "Detect models referencing undefined tables or views"
+    class UndefinedTableReferences < Base # :nodoc:
+      @description = "detect models referencing undefined tables or views"
+      @config = {
+        ignore_models: {
+          description: "models whose underlying tables should not be checked for existence",
+          global: true
+        }
+      }
 
       private
 
@@ -15,23 +20,10 @@ module ActiveRecordDoctor
       end
 
       def detect
-        # If we can't list views due to old Rails version or unsupported
-        # database then existing_views is nil. We inform the caller we haven't
-        # consulted views so that it can display an appropriate warning.
-        existing_views = views
-        if existing_views.nil?
-          warning(<<WARNING)
-WARNING: Models backed by database views are supported only in Rails 5+ OR
-Rails 4.2 + PostgreSQL. It seems this is NOT your setup. Therefore, such models
-will be erroneously reported below as not having their underlying tables/views.
-Consider upgrading Rails or skipping invalid warnings reported below.
-WARNING
-        end
-
-        models.each do |model|
+        models(except: config(:ignore_models)).each do |model|
           next if model.table_name.nil?
           next if tables.include?(model.table_name)
-          next if !existing_views.nil? && existing_views.include?(model.table_name)
+          next if tables_and_views.include?(model.table_name)
 
           problem!(model: model.name, table: model.table_name)
         end

@@ -4,9 +4,17 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Detect models with non-NULL columns that lack the corresponding model-level validator.
-    class MissingPresenceValidation < Base
-      @description = "Detect non-NULL columns without a presence validator"
+    class MissingPresenceValidation < Base # :nodoc:
+      @description = "detect non-NULL columns without a corresponding presence validator"
+      @config = {
+        ignore_models: {
+          description: "models whose underlying tables' columns should not be checked",
+          global: true
+        },
+        ignore_attributes: {
+          description: "specific attributes, written as Model.attribute, that should not be checked"
+        }
+      }
 
       private
 
@@ -15,14 +23,14 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models.each do |model|
+        models(except: config(:ignore_models)).each do |model|
           next if model.table_name.nil?
-          next if model.table_name == "schema_migrations"
           next unless table_exists?(model.table_name)
 
           connection.columns(model.table_name).each do |column|
             next unless validator_needed?(model, column)
             next if validator_present?(model, column)
+            next if config(:ignore_attributes).include?("#{model}.#{column.name}")
 
             problem!(column: column.name, model: model.name)
           end

@@ -12,9 +12,9 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       validates :email, :active, presence: true
     end
 
-    assert_problems(<<OUTPUT)
-replace the `presence` validator on ModelFactory::Models::User.active with `inclusion` - `presence` can't be used on booleans
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      replace the `presence` validator on ModelFactory::Models::User.active with `inclusion` - `presence` can't be used on booleans
+    OUTPUT
   end
 
   def test_inclusion_is_not_reported
@@ -29,6 +29,50 @@ OUTPUT
 
   def test_models_with_non_existent_tables_are_skipped
     create_model(:users)
+
+    refute_problems
+  end
+
+  def test_config_ignore_models
+    create_table(:users) do |t|
+      t.string :email, null: false
+    end.create_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_models: ["ModelFactory.User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_models
+    create_table(:users) do |t|
+      t.string :email, null: false
+    end.create_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_models, ["ModelFactory.User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_attributes
+    create_table(:users) do |t|
+      t.string :email, null: false
+    end.create_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_attributes: ["ModelFactory.User.email"]
+      end
+    CONFIG
 
     refute_problems
   end

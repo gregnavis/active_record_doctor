@@ -1,7 +1,19 @@
 # frozen_string_literal: true
 
 module ModelFactory
-  def self.cleanup
+  def create_table(*args, &block)
+    ModelFactory.create_table(*args, &block)
+  end
+
+  def create_model(*args, &block)
+    ModelFactory.create_model(*args, &block)
+  end
+
+  def cleanup_models
+    ModelFactory.cleanup_models
+  end
+
+  def self.cleanup_models
     delete_models
     drop_all_tables
     GC.start
@@ -10,27 +22,53 @@ module ModelFactory
   def self.drop_all_tables
     connection = ActiveRecord::Base.connection
     loop do
-      before = connection.tables.size
+      before = connection.data_sources.size
       break if before.zero?
 
-      attempt_drop_all_tables(connection)
-      after = connection.tables.size
+      try_drop_all_tables_and_views(connection)
+      remaining_data_sources = connection.data_sources
+      after = remaining_data_sources.size
 
+      # rubocop:disable Style/Next
       if before == after
-        raise("cannot delete temporary tables - most likely due to failing constraints")
+        raise(<<~ERROR)
+          Cannot delete temporary tables - most likely due to failing constraints. Remaining tables and views:
+
+          #{remaining_data_sources.join("\n")}
+        ERROR
+      end
+      # rubocop:enable Style/Next
+    end
+  end
+
+  def self.try_drop_all_tables_and_views(connection)
+    connection.data_sources.each do |table_name|
+      try_drop_table(connection, table_name) || try_drop_view(connection, table_name)
+    end
+  end
+
+  def self.try_drop_table(connection, table_name)
+    ActiveRecord::Migration.suppress_messages do
+      begin
+        connection.drop_table(table_name, force: :cascade)
+        true
+      rescue ActiveRecord::InvalidForeignKey, ActiveRecord::StatementInvalid
+        # The table cannot be dropped due to foreign key constraints so
+        # we'll try to drop it on another attempt.
+        false
       end
     end
   end
 
-  def self.attempt_drop_all_tables(connection)
-    connection.tables.each do |table_name|
-      ActiveRecord::Migration.suppress_messages do
-        begin
-          connection.drop_table(table_name, force: :cascade)
-        rescue ActiveRecord::InvalidForeignKey, ActiveRecord::StatementInvalid
-          # The table cannot be dropped due to foreign key constraints so
-          # we'll try to drop it on another attempt.
-        end
+  def self.try_drop_view(connection, view_name)
+    ActiveRecord::Migration.suppress_messages do
+      begin
+        connection.execute("DROP VIEW #{view_name}")
+        true
+      rescue ActiveRecord::InvalidForeignKey, ActiveRecord::StatementInvalid
+        # The table cannot be dropped due to foreign key constraints so
+        # we'll try to drop it on another attempt.
+        false
       end
     end
   end

@@ -4,9 +4,17 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find foreign keys that lack indexes (usually recommended for performance reasons).
-    class UnindexedForeignKeys < Base
-      @description = "Detect foreign keys without an index on them"
+    class UnindexedForeignKeys < Base # :nodoc:
+      @description = "detect unindexed foreign keys"
+      @config = {
+        ignore_tables: {
+          description: "tables whose foreign keys should not be checked",
+          global: true
+        },
+        ignore_columns: {
+          description: "columns, written as table.column, that should not be checked"
+        }
+      }
 
       private
 
@@ -17,10 +25,10 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables.each do |table|
-          next if table == "schema_migrations"
-
+        tables(except: config(:ignore_tables)).each do |table|
           connection.columns(table).each do |column|
+            next if config(:ignore_columns).include?("#{table}.#{column.name}")
+
             next unless foreign_key?(column)
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)

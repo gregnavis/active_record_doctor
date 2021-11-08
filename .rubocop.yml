@@ -31,10 +31,22 @@ Style/IfUnlessModifier:
 Style/SymbolProc:
   Enabled: false
 
+# Allow explicit nil else clauses.
+Style/EmptyCaseCondition:
+  Enabled: false
+
+Style/EmptyElse:
+  Enabled: false
+
+# if !predicate is often more readable than unless predicate.
+Style/NegatedIf:
+  Enabled: false
+
 # We allow the old key-value syntax (key => value) in Rakefiles as that's how
 # we define task dependencies.
 Style/HashSyntax:
   Exclude:
+    - lib/active_record_doctor/rake/task.rb
     - '**/*.rake'
 
 # We support older Rubies where those begins are required.
@@ -93,6 +105,10 @@ Metrics/PerceivedComplexity:
   Enabled: false
 
 Metrics/ClassLength:
+  Enabled: false
+
+# We know how to decide whether a block is too long or not.
+Metrics/BlockLength:
   Enabled: false
 
 # In general, it's a good recommendation but there are two exceptions in

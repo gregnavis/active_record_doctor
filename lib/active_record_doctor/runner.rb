@@ -1,29 +1,41 @@
 # frozen_string_literal: true
 
 module ActiveRecordDoctor # :nodoc:
-  # A class for loading configuration and running detectors.
+  # An excecution environment for active_record_doctor that provides a config
+  # and an output device for use by detectors.
   class Runner
-    def initialize(config)
+    # io is injected via constructor parameters to facilitate testing.
+    def initialize(config, io = $stdout)
       @config = config
-      @init_called = false
+      @io = io
     end
 
-    def run(detector)
+    def run_one(name)
       ActiveRecordDoctor.handle_exception do
-        call_init
-        config = @config.detectors.fetch(detector.underscored_name, {})
-        detector.run(config)
+        ActiveRecordDoctor.detectors.fetch(name).run(config, io)
       end
+    end
+
+    def run_all
+      success = true
+
+      # We can't use #all? because of its short-circuit behavior - it stops
+      # iteration and returns false upon the first falsey value. This
+      # prevents other detectors from running if there's a failure.
+      ActiveRecordDoctor.detectors.each do |name, _|
+        success = false if !run_one(name)
+      end
+
+      success
+    end
+
+    def help(name)
+      detector = ActiveRecordDoctor.detectors.fetch(name)
+      io.puts(ActiveRecordDoctor::Help.new(detector))
     end
 
     private
 
-    def call_init
-      return if @init_called
-
-      @config.init&.call
-
-      @init_called = true
-    end
+    attr_reader :config, :io
   end
 end

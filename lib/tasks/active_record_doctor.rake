@@ -20,5 +20,5 @@ ActiveRecordDoctor::Rake::Task.new do |task|
   # Rails app so it's the right place for all Rails-specific settings.
   task.deps = [:environment]
   task.config_path = ::Rails.root.join(".active_record_doctor")
-  task.default_init = -> { ::Rails.application.eager_load! }
+  task.setup = -> { ::Rails.application.eager_load! }
 end

@@ -13,9 +13,9 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
       belongs_to :company
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :delete_all` or similar on ModelFactory::Models::Company.users - associated models have no validations and can be deleted in bulk
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete_all` or similar on ModelFactory::Models::Company.users - associated models have no validations and can be deleted in bulk
+    OUTPUT
   end
 
   def test_invoking_callbacks_does_not_suggest_delete_all
@@ -55,9 +55,9 @@ OUTPUT
       end
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :destroy` or similar on ModelFactory::Models::Company.users - the associated model has callbacks that are currently skipped
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :destroy` or similar on ModelFactory::Models::Company.users - the associated model has callbacks that are currently skipped
+    OUTPUT
   end
 
   def test_invoking_callbacks_does_not_suggest_destroy
@@ -92,9 +92,9 @@ OUTPUT
       belongs_to :company
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :delete` or similar on ModelFactory::Models::Company.owner - the associated model has no callbacks and can be deleted without loading
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete` or similar on ModelFactory::Models::Company.owner - the associated model has no callbacks and can be deleted without loading
+    OUTPUT
   end
 
   def test_works_on_belongs_to
@@ -109,9 +109,9 @@ OUTPUT
       belongs_to :company, dependent: :destroy
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+    OUTPUT
   end
 
   def test_no_foreign_key_on_second_level_association
@@ -133,9 +133,9 @@ OUTPUT
       belongs_to :company
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+    OUTPUT
   end
 
   def test_nullify_foreign_key_on_second_level_association
@@ -157,9 +157,9 @@ OUTPUT
       belongs_to :company
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+    OUTPUT
   end
 
   def test_cascade_foreign_key_and_callbacks_on_second_level_association
@@ -186,9 +186,9 @@ OUTPUT
       end
     end
 
-    assert_problems(<<OUTPUT)
-use `dependent: :destroy` or similar on ModelFactory::Models::User.company - the associated model has callbacks that are currently skipped
-OUTPUT
+    assert_problems(<<~OUTPUT)
+      use `dependent: :destroy` or similar on ModelFactory::Models::User.company - the associated model has callbacks that are currently skipped
+    OUTPUT
   end
 
   def test_cascade_foreign_key_and_no_callbacks_on_second_level_association
@@ -224,6 +224,71 @@ OUTPUT
     end.create_model do
       belongs_to :company
     end
+
+    refute_problems
+  end
+
+  def test_config_ignore_models
+    create_table(:companies) do
+    end.create_model do
+      has_many :users, dependent: :destroy
+    end
+
+    create_table(:users) do |t|
+      t.references :companies
+    end.create_model do
+      belongs_to :company
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_dependent_option,
+          ignore_models: ["ModelFactory::Models::Company"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_models
+    create_table(:companies) do
+    end.create_model do
+      has_many :users, dependent: :destroy
+    end
+
+    create_table(:users) do |t|
+      t.references :companies
+    end.create_model do
+      belongs_to :company
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_models, ["ModelFactory::Models::Company"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_associations
+    create_table(:companies) do
+    end.create_model do
+      has_many :users, dependent: :destroy
+    end
+
+    create_table(:users) do |t|
+      t.references :companies
+    end.create_model do
+      belongs_to :company
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_dependent_option,
+          ignore_associations: ["ModelFactory::Models::Company.users"]
+      end
+    CONFIG
 
     refute_problems
   end

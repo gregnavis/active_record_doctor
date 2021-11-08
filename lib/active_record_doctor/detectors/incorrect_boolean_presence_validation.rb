@@ -4,30 +4,37 @@ require "active_record_doctor/detectors/base"
 
 module ActiveRecordDoctor
   module Detectors
-    # Find instances of boolean column presence validations that use presence/absence instead of includes/excludes.
-    class IncorrectBooleanPresenceValidation < Base
-      @description = "Detect boolean columns with presence instead of includes validators"
+    class IncorrectBooleanPresenceValidation < Base # :nodoc:
+      @description = "detect persence (instead of inclusion) validators on boolean columns"
+      @config = {
+        ignore_models: {
+          description: "models whose validators should not be checked",
+          global: true
+        },
+        ignore_attributes: {
+          description: "attributes, written as Model.attribute, whose validators should not be checked"
+        }
+      }
 
       private
 
-      def message(model:, column:)
-        "replace the `presence` validator on #{model}.#{column} with `inclusion` - `presence` can't be used on booleans"
+      def message(model:, attribute:)
+        # rubocop:disable Layout/LineLength
+        "replace the `presence` validator on #{model}.#{attribute} with `inclusion` - `presence` can't be used on booleans"
+        # rubocop:enable Layout/LineLength
       end
 
       def detect
-        models.each do |model|
+        models(except: config(:ignore_models)).each do |model|
           next if model.table_name.nil?
-          next if model.table_name == "schema_migrations"
           next unless table_exists?(model.table_name)
 
           connection.columns(model.table_name).each do |column|
+            next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
             next unless column.type == :boolean
             next unless has_presence_validator?(model, column)
 
-            problem!(
-              model: model.name,
-              column: column.name
-            )
+            problem!(model: model.name, attribute: column.name)
           end
         end
       end
