@@ -61,6 +61,50 @@ remove index_users_on_last_name_and_first_name - can be replaced by index_users_
 OUTPUT
   end
 
+  def test_not_covered_by_different_index_type
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.index [:last_name, :first_name], using: :btree
+
+      if mysql?
+        t.index :last_name, type: :fulltext
+      else
+        t.index :last_name, using: :hash
+      end
+    end
+
+    refute_problems
+  end
+
+  def test_not_covered_by_partial_index
+    skip("MySQL doesn't support partial indexes") if mysql?
+
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.boolean :active
+      t.index [:last_name, :first_name], where: "active"
+      t.index :last_name
+    end
+
+    refute_problems
+  end
+
+  def test_not_covered_with_different_opclasses
+    skip("ActiveRecord < 5.2 doesn't support operator classes") if ActiveRecord::VERSION::STRING < "5.2"
+    skip("MySQL doesn't support operator classes") if mysql?
+
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.index [:last_name, :first_name], opclass: :varchar_pattern_ops
+      t.index :last_name
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     # The detector recognizes two kinds of errors and both must take
     # ignore_tables into account. We trigger those errors by indexing the
