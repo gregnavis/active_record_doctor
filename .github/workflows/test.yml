@@ -1,5 +1,5 @@
 name: Test
-on: push
+on: [push, pull_request]
 
 jobs:
   # Run the linter first for rapid feedback if some trivial stylistic issues
