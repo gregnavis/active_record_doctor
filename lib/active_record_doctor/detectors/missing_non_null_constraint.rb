@@ -5,48 +5,50 @@ require "active_record_doctor/detectors/base"
 module ActiveRecordDoctor
   module Detectors
     class MissingNonNullConstraint < Base # :nodoc:
-      @description = "detect presence validators not backed by a non-NULL constraint"
+      @description = "detect columns whose presence is always validated but isn't enforced via a non-NULL constraint"
       @config = {
-        ignore_models: {
-          description: "models whose presence validators should not be checked",
+        ignore_tables: {
+          description: "tables whose columns should not be checked",
           global: true
         },
-        ignore_attributes: {
-          description: "attributes, written as Model.attribute, whose presence validators should not be checked"
+        ignore_columns: {
+          description: "columns, written as table.column, that should not be checked"
         }
       }
 
       private
 
-      def message(column:, model:, table:)
-        "add `NOT NULL` to #{table}.#{column} - #{model} validates its presence but it's not non-NULL in the database"
+      def message(column:, table:)
+        "add `NOT NULL` to #{table}.#{column} - models validates its presence but it's not non-NULL in the database"
       end
 
       def detect
-        models(except: config(:ignore_models)).each do |model|
-          next if model.table_name.nil?
-          next unless table_exists?(model.table_name)
+        table_models = models.group_by(&:table_name)
+        table_models.delete_if { |table| table.nil? || !table_exists?(table) }
 
-          connection.columns(model.table_name).each do |column|
-            next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
-            next unless validator_needed?(model, column)
-            next unless has_mandatory_presence_validator?(model, column)
-            next unless column.null
+        table_models.each do |table, models|
+          next if config(:ignore_tables).include?(table)
 
-            problem!(
-              column: column.name,
-              model: model.name,
-              table: model.table_name
-            )
+          concrete_models = models.reject do |model|
+            model.abstract_class? || sti_base_model?(model)
+          end
+
+          connection.columns(table).each do |column|
+            next if config(:ignore_columns).include?("#{table}.#{column.name}")
+            next if !column.null
+            next if !concrete_models.all? { |model| non_null_needed?(model, column) }
+
+            problem!(column: column.name, table: table)
           end
         end
       end
 
-      def validator_needed?(model, column)
-        ![model.primary_key, "created_at", "updated_at"].include?(column.name)
+      def sti_base_model?(model)
+        model.base_class == model &&
+          model.columns_hash.include?(model.inheritance_column.to_s)
       end
 
-      def has_mandatory_presence_validator?(model, column)
+      def non_null_needed?(model, column)
         # A foreign key can be validates via the column name (e.g. company_id)
         # or the association name (e.g. company). We collect the allowed names
         # in an array to check for their presence in the validator definition
