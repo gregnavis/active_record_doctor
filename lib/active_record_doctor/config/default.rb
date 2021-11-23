@@ -3,7 +3,10 @@
 ActiveRecordDoctor.configure do
   global :ignore_tables, [
     "ar_internal_metadata",
-    "schema_migrations"
+    "schema_migrations",
+    "active_storage_blobs",
+    "active_storage_attachments",
+    "action_text_rich_texts"
   ]
 
   detector :extraneous_indexes,
