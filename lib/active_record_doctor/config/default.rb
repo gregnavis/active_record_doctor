@@ -30,8 +30,8 @@ ActiveRecordDoctor.configure do
     ignore_columns: []
 
   detector :missing_non_null_constraint,
-    ignore_models: [],
-    ignore_attributes: []
+    ignore_tables: [],
+    ignore_columns: []
 
   detector :missing_presence_validation,
     ignore_models: [],
