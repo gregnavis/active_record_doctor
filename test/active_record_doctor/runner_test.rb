@@ -20,7 +20,7 @@ class ActiveRecordDoctor::RunnerTest < Minitest::Test
 
   def test_run_all_returns_false_when_errors
     # Create a model without its underlying table to trigger an error.
-    create_model(:users)
+    create_model(:User)
 
     io = StringIO.new
     runner = ActiveRecordDoctor::Runner.new(load_config, io)

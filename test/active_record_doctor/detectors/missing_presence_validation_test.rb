@@ -114,7 +114,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    create_model(:users)
+    create_model(:User)
 
     refute_problems
   end

@@ -88,8 +88,8 @@ module ModelFactory
     ModelDefinitionProxy.new(table_name)
   end
 
-  def self.create_model(table_name, &block)
-    table_name = table_name.to_sym
+  def self.create_model(model_name, base_class = ActiveRecord::Base, &block)
+    model_name = model_name.to_sym
 
     # Normally, when a class is defined via `class MyClass < MySuperclass` the
     # .name class method returns the name of the class when called from within
@@ -102,9 +102,8 @@ module ModelFactory
     # We solve the problem by defining an empty model class first, assigning to
     # a constant to ensure a name is assigned, and then reopening the class to
     # give it a non-trivial body.
-    klass = Class.new(ActiveRecord::Base)
-    klass_name = table_name.to_s.classify
-    Models.const_set(klass_name, klass)
+    klass = Class.new(base_class)
+    Models.const_set(model_name, klass)
 
     klass.class_eval(&block) if block_given?
   end
@@ -115,7 +114,7 @@ module ModelFactory
     end
 
     def create_model(&block)
-      ModelFactory.create_model(@table_name, &block)
+      ModelFactory.create_model(@table_name.to_s.classify, &block)
     end
   end
 
