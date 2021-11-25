@@ -70,6 +70,8 @@ module ActiveRecordDoctor
 
       # Does lhs cover rhs?
       def cover?(lhs, rhs)
+        return false unless compatible_options?(lhs, rhs)
+
         case [lhs.unique, rhs.unique]
         when [true, true]
           lhs.columns == rhs.columns
@@ -87,6 +89,25 @@ module ActiveRecordDoctor
 
       def indexes(table_name)
         super.select { |index| index.columns.is_a?(Array) }
+      end
+
+      def compatible_options?(lhs, rhs)
+        lhs.type == rhs.type &&
+          lhs.using == rhs.using &&
+          lhs.where == rhs.where &&
+          same_opclasses?(lhs, rhs)
+      end
+
+      def same_opclasses?(lhs, rhs)
+        if ActiveRecord::VERSION::STRING >= "5.2"
+          rhs.columns.all? do |column|
+            lhs_opclass = lhs.opclasses.is_a?(Hash) ? lhs.opclasses[column] : lhs.opclasses
+            rhs_opclass = rhs.opclasses.is_a?(Hash) ? rhs.opclasses[column] : rhs.opclasses
+            lhs_opclass == rhs_opclass
+          end
+        else
+          true
+        end
       end
     end
   end
