@@ -10,7 +10,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on ModelFactory::Models::User(email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
     OUTPUT
   end
 
@@ -36,7 +36,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on ModelFactory::Models::User(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
     OUTPUT
   end
 

@@ -18,9 +18,9 @@ module ActiveRecordDoctor
 
       private
 
-      def message(model:, columns:)
+      def message(table:, columns:)
         # rubocop:disable Layout/LineLength
-        "add a unique index on #{model}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
+        "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
         # rubocop:enable Layout/LineLength
       end
 
@@ -42,7 +42,7 @@ module ActiveRecordDoctor
             columns = (scope + validator.attributes).map(&:to_s)
             next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-            problem!(model: model.name, columns: columns)
+            problem!(table: model.table_name, columns: columns)
           end
         end
       end
