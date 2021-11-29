@@ -1,42 +1,146 @@
 # Active Record Doctor
 
 Active Record Doctor helps to keep the database in a good shape. Currently, it
-can:
+can detect:
+
+* extraneous indexes - [`active_record_doctor:extraneous_indexes`](#removing-extraneous-indexes)
+* unindexed `deleted_at` columns - [`active_record_doctor:unindexed_deleted_at`](#detecting-unindexed-deleted_at-columns)
+* missing foreign key constraints - [`active_record_doctor:missing_foreign_keys`](#detecting-missing-foreign-key-constraints)
+* models referencing undefined tables - [`active_record_doctor:undefined_table_references`](#detecting-models-referencing-undefined-tables)
+* uniqueness validations not backed by an unique index - [`active_record_doctor:missing_unique_indexes`](#detecting-uniqueness-validations-not-backed-by-an-index)
+* missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
+* missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
+* incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
+* incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
+* primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
+* mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
+
+It can also:
 
 * index unindexed foreign keys - [`active_record_doctor:unindexed_foreign_keys`](#indexing-unindexed-foreign-keys)
-* detect extraneous indexes - [`active_record_doctor:extraneous_indexes`](#removing-extraneous-indexes)
-* detect unindexed `deleted_at` columns - [`active_record_doctor:unindexed_deleted_at`](#detecting-unindexed-deleted_at-columns)
-* detect missing foreign key constraints - [`active_record_doctor:missing_foreign_keys`](#detecting-missing-foreign-key-constraints)
-* detect models referencing undefined tables - [`active_record_doctor:undefined_table_references`](#detecting-models-referencing-undefined-tables)
-* detect uniqueness validations not backed by an unique index - [`active_record_doctor:missing_unique_indexes`](#detecting-uniqueness-validations-not-backed-by-an-index)
-* detect missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
-* detect missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
-* detect incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
-* detect incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
-* detect primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
-* detect mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
-
-More features coming soon!
-
-Want to suggest a feature? Just shoot me [an email](mailto:contact@gregnavis.com).
 
 [![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml)
+
 ## Installation
 
-The preferred installation method is adding `active_record_doctor` to your
-`Gemfile`:
+In order to use the latest production release, please add the following to
+your `Gemfile`:
 
 ```ruby
 gem 'active_record_doctor', group: :development
 ```
 
-Then run:
+and run `bundle install`. If you'd like to use the most recent development
+version then use this instead:
 
-```bash
-bundle install
+```ruby
+gem 'active_record_doctor', github: 'gregnavis/active_record_doctor'
 ```
 
+That's it when it comes to Rails projects. If your project doesn't use Rails
+then you can use `active_record_doctor` via `Rakefile`.
+
+### Additional Installation Steps for non-Rails Projects
+
+If your project uses Rake then you can add the following to `Rakefile` in order
+to use `active_record_doctor`:
+
+```ruby
+require "active_record_doctor"
+
+ActiveRecordDoctor::Rake::Task.new do |task|
+  # Add project-specific Rake dependencies that should be run before running
+  # active_record_doctor.
+  task.deps = []
+
+  # A path to your active_record_doctor configuration file.
+  task.config_path = ::Rails.root.join(".active_record_doctor")
+
+  # A Proc called right before running detectors that should ensure your Active
+  # Record models are preloaded and a database connection is ready.
+  task.setup = -> { ::Rails.application.eager_load! }
+end
+```
+
+**IMPORTANT**. `active_record_doctor` expects that after running `deps` and
+calling `setup` your Active Record models are loaded and a database connection
+is established.
+
 ## Usage
+
+`active_record_doctor` can be used via `rake` or `rails`.
+
+You can run all available detectors via:
+
+```
+bundle exec rake active_record_doctor
+```
+
+You can run a specific detector via:
+
+```
+bundle exec rake active_record_doctor:extraneous_indexes
+```
+
+### Continuous Integration
+
+If you want to use `active_record_doctor` in a Continuous Integration setting
+then ensure the configuration file is committed and run the tool as one of your
+build steps -- it returns a non-zero exit status if any errors were reported.
+
+### Obtaining Help
+
+If you'd like to obtain help on a specific detector then use the `help` sub-task:
+
+```
+bundle exec rake active_record_doctor:extraneous_indexes:help
+```
+
+This will show the detector help text in the terminal, along with supported
+configuration options, their meaning, and whether they're global or local.
+
+### Configuration
+
+`active_record_doctor` can be configured to better suite your project's needs.
+For example, if it complains about a model that you want ignored then you can
+add that model to the configuration file.
+
+If you want to use the default configuration then you don't have to do anything.
+Just run `active_record_doctor` in your project directory.
+
+If you want to customize the tool you should create a file named
+`.active_record_doctor` in your project root directory with content like:
+
+```ruby
+ActiveRecordDoctor.configure do
+  # Global settings affect all detectors.
+  global :ignore_tables, [
+    # Ignore internal Rails-related tables.
+    "ar_internal_metadata",
+    "schema_migrations",
+    "active_storage_blobs",
+    "active_storage_attachments",
+    "action_text_rich_texts",
+
+    # Add project-specific tables here.
+    "legacy_users"
+  ]
+
+  # Detector-specific settings affect only one specific detector.
+  detector :extraneous_indexes,
+    ignore_tables: ["users"],
+    ignore_indexes: ["accounts_on_email_organization_id"]
+end
+```
+
+The configuration file above will make `active_record_doctor` ignore internal
+Rails tables (which are ignored by default) and also the `legacy_users` table.
+It'll also make the `extraneous_indexes` detector skip the `users` table
+entirely and will not report the index named `accounts_on_email_organization_id`
+as extraneous.
+
+Configuration options for each detector are listed below. They can also be
+obtained via the help mechanism described in the previous section.
 
 ### Indexing Unindexed Foreign Keys
 
@@ -66,6 +170,11 @@ three-step process:
   ```bash
   bundle exec rake db:migrate
   ```
+
+Supported configuration options:
+
+- `ignore_tables` - tables whose foreign keys should not be checked
+- `ignore_columns` - columns, written as table.column, that should not be checked.
 
 ### Removing Extraneous Indexes
 
@@ -108,6 +217,11 @@ example, if there's a unique index on `users.login` and a non-unique index on
 `users.login, users.domain` then the tool will _not_ suggest dropping
 `users.login` as it could violate the uniqueness assumption.
 
+Supported configuration options:
+
+- `ignore_tables` - tables whose indexes should never be reported as extraneous.
+- `ignore_columns` - indexes that should never be reported as extraneous.
+
 ### Detecting Unindexed `deleted_at` Columns
 
 If you soft-delete some models (e.g. with `paranoia`) then you need to modify
@@ -126,6 +240,13 @@ This will print a list of indexes that don't have the `deleted_at IS NULL`
 clause. Currently, `active_record_doctor` cannot automatically generate
 appropriate migrations. You need to do that manually.
 
+Supported configuration options:
+
+- `ignore_tables` - tables whose indexes should not be checked.
+- `ignore_columns` - specific columns, written as table.column, that should not be reported as unindexed.
+- `ignore_indexes` - specific indexes that should not be reported as excluding a timestamp column.
+- `column_names` - deletion timestamp column names.
+
 ### Detecting Missing Foreign Key Constraints
 
 If `users.profile_id` references a row in `profiles` then this can be expressed
@@ -143,20 +264,8 @@ keys with the following command:
 bundle exec rake active_record_doctor:missing_foreign_keys
 ```
 
-The output will look like:
-
-```
-users profile_id
-comments user_id article_id
-```
-
-Tables are listed one per line. Each line starts with a table name followed by
-column names that should have a foreign key constraint. In the example above,
-`users.profile_id`, `comments.user_id`, and `comments.article_id` lack a foreign
-key constraint.
-
-In order to add a foreign key constraint to `users.profile_id` use the following
-migration:
+In order to add a foreign key constraint to `users.profile_id` use a migration
+like:
 
 ```ruby
 class AddForeignKeyConstraintToUsersProfileId < ActiveRecord::Migration
@@ -165,6 +274,11 @@ class AddForeignKeyConstraintToUsersProfileId < ActiveRecord::Migration
   end
 end
 ```
+
+Supported configuration options:
+
+- `ignore_tables` - tables whose columns should not be checked.
+- `ignore_columns` - columns, written as table.column, that should not be checked.
 
 ### Detecting Models Referencing Undefined Tables
 
@@ -188,12 +302,15 @@ If there a model references an undefined table then you'll see a message like
 this:
 
 ```
-The following models reference undefined tables:
-  Contract (the table contract_records is undefined)
+Contract references a non-existent table or view named contract_records
 ```
 
 On top of that `rake` will exit with status code of 1. This allows you to use
 this check as part of your Continuous Integration pipeline.
+
+Supported configuration options:
+
+- `ignore_models` - models whose underlying tables should not be checked for existence.
 
 ### Detecting Uniqueness Validations not Backed by an Index
 
@@ -210,11 +327,15 @@ bundle exec rake active_record_doctor:missing_unique_indexes
 If there are such indexes then the command will print:
 
 ```
-The following indexes should be created to back model-level uniqueness validations:
-  users: email
+add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
 ```
 
 This means that you should create a unique index on `users.email`.
+
+Supported configuration options:
+
+- `ignore_models` - models whose uniqueness validators should not be checked.
+- `ignore_columns` - specific validators, written as Model(column1, column2, ...), that should not be checked.
 
 ### Detecting Missing Non-`NULL` Constraints
 
@@ -231,15 +352,18 @@ bundle exec rake active_record_doctor:missing_non_null_constraint
 The output of the command is similar to:
 
 ```
-The following columns should be marked as `null: false`:
-  users: name
-
+add `NOT NULL` to users.name - models validates its presence but it's not non-NULL in the database
 ```
 
 You can mark the columns mentioned in the output as `null: false` by creating a
 migration and calling `change_column_null`.
 
 This validator skips models whose corresponding database tables don't exist.
+
+Supported configuration options:
+
+- `ignore_tables` - tables whose columns should not be checked.
+- `ignore_columns` - columns, written as table.column, that should not be checked.
 
 ### Detecting Missing Presence Validations
 
@@ -255,13 +379,18 @@ bundle exec rake active_record_doctor:missing_presence_validation
 The output of the command looks like this:
 
 ```
-The following models and columns should have presence validations:
-  User: email, name
+add a `presence` validator to User.email - it's NOT NULL but lacks a validator
+add a `presence` validator to User.name - it's NOT NULL but lacks a validator
 ```
 
 This means `User` should have a presence validator on `email` and `name`.
 
 This validator skips models whose corresponding database tables don't exist.
+
+Supported configuration options:
+
+- `ignore_models` - models whose underlying tables' columns should not be checked.
+- `ignore_columns` - specific attributes, written as Model.attribute, that should not be checked.
 
 ### Detecting Incorrect Presence Validations on Boolean Columns
 
@@ -277,14 +406,18 @@ bundle exec rake active_record_doctor:incorrect_boolean_presence_validation
 The output of the command looks like this:
 
 ```
-The presence of the following boolean columns is validated incorrectly:
-  User: active
+replace the `presence` validator on User.active with `inclusion` - `presence` can't be used on booleans
 ```
 
 This means `active` is validated with `presence: true` instead of
 `inclusion: { in: [true, false] }` or `exclusion: { in: [nil] }`.
 
 This validator skips models whose corresponding database tables don't exist.
+
+Supported configuration options:
+
+- `ignore_models` - models whose validators should not be checked.
+- `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
 
 ### Detecting Incorrect `dependent` Option on Associations
 
@@ -309,10 +442,14 @@ bundle exec rake active_record_doctor:incorrect_dependent_option
 The output of the command looks like this:
 
 ```
-The following associations might be using invalid dependent settings:
-  Company: users loads models one-by-one to invoke callbacks even though the related model defines none - consider using `dependent: :delete_all`
-  Post: comments skips callbacks that are defined on the associated model - consider changing to `dependent: :destroy` or similar
+use `dependent: :delete_all` or similar on Company.users - associated models have no validations and can be deleted in bulk
+use `dependent: :destroy` or similar on Post.comments - the associated model has callbacks that are currently skipped
 ```
+
+Supported configuration options:
+
+- `ignore_models` - models whose associations should not be checked.
+- `ignore_columns` - associations, written as Model.association, that should not be checked.
 
 ### Detecting Primary Keys Having Short Integer Types
 
@@ -329,8 +466,7 @@ bundle exec rake active_record_doctor:short_primary_key_type
 The output of the command looks like this:
 
 ```
-The following primary keys have a short integer type:
-  companies id
+change the type of companies.id to bigint
 ```
 
 The above means `comanies.id` should be migrated to a wider integer type. An
@@ -346,6 +482,10 @@ end
 
 **IMPORTANT**. Running the above migration on a large table can cause downtime
 as all rows need to be rewritten.
+
+Supported configuration options:
+
+- `ignore_tables` - tables whose primary keys should not be checked.
 
 ### Detecting Mismatched Foreign Key Types
 
@@ -363,9 +503,13 @@ bundle exec rake active_record_doctor:mismatched_foreign_key_type
 The output of the command looks like this:
 
 ```
-The following foreign keys have different type than their paired primary keys:
-  companies user_id
+companies.user_id references a column of different type - foreign keys should be of the same type as the referenced column
 ```
+
+Supported configuration options:
+
+- `ignore_tables` - tables whose foreign keys should not be checked.
+- `ignore_columns` - foreign keys, written as table.column, that should not be checked.
 
 ## Ruby and Rails Compatibility Policy
 
