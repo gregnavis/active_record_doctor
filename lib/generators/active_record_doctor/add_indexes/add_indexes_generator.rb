@@ -19,7 +19,7 @@ module ActiveRecordDoctor
 
     private
 
-    INPUT_LINE = /^add an index on (\w+)\.(\w+) - .*$/
+    INPUT_LINE = /^add an index on (\w+)\.(\w+) - .*$/.freeze
     private_constant :INPUT_LINE
 
     def read_migration_descriptions(path)
