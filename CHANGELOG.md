@@ -1,3 +1,26 @@
+# Version 1.9.0
+
+* New feature: support for project-specific configuration and Continuous
+  Integration usage.
+* New feature: `mismatched_foreign_key_type` can detect foreign keys using a
+  different column type than the column they're referencing (contributed by
+  fatkodima).
+* New feature: `short_primary_key_type` can detect primary keys that use short
+  integer types and pose a risk of running out of IDs (contributed by
+  fatkodima).
+* Enhancement: `missing_non_null_constraint` can now properly handle both STI
+  and non-STI inheritance hierarchies (contributed by Greg Navis and fatkodima).
+* Enhancement: `incorrect_dependency_option` now supports `belongs_to`
+  associations (contributed by fatkodima).
+* Enhancement: more built-in Rails tables are ignored by default.
+* Bug fix: make `extraneous_indexes` take index options into account when
+  comparing them for equivalence (contributed by fatkodima).
+* Bug fix: add_indexes_generator uses the correct migration version.
+* Bug fix: add_indexes_generattor truncates long index names (contributed by
+  Dusan Orlovic).
+* Bug fix: `missing_unique_indexes` reports tables instead of indexes - it
+  didn't make sense to talk about indexes on _models_.
+
 # Version 1.8.0
 
 * New feature: `incorrect_dependency_option` can detect cases sub-optimal or
