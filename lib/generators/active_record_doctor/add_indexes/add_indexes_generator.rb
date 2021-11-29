@@ -3,8 +3,6 @@
 module ActiveRecordDoctor
   # Generate migrations that add missing indexes to the database.
   class AddIndexesGenerator < Rails::Generators::Base
-    MigrationDescription = Struct.new(:table, :columns)
-
     desc "Generate migrations for the specified indexes"
     argument :path, type: :string, default: nil, banner: "PATH"
 
@@ -12,46 +10,54 @@ module ActiveRecordDoctor
       migration_descriptions = read_migration_descriptions(path)
       now = Time.now
 
-      migration_descriptions.each_with_index do |migration_description, index|
+      migration_descriptions.each_with_index do |(table, columns), index|
         timestamp = (now + index).strftime("%Y%m%d%H%M%S")
-        file_name = "db/migrate/#{timestamp}_index_foreign_keys_in_#{migration_description.table}.rb"
-        create_file(file_name, content(migration_description))
+        file_name = "db/migrate/#{timestamp}_index_foreign_keys_in_#{table}.rb"
+        create_file(file_name, content(table, columns).tap { |x| puts x })
       end
     end
 
     private
 
+    INPUT_LINE = /^add an index on (\w+)\.(\w+) - .*$/
+    private_constant :INPUT_LINE
+
     def read_migration_descriptions(path)
-      File.readlines(path).each_with_index.map do |line, index|
-        table, *columns = line.split(/\s+/)
+      tables_to_columns = Hash.new { |hash, table| hash[table] = [] }
 
-        if table.empty?
-          raise("No table name in #{path} on line #{index + 1}. Ensure the line doesn't start with whitespace.")
-        end
-        if columns.empty?
-          raise("No columns for table #{table} in #{path} on line #{index + 1}.")
+      File.readlines(path).each_with_index do |line, index|
+        next if line.blank?
+
+        match = INPUT_LINE.match(line)
+        if match.nil?
+          raise("cannot extract table and column name from line #{index + 1}: #{line}")
         end
 
-        MigrationDescription.new(table, columns)
+        table = match[1]
+        column = match[2]
+
+        tables_to_columns[table] << column
       end
+
+      tables_to_columns
     end
 
-    def content(migration_description)
+    def content(table, columns)
       # In order to properly indent the resulting code, we must disable the
       # rubocop rule below.
 
       <<MIGRATION
-class IndexForeignKeysIn#{migration_description.table.camelize} < ActiveRecord::Migration#{migration_version}
+class IndexForeignKeysIn#{table.camelize} < ActiveRecord::Migration#{migration_version}
   def change
-#{add_indexes(migration_description)}
+#{add_indexes(table, columns)}
   end
 end
 MIGRATION
     end
 
-    def add_indexes(migration_description)
-      migration_description.columns.map do |column|
-        add_index(migration_description.table, column)
+    def add_indexes(table, columns)
+      columns.map do |column|
+        add_index(table, column)
       end.join("\n")
     end
 

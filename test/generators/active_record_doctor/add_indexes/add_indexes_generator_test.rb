@@ -21,8 +21,9 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
 
       path = File.join(dir, "indexes.txt")
       File.write(path, <<~INDEXES)
-        users organization_id account_id
-        organizations owner_id
+        add an index on users.organization_id - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on users.account_id - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on organizations.owner_id - foreign keys are often used in database lookups and should be indexed for performance reasons
       INDEXES
 
       capture_io do
@@ -50,9 +51,11 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
     end
   end
 
-  def test_create_migrations_raises_when_table_name_missing
+  def test_create_migrations_raises_when_malformed_inpout
     Tempfile.create do |file|
-      file.write(" organization_id")
+      file.write(<<~INDEXES)
+        add an index on users. - foreign keys are often used in database lookups and should be indexed for performance reasons
+      INDEXES
       file.flush
 
       assert_raises(RuntimeError) do
@@ -63,14 +66,17 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
     end
   end
 
-  def test_create_migrations_raises_when_columns_missing
-    Tempfile.create do |file|
-      file.write("users")
-      file.flush
+  def test_create_migrations_skips_blank_lines
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir)
 
-      assert_raises(RuntimeError) do
-        capture_io do
-          ActiveRecordDoctor::AddIndexesGenerator.start([file.path])
+      path = File.join(dir, "indexes.txt")
+      File.write(path, "\n")
+
+      capture_io do
+        Time.stub(:now, TIMESTAMP) do
+          # Not raising an exception is considered success.
+          ActiveRecordDoctor::AddIndexesGenerator.start([path])
         end
       end
     end
@@ -89,7 +95,7 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
 
       path = File.join(dir, "indexes.txt")
       File.write(path, <<~INDEXES)
-        organizations_migrated_from_legacy_app legacy_owner_id_compatible_with_v1_to_v8
+        add an index on organizations_migrated_from_legacy_app.legacy_owner_id_compatible_with_v1_to_v8 - foreign keys are often used in database lookups and should be indexed for performance reasons
       INDEXES
 
       capture_io do
