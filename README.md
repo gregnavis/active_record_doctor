@@ -101,7 +101,7 @@ configuration options, their meaning, and whether they're global or local.
 
 ### Configuration
 
-`active_record_doctor` can be configured to better suite your project's needs.
+`active_record_doctor` can be configured to better suit your project's needs.
 For example, if it complains about a model that you want ignored then you can
 add that model to the configuration file.
 
