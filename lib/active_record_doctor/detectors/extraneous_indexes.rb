@@ -35,18 +35,20 @@ module ActiveRecordDoctor
       def subindexes_of_multi_column_indexes
         tables(except: config(:ignore_tables)).each do |table|
           indexes = indexes(table)
-          maximal_indexes = indexes.select { |index| maximal?(indexes, index) }
 
           indexes.each do |index|
-            next if maximal_indexes.include?(index)
-
-            replacement_indexes = maximal_indexes.select do |maximum_index|
-              cover?(maximum_index, index)
-            end.map(&:name).sort
-
             next if config(:ignore_indexes).include?(index.name)
 
-            problem!(extraneous_index: index.name, replacement_indexes: replacement_indexes)
+            replacement_indexes = indexes.select do |other_index|
+              index != other_index && replacable_with?(index, other_index)
+            end
+
+            next if replacement_indexes.empty?
+
+            problem!(
+              extraneous_index: index.name,
+              replacement_indexes: replacement_indexes.map(&:name).sort
+            )
           end
         end
       end
@@ -62,23 +64,19 @@ module ActiveRecordDoctor
         end
       end
 
-      def maximal?(indexes, index)
-        indexes.all? do |another_index|
-          index == another_index || !cover?(another_index, index)
-        end
-      end
+      def replacable_with?(index1, index2)
+        return false if index1.type != index2.type
+        return false if index1.using != index2.using
+        return false if index1.where != index2.where
+        return false if index1.opclasses != index2.opclasses
 
-      # Does lhs cover rhs?
-      def cover?(lhs, rhs)
-        return false unless compatible_options?(lhs, rhs)
-
-        case [lhs.unique, rhs.unique]
+        case [index1.unique, index2.unique]
         when [true, true]
-          lhs.columns == rhs.columns
-        when [false, true]
+          index1.columns == index2.columns
+        when [true, false]
           false
         else
-          prefix?(rhs, lhs)
+          prefix?(index1, index2)
         end
       end
 
@@ -89,25 +87,6 @@ module ActiveRecordDoctor
 
       def indexes(table_name)
         super.select { |index| index.columns.is_a?(Array) }
-      end
-
-      def compatible_options?(lhs, rhs)
-        lhs.type == rhs.type &&
-          lhs.using == rhs.using &&
-          lhs.where == rhs.where &&
-          same_opclasses?(lhs, rhs)
-      end
-
-      def same_opclasses?(lhs, rhs)
-        if ActiveRecord::VERSION::STRING >= "5.2"
-          rhs.columns.all? do |column|
-            lhs_opclass = lhs.opclasses.is_a?(Hash) ? lhs.opclasses[column] : lhs.opclasses
-            rhs_opclass = rhs.opclasses.is_a?(Hash) ? rhs.opclasses[column] : rhs.opclasses
-            lhs_opclass == rhs_opclass
-          end
-        else
-          true
-        end
       end
     end
   end
