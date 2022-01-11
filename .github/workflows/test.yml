@@ -112,6 +112,11 @@ jobs:
             gemfile: gemfiles/Gemfile.rails-6.1.x
           - ruby-version: 3.0.2
             gemfile: gemfiles/Gemfile.rails-6.1.x
+
+          - ruby-version: 2.7.4
+            gemfile: gemfiles/Gemfile.rails-7.0.x
+          - ruby-version: 3.0.2
+            gemfile: gemfiles/Gemfile.rails-7.0.x
     steps:
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
