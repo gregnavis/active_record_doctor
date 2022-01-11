@@ -3,6 +3,8 @@
 class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
   def test_short_integer_primary_key_is_reported
     if mysql?
+      skip if ActiveRecord::VERSION::STRING < "5.0"
+
       create_table(:companies, id: :int)
 
       assert_problems(<<~OUTPUT)

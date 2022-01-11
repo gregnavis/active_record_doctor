@@ -68,7 +68,7 @@ module ActiveRecordDoctor
         return false if index1.type != index2.type
         return false if index1.using != index2.using
         return false if index1.where != index2.where
-        return false if index1.opclasses != index2.opclasses
+        return false if opclasses(index1) != opclasses(index2)
 
         case [index1.unique, index2.unique]
         when [true, true]
@@ -78,6 +78,10 @@ module ActiveRecordDoctor
         else
           prefix?(index1, index2)
         end
+      end
+
+      def opclasses(index)
+        index.respond_to?(:opclasses) ? index.opclasses : nil
       end
 
       def prefix?(lhs, rhs)
