@@ -33,7 +33,7 @@ module ActiveRecordDoctor
 
       def detect
         models(except: config(:ignore_models)).each do |model|
-          next if model.table_name.nil?
+          next unless model.table_exists?
 
           associations = model.reflect_on_all_associations(:has_many) +
                          model.reflect_on_all_associations(:has_one) +

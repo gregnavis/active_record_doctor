@@ -26,8 +26,7 @@ module ActiveRecordDoctor
 
       def detect
         models(except: config(:ignore_models)).each do |model|
-          next if model.table_name.nil?
-          next unless table_exists?(model.table_name)
+          next unless model.table_exists?
 
           connection.columns(model.table_name).each do |column|
             next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")

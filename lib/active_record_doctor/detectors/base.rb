@@ -100,22 +100,6 @@ module ActiveRecordDoctor
         end
       end
 
-      def table_exists?(table_name)
-        if ActiveRecord::VERSION::STRING >= "5.1"
-          connection.table_exists?(table_name)
-        else
-          connection.data_source_exists?(table_name)
-        end
-      end
-
-      def tables_and_views
-        if connection.respond_to?(:data_sources)
-          connection.data_sources
-        else
-          connection.tables
-        end
-      end
-
       def primary_key(table_name)
         primary_key_name = connection.primary_key(table_name)
         return nil if primary_key_name.nil?
@@ -132,12 +116,16 @@ module ActiveRecordDoctor
           if connection.respond_to?(:views)
             connection.views
           elsif postgresql?
-            ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
-              SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
+            ActiveRecord::Base.connection.select_values(<<-SQL)
+              SELECT relname FROM pg_class WHERE relkind IN ('m', 'v')
+            SQL
+          elsif connection.adapter_name == "Mysql2"
+            ActiveRecord::Base.connection.select_values(<<-SQL)
+              SHOW FULL TABLES WHERE table_type = 'VIEW'
             SQL
           else
             # We don't support this Rails/database combination yet.
-            nil
+            []
           end
       end
 
