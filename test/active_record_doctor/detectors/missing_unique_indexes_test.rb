@@ -206,6 +206,57 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_has_one_without_index
+    create_table(:users)
+      .create_model do
+        has_one :account, class_name: "ModelFactory::Models::Account"
+        has_one :account_history, through: :account, class_name: "ModelFactory::Models::Account"
+      end
+
+    create_table(:accounts) do |t|
+      t.integer :user_id
+    end.create_model do
+      has_one :account_history, class_name: "ModelFactory::Models::AccountHistory"
+    end
+
+    create_table(:account_histories) do |t|
+      t.integer :account_id
+    end.create_model do
+      belongs_to :account,  class_name: "ModelFactory::Models::Account"
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on accounts(user_id) - using `has_one` in the ModelFactory::Models::User model without an index can lead to duplicates
+      add a unique index on account_histories(account_id) - using `has_one` in the ModelFactory::Models::Account model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_has_one_with_scope_and_without_index
+    create_table(:users)
+      .create_model do
+        has_one :last_comment, -> { order(created_at: :desc) }, class_name: "ModelFactory::Models::Comment"
+      end
+
+    create_table(:comments) do |t|
+      t.integer :user_id
+    end.create_model
+
+    refute_problems
+  end
+
+  def test_has_one_with_index
+    create_table(:users)
+      .create_model do
+        has_one :account, class_name: "ModelFactory::Models::Account"
+      end
+
+    create_table(:accounts) do |t|
+      t.integer :user_id, index: { unique: true }
+    end.create_model
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :email

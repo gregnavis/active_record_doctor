@@ -18,17 +18,23 @@ module ActiveRecordDoctor
 
       private
 
-      def message(table:, columns:)
-        # rubocop:disable Layout/LineLength
-        "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
-        # rubocop:enable Layout/LineLength
+      # rubocop:disable Layout/LineLength
+      def message(model:, table:, columns:, problem:)
+        case problem
+        when :validations
+          "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
+        when :has_ones
+          "add a unique index on #{table}(#{columns.first}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
+        end
       end
+      # rubocop:enable Layout/LineLength
 
       def detect
-        ignore_columns = config(:ignore_columns).map do |column|
-          column.gsub(" ", "")
-        end
+        validations_without_indexes
+        has_ones_without_indexes
+      end
 
+      def validations_without_indexes
         models(except: config(:ignore_models)).each do |model|
           next unless model.table_exists?
 
@@ -44,8 +50,28 @@ module ActiveRecordDoctor
               next if unique_index?(model.table_name, columns)
               next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-              problem!(table: model.table_name, columns: columns)
+              problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
             end
+          end
+        end
+      end
+
+      def has_ones_without_indexes # rubocop:disable Naming/PredicateName
+        models.each do |model|
+          has_ones = model.reflect_on_all_associations(:has_one)
+          has_ones.each do |has_one|
+            next if has_one.is_a?(ActiveRecord::Reflection::ThroughReflection) || has_one.scope
+
+            association_model = has_one.klass
+            next if config(:ignore_models).include?(association_model.name)
+
+            foreign_key = has_one.foreign_key
+            next if ignore_columns.include?(foreign_key.to_s)
+
+            table_name = association_model.table_name
+            next if unique_index?(table_name, [foreign_key])
+
+            problem!(model: model, table: table_name, columns: [foreign_key], problem: :has_ones)
           end
         end
       end
@@ -76,11 +102,18 @@ module ActiveRecordDoctor
         end.map(&:to_s)
       end
 
-      def unique_index?(table_name, columns)
+      def unique_index?(table_name, columns, scope = nil)
+        columns = (Array(scope) + columns).map(&:to_s)
         indexes(table_name).any? do |index|
           index.unique &&
             index.where.nil? &&
             (Array(index.columns) - columns).empty?
+        end
+      end
+
+      def ignore_columns
+        @ignore_columns ||= config(:ignore_columns).map do |column|
+          column.gsub(" ", "")
         end
       end
     end
