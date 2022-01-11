@@ -23,7 +23,7 @@ module ActiveRecordDoctor
         tables(except: config(:ignore_tables)).each do |table|
           column = primary_key(table)
           next if column.nil?
-          next if bigint?(column)
+          next if bigint?(column) || uuid?(column)
 
           problem!(table: table, column: column.name)
         end
@@ -35,6 +35,10 @@ module ActiveRecordDoctor
         else
           /\Abigint\b/.match?(column.sql_type)
         end
+      end
+
+      def uuid?(column)
+        column.sql_type == "uuid"
       end
     end
   end
