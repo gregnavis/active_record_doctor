@@ -129,6 +129,27 @@ module ActiveRecordDoctor
           end
       end
 
+      def check_constraints(table_name)
+        # ActiveRecord 6.1+
+        if connection.respond_to?(:supports_check_constraints?) && connection.supports_check_constraints?
+          connection.check_constraints(table_name).select(&:validated?).map(&:expression)
+        elsif postgresql?
+          definitions =
+            connection.select_values(<<-SQL)
+              SELECT pg_get_constraintdef(oid, true)
+              FROM pg_constraint
+              WHERE contype = 'c'
+                AND convalidated
+                AND conrelid = #{connection.quote(table_name)}::regclass
+            SQL
+
+          definitions.map { |definition| definition[/CHECK \((.+)\)/m, 1] }
+        else
+          # We don't support this Rails/database combination yet.
+          []
+        end
+      end
+
       def models(except: [])
         ActiveRecord::Base.descendants.reject do |model|
           model.name.start_with?("HABTM_") || except.include?(model.name)

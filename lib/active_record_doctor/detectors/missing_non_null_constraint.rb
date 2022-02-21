@@ -37,6 +37,7 @@ module ActiveRecordDoctor
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }
+            next if not_null_check_constraint_exists?(table, column)
 
             problem!(column: column.name, table: table)
           end
@@ -65,6 +66,13 @@ module ActiveRecordDoctor
             !validator.options[:allow_nil] &&
             !validator.options[:if] &&
             !validator.options[:unless]
+        end
+      end
+
+      def not_null_check_constraint_exists?(table, column)
+        check_constraints(table).any? do |definition|
+          definition =~ /\A#{column.name} IS NOT NULL\z/i ||
+            definition =~ /\A#{connection.quote_column_name(column.name)} IS NOT NULL\z/i
         end
       end
     end
