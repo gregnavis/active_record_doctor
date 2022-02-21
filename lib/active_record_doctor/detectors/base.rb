@@ -131,7 +131,7 @@ module ActiveRecordDoctor
         @views ||=
           if connection.respond_to?(:views)
             connection.views
-          elsif connection.adapter_name == "PostgreSQL"
+          elsif postgresql?
             ActiveRecord::Base.connection.execute(<<-SQL).map { |tuple| tuple.fetch("relname") }
               SELECT c.relname FROM pg_class c WHERE c.relkind IN ('m', 'v')
             SQL
@@ -149,6 +149,10 @@ module ActiveRecordDoctor
 
       def underscored_name
         self.class.underscored_name
+      end
+
+      def postgresql?
+        ["PostgreSQL", "PostGIS"].include?(connection.adapter_name)
       end
     end
   end
