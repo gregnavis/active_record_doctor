@@ -24,7 +24,7 @@ module ActiveRecordDoctor
 
       def detect
         table_models = models.group_by(&:table_name)
-        table_models.delete_if { |table| table.nil? || !table_exists?(table) }
+        table_models.delete_if { |_table, models| !models.first.table_exists? }
 
         table_models.each do |table, models|
           next if config(:ignore_tables).include?(table)

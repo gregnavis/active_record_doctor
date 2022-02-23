@@ -30,7 +30,7 @@ module ActiveRecordDoctor
         end
 
         models(except: config(:ignore_models)).each do |model|
-          next if model.table_name.nil?
+          next unless model.table_exists?
 
           model.validators.each do |validator|
             scope = Array(validator.options.fetch(:scope, []))
