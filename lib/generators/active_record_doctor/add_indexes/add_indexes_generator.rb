@@ -62,24 +62,13 @@ MIGRATION
     end
 
     def add_index(table, column)
-      index_name = Class.new.extend(ActiveRecord::ConnectionAdapters::SchemaStatements).index_name table, column
-      if index_name.size > maximum_index_name_length
-        "    add_index :#{table}, :#{column}, name: '#{index_name.first(maximum_index_name_length)}'"
-      else
-        "    add_index :#{table}, :#{column}"
-      end
-    end
-
-    def maximum_index_name_length
       connection = ActiveRecord::Base.connection
 
-      case
-      when connection.respond_to?(:allowed_index_name_length)
-        connection.allowed_index_name_length
-      when connection.respond_to?(:index_name_length)
-        connection.index_name_length
+      index_name = connection.index_name(table, column)
+      if index_name.size > connection.index_name_length
+        "    add_index :#{table}, :#{column}, name: '#{index_name.first(connection.index_name_length)}'"
       else
-        raise("cannot determine maximum index name length - an unsupported Active Record version may be in use")
+        "    add_index :#{table}, :#{column}"
       end
     end
 
