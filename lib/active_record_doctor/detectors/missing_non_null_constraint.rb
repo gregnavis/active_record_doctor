@@ -68,13 +68,6 @@ module ActiveRecordDoctor
             !validator.options[:unless]
         end
       end
-
-      def not_null_check_constraint_exists?(table, column)
-        check_constraints(table).any? do |definition|
-          definition =~ /\A#{column.name} IS NOT NULL\z/i ||
-            definition =~ /\A#{connection.quote_column_name(column.name)} IS NOT NULL\z/i
-        end
-      end
     end
   end
 end

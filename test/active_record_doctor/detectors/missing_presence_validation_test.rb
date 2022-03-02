@@ -119,6 +119,36 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_not_null_check_constraint
+    skip unless postgresql?
+
+    create_table(:users) do |t|
+      t.string :name
+    end.create_model
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL)
+    SQL
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
+  def test_not_null_check_constraint_not_valid
+    skip unless postgresql?
+
+    create_table(:users) do |t|
+      t.string :name
+    end.create_model
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL) NOT VALID
+    SQL
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :name, null: false

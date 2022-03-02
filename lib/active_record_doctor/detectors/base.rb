@@ -129,6 +129,13 @@ module ActiveRecordDoctor
           end
       end
 
+      def not_null_check_constraint_exists?(table, column)
+        check_constraints(table).any? do |definition|
+          definition =~ /\A#{column.name} IS NOT NULL\z/i ||
+            definition =~ /\A#{connection.quote_column_name(column.name)} IS NOT NULL\z/i
+        end
+      end
+
       def check_constraints(table_name)
         # ActiveRecord 6.1+
         if connection.respond_to?(:supports_check_constraints?) && connection.supports_check_constraints?
