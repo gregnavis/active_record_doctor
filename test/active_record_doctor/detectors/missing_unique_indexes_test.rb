@@ -14,6 +14,22 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     OUTPUT
   end
 
+  def test_missing_unique_index_on_functional_index
+    skip if !(ActiveRecord::VERSION::STRING >= "5.0" && postgresql?)
+
+    create_table(:users) do |t|
+      t.string :email
+      t.index "lower(email)"
+    end.create_model do
+      validates :email, uniqueness: true
+    end
+
+    # Running the detector should NOT raise an error when a functional index
+    # is present. No need to assert anything -- the test is successful if no
+    # exception was raised.
+    run_detector
+  end
+
   def test_present_unique_index
     create_table(:users) do |t|
       t.string :email
