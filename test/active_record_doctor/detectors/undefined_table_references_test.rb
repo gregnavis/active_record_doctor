@@ -30,6 +30,14 @@ class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Te
     end
   end
 
+  def test_abstract_model
+    create_model(:ApplicationRecord) do
+      self.abstract_class = true
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     create_model(:User)
 

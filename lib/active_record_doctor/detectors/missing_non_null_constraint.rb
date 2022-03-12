@@ -29,9 +29,7 @@ module ActiveRecordDoctor
         table_models.each do |table, models|
           next if config(:ignore_tables).include?(table)
 
-          concrete_models = models.reject do |model|
-            model.abstract_class? || sti_base_model?(model)
-          end
+          concrete_models = models.reject { |model| sti_base_model?(model) }
 
           connection.columns(table).each do |column|
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
