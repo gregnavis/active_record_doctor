@@ -93,6 +93,23 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_anonymous_model
+    create_table(:users) do |t|
+      t.string :email
+      t.index :email, unique: true
+    end.create_model do
+      validates :email, uniqueness: true
+    end
+
+    model = ModelFactory::Models::User
+    model.table_name = "users"
+    def model.name
+      nil
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :email
