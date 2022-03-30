@@ -390,7 +390,7 @@ This validator skips models whose corresponding database tables don't exist.
 Supported configuration options:
 
 - `ignore_models` - models whose underlying tables' columns should not be checked.
-- `ignore_columns` - specific attributes, written as Model.attribute, that should not be checked.
+- `ignore_attributes` - specific attributes, written as Model.attribute, that should not be checked.
 
 ### Detecting Incorrect Presence Validations on Boolean Columns
 
