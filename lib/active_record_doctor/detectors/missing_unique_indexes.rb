@@ -63,7 +63,7 @@ module ActiveRecordDoctor
         columns = (Array(scope) + columns).map(&:to_s)
 
         indexes(table_name).any? do |index|
-          index.columns.to_set == columns.to_set && index.unique
+          Array(index.columns).to_set == columns.to_set && index.unique
         end
       end
     end
