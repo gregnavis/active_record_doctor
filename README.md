@@ -174,6 +174,7 @@ three-step process:
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose foreign keys should not be checked
 - `ignore_columns` - columns, written as table.column, that should not be checked.
 
@@ -220,6 +221,7 @@ example, if there's a unique index on `users.login` and a non-unique index on
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose indexes should never be reported as extraneous.
 - `ignore_columns` - indexes that should never be reported as extraneous.
 
@@ -243,6 +245,7 @@ appropriate migrations. You need to do that manually.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose indexes should not be checked.
 - `ignore_columns` - specific columns, written as table.column, that should not be reported as unindexed.
 - `ignore_indexes` - specific indexes that should not be reported as excluding a timestamp column.
@@ -278,6 +281,7 @@ end
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose columns should not be checked.
 - `ignore_columns` - columns, written as table.column, that should not be checked.
 
@@ -311,6 +315,7 @@ this check as part of your Continuous Integration pipeline.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose underlying tables should not be checked for existence.
 
 ### Detecting Uniqueness Validations not Backed by an Index
@@ -335,6 +340,7 @@ This means that you should create a unique index on `users.email`.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose uniqueness validators should not be checked.
 - `ignore_columns` - specific validators, written as Model(column1, column2, ...), that should not be checked.
 
@@ -363,6 +369,7 @@ This validator skips models whose corresponding database tables don't exist.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose columns should not be checked.
 - `ignore_columns` - columns, written as table.column, that should not be checked.
 
@@ -390,6 +397,7 @@ This validator skips models whose corresponding database tables don't exist.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose underlying tables' columns should not be checked.
 - `ignore_attributes` - specific attributes, written as Model.attribute, that should not be checked.
 
@@ -417,6 +425,7 @@ This validator skips models whose corresponding database tables don't exist.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose validators should not be checked.
 - `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
 
@@ -448,6 +457,7 @@ model validation.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose validators should not be checked.
 - `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
 
@@ -480,6 +490,7 @@ use `dependent: :destroy` or similar on Post.comments - the associated model has
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose associations should not be checked.
 - `ignore_columns` - associations, written as Model.association, that should not be checked.
 
@@ -517,6 +528,7 @@ as all rows need to be rewritten.
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose primary keys should not be checked.
 
 ### Detecting Mismatched Foreign Key Types
@@ -540,6 +552,7 @@ companies.user_id references a column of different type - foreign keys should be
 
 Supported configuration options:
 
+- `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose foreign keys should not be checked.
 - `ignore_columns` - foreign keys, written as table.column, that should not be checked.
 

@@ -4,8 +4,14 @@ module ActiveRecordDoctor
   module Detectors
     # Base class for all active_record_doctor detectors.
     class Base
+      BASE_CONFIG = {
+        enabled: {
+          description: "set to false to disable the detector altogether"
+        }
+      }.freeze
+
       class << self
-        attr_reader :description, :config
+        attr_reader :description
 
         def run(config, io)
           new(config, io).run
@@ -13,6 +19,10 @@ module ActiveRecordDoctor
 
         def underscored_name
           name.demodulize.underscore.to_sym
+        end
+
+        def config
+          @config.merge(BASE_CONFIG)
         end
 
         def locals_and_globals
@@ -37,7 +47,7 @@ module ActiveRecordDoctor
       def run
         @problems = []
 
-        detect
+        detect if config(:enabled)
         @problems.each do |problem|
           @io.puts(message(**problem))
         end
