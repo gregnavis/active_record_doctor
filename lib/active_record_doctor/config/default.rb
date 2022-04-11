@@ -17,6 +17,10 @@ ActiveRecordDoctor.configure do
     ignore_models: [],
     ignore_attributes: []
 
+  detector :incorrect_length_validation,
+    ignore_models: [],
+    ignore_attributes: []
+
   detector :incorrect_dependent_option,
     ignore_models: [],
     ignore_associations: []

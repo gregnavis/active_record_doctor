@@ -11,6 +11,7 @@ can detect:
 * missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
 * missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
 * incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
+* mismatches between model length validations and database validation constraints - [`active_record_doctor:incorrect_length_validation`](#detecting-incorrect-length-validation)
 * incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
 * primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
@@ -413,6 +414,37 @@ This means `active` is validated with `presence: true` instead of
 `inclusion: { in: [true, false] }` or `exclusion: { in: [nil] }`.
 
 This validator skips models whose corresponding database tables don't exist.
+
+Supported configuration options:
+
+- `ignore_models` - models whose validators should not be checked.
+- `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
+
+### Detecting Incorrect Length Validations
+
+String length can be enforced by both the database and the application. If
+there's a database limit then it's a good idea to add a model validation to
+ensure user-friendly error messages. Similarly, if there's a model validator
+without the corresponding database constraint then it's a good idea to add one
+to avoid saving invalid models.
+
+In order to detect columns whose length isn't validated properly run:
+
+```
+bundle exec rake active_record_doctor:incorrect_length_validation
+```
+
+The output of the command looks like this:
+
+```
+set the maximum length in the validator of User.email (currently 32) and the database limit on users.email (currently 64) to the same value
+add a length validator on User.address to enforce a maximum length of 64 defined on users.address
+```
+
+The first message means the validator on `User.email` is checking for a
+different maximum than the database limit on `users.email`. The second message
+means there's a database limit on `users.address` without the corresponding
+model validation.
 
 Supported configuration options:
 
