@@ -104,13 +104,17 @@ class Minitest::Test
 
   def assert_problems(expected_output)
     success, output = run_detector
-    assert_equal(expected_output, output)
+    assert_equal(sort_lines(expected_output), sort_lines(output))
     refute(success, "Expected the detector to return failure.")
   end
 
   def refute_problems(expected_output = "")
     success, output = run_detector
-    assert_equal(expected_output, output)
+    assert_equal(sort_lines(expected_output), sort_lines(output))
     assert(success, "Expected the detector to return success.")
+  end
+
+  def sort_lines(string)
+    string.split("\n").sort.join("\n")
   end
 end
