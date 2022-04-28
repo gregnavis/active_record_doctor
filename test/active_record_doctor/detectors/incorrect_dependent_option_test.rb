@@ -14,7 +14,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete_all` or similar on ModelFactory::Models::Company.users - associated models have no validations and can be deleted in bulk
+      use `dependent: :delete_all` or similar on ModelFactory::Models::Company.users - associated model ModelFactory::Models::User has no validations and can be deleted in bulk
     OUTPUT
   end
 
@@ -56,7 +56,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :destroy` or similar on ModelFactory::Models::Company.users - the associated model has callbacks that are currently skipped
+      use `dependent: :destroy` or similar on ModelFactory::Models::Company.users - the associated model ModelFactory::Models::User has callbacks that are currently skipped
     OUTPUT
   end
 
@@ -93,7 +93,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on ModelFactory::Models::Company.owner - the associated model has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on ModelFactory::Models::Company.owner - the associated model ModelFactory::Models::User has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -110,7 +110,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model ModelFactory::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -134,7 +134,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model ModelFactory::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -158,7 +158,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on ModelFactory::Models::User.company - the associated model ModelFactory::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -187,7 +187,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :destroy` or similar on ModelFactory::Models::User.company - the associated model has callbacks that are currently skipped
+      use `dependent: :destroy` or similar on ModelFactory::Models::User.company - the associated model ModelFactory::Models::Company has callbacks that are currently skipped
     OUTPUT
   end
 
@@ -223,6 +223,104 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
       t.references :companies
     end.create_model do
       belongs_to :company
+    end
+
+    refute_problems
+  end
+
+  def test_polymorphic_destroy_reported_when_all_associations_deletable
+    create_table(:images) do |t|
+      t.bigint :imageable_id, null: false
+      t.string :imageable_type, null: true
+    end.create_model do
+      belongs_to :imageable, polymorphic: true, dependent: :destroy
+    end
+
+    create_table(:users) do
+    end.create_model do
+      has_one :image, as: :imageable
+    end
+
+    create_table(:companies) do
+    end.create_model do
+      has_one :image, as: :imageable
+    end
+
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete` or similar on ModelFactory::Models::Image.imageable - the associated models ModelFactory::Models::Company, ModelFactory::Models::User have no callbacks and can be deleted without loading
+    OUTPUT
+  end
+
+  def test_polymorphic_destroy_not_reported_when_some_associations_not_deletable
+    create_table(:images) do |t|
+      t.bigint :imageable_id, null: false
+      t.string :imageable_type, null: true
+    end.create_model do
+      belongs_to :imageable, polymorphic: true, dependent: :destroy
+    end
+
+    create_table(:users) do
+    end.create_model do
+      has_one :image, as: :imageable
+
+      before_destroy :log
+
+      def log
+      end
+    end
+
+    create_table(:companies) do
+    end.create_model do
+      has_one :image, as: :imageable
+    end
+
+    refute_problems
+  end
+
+  def test_polymorphic_delete_reported_when_some_associations_not_deletable
+    create_table(:images) do |t|
+      t.bigint :imageable_id, null: false
+      t.string :imageable_type, null: true
+    end.create_model do
+      belongs_to :imageable, polymorphic: true, dependent: :delete
+    end
+
+    create_table(:users) do
+    end.create_model do
+      has_one :image, as: :imageable
+
+      before_destroy :log
+
+      def log
+      end
+    end
+
+    create_table(:companies) do
+    end.create_model do
+      has_one :image, as: :imageable
+    end
+
+    assert_problems(<<~OUTPUT)
+      use `dependent: :destroy` or similar on ModelFactory::Models::Image.imageable - the associated model ModelFactory::Models::User has callbacks that are currently skipped
+    OUTPUT
+  end
+
+  def test_polymorphic_delete_not_reported_when_all_associations_deletable
+    create_table(:images) do |t|
+      t.bigint :imageable_id, null: false
+      t.string :imageable_type, null: true
+    end.create_model do
+      belongs_to :imageable, polymorphic: true, dependent: :delete
+    end
+
+    create_table(:users) do
+    end.create_model do
+      has_one :image, as: :imageable
+    end
+
+    create_table(:companies) do
+    end.create_model do
+      has_one :image, as: :imageable
     end
 
     refute_problems

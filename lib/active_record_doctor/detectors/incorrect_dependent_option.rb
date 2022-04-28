@@ -18,15 +18,24 @@ module ActiveRecordDoctor
 
       private
 
-      def message(model:, association:, problem:)
+      def message(model:, association:, problem:, associated_models:)
+        associated_models.sort!
+
+        models_part =
+          if associated_models.length == 1
+            "model #{associated_models[0]} has"
+          else
+            "models #{associated_models.join(', ')} have"
+          end
+
         # rubocop:disable Layout/LineLength
         case problem
         when :suggest_destroy
-          "use `dependent: :destroy` or similar on #{model}.#{association} - the associated model has callbacks that are currently skipped"
+          "use `dependent: :destroy` or similar on #{model}.#{association} - the associated #{models_part} callbacks that are currently skipped"
         when :suggest_delete
-          "use `dependent: :delete` or similar on #{model}.#{association} - the associated model has no callbacks and can be deleted without loading"
+          "use `dependent: :delete` or similar on #{model}.#{association} - the associated #{models_part} no callbacks and can be deleted without loading"
         when :suggest_delete_all
-          "use `dependent: :delete_all` or similar on #{model}.#{association} - associated models have no validations and can be deleted in bulk"
+          "use `dependent: :delete_all` or similar on #{model}.#{association} - associated #{models_part} no validations and can be deleted in bulk"
         end
         # rubocop:enable Layout/LineLength
       end
@@ -42,7 +51,16 @@ module ActiveRecordDoctor
           associations.each do |association|
             next if config(:ignore_associations).include?("#{model.name}.#{association.name}")
 
-            if callback_action(association) == :invoke && deletable?(association.klass)
+            associated_models =
+              if association.polymorphic?
+                models_having(as: association.name)
+              else
+                [association.klass]
+              end
+
+            deletable_models, destroyable_models = associated_models.partition { |klass| deletable?(klass) }
+
+            if callback_action(association) == :invoke && destroyable_models.empty? && deletable_models.present?
               suggestion =
                 case association.macro
                 when :has_many then :suggest_delete_all
@@ -50,10 +68,23 @@ module ActiveRecordDoctor
                 else raise("unsupported association type #{association.macro}")
                 end
 
-              problem!(model: model.name, association: association.name, problem: suggestion)
-            elsif callback_action(association) == :skip && !deletable?(association.klass)
-              problem!(model: model.name, association: association.name, problem: :suggest_destroy)
+              problem!(model: model.name, association: association.name, problem: suggestion,
+                       associated_models: deletable_models.map(&:name))
+            elsif callback_action(association) == :skip && destroyable_models.present?
+              problem!(model: model.name, association: association.name, problem: :suggest_destroy,
+                       associated_models: destroyable_models.map(&:name))
             end
+          end
+        end
+      end
+
+      def models_having(as:)
+        models.select do |model|
+          associations = model.reflect_on_all_associations(:has_one) +
+                         model.reflect_on_all_associations(:has_many)
+
+          associations.any? do |association|
+            association.options[:as] == as
           end
         end
       end

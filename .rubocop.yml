@@ -124,3 +124,8 @@ Naming/PredicateName:
 # We support a broad range of versions and it's impossible to satisfy this.
 Gemspec/RequiredRubyVersion:
   Enabled: false
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - as
+    - io
