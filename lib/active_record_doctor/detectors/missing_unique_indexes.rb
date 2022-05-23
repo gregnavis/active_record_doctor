@@ -37,9 +37,10 @@ module ActiveRecordDoctor
 
             next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
             next unless supported_validator?(validator)
-            next if unique_index?(model.table_name, validator.attributes, scope)
 
             columns = (scope + validator.attributes).map(&:to_s)
+            next if unique_index?(model.table_name, columns)
+
             next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
             problem!(table: model.table_name, columns: columns)
@@ -59,11 +60,11 @@ module ActiveRecordDoctor
           validator.options.fetch(:case_sensitive, true)
       end
 
-      def unique_index?(table_name, columns, scope)
-        columns = (Array(scope) + columns).map(&:to_s)
-
+      def unique_index?(table_name, columns)
         indexes(table_name).any? do |index|
-          Array(index.columns).to_set == columns.to_set && index.unique
+          index.unique &&
+            index.where.nil? &&
+            (Array(index.columns) - columns).empty?
         end
       end
     end

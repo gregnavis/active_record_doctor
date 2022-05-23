@@ -41,7 +41,23 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
-  def test_missing_unique_index_with_scope
+  def test_present_partial_unique_index
+    skip("MySQL doesn't support partial indexes") if mysql?
+
+    create_table(:users) do |t|
+      t.string :email
+      t.boolean :active
+      t.index :email, unique: true, where: "active"
+    end.create_model do
+      validates :email, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_unique_index_with_extra_columns_with_scope
     create_table(:users) do |t|
       t.string :email
       t.integer :company_id
@@ -56,12 +72,25 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     OUTPUT
   end
 
-  def test_present_unique_index_with_scope
+  def test_unique_index_with_exact_columns_with_scope
     create_table(:users) do |t|
       t.string :email
       t.integer :company_id
       t.integer :department_id
       t.index [:company_id, :department_id, :email], unique: true
+    end.create_model do
+      validates :email, uniqueness: { scope: [:company_id, :department_id] }
+    end
+
+    refute_problems
+  end
+
+  def test_unique_index_with_fewer_columns_with_scope
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :company_id
+      t.integer :department_id
+      t.index [:company_id, :department_id], unique: true
     end.create_model do
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
     end
