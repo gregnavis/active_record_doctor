@@ -61,6 +61,19 @@ remove index_users_on_last_name_and_first_name - can be replaced by index_users_
 OUTPUT
   end
 
+  def test_unique_index_with_fewer_columns
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.index :first_name, unique: true
+      t.index [:last_name, :first_name], unique: true
+    end
+
+    assert_problems(<<OUTPUT)
+remove index_users_on_last_name_and_first_name - can be replaced by index_users_on_first_name
+OUTPUT
+  end
+
   def test_not_covered_by_different_index_type
     create_table(:users) do |t|
       t.string :first_name
