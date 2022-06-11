@@ -40,7 +40,7 @@ module ActiveRecordDoctor
             next if config(:ignore_indexes).include?(index.name)
 
             replacement_indexes = indexes.select do |other_index|
-              index != other_index && replacable_with?(index, other_index)
+              index != other_index && replaceable_with?(index, other_index)
             end
 
             next if replacement_indexes.empty?
@@ -64,7 +64,7 @@ module ActiveRecordDoctor
         end
       end
 
-      def replacable_with?(index1, index2)
+      def replaceable_with?(index1, index2)
         return false if index1.type != index2.type
         return false if index1.using != index2.using
         return false if index1.where != index2.where
@@ -72,7 +72,7 @@ module ActiveRecordDoctor
 
         case [index1.unique, index2.unique]
         when [true, true]
-          index1.columns == index2.columns
+          (index2.columns - index1.columns).empty?
         when [true, false]
           false
         else
