@@ -164,6 +164,40 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     refute_problems
   end
 
+  def test_not_null_check_constraint
+    skip unless postgresql?
+
+    create_table(:users) do |t|
+      t.string :email
+    end.create_model do
+      validates :email, presence: true
+    end
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      ALTER TABLE users ADD CONSTRAINT email_not_null CHECK (email IS NOT NULL)
+    SQL
+
+    refute_problems
+  end
+
+  def test_not_null_check_constraint_not_valid
+    skip unless postgresql?
+
+    create_table(:users) do |t|
+      t.string :email
+    end.create_model do
+      validates :email, presence: true
+    end
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      ALTER TABLE users ADD CONSTRAINT email_not_null CHECK (email IS NOT NULL) NOT VALID
+    SQL
+
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to users.email - models validates its presence but it's not non-NULL in the database
+    OUTPUT
+  end
+
   def test_config_ignore_tables
     create_table(:users) do |t|
       t.string :name, null: true

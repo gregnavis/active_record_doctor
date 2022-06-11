@@ -37,6 +37,7 @@ module ActiveRecordDoctor
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }
+            next if not_null_check_constraint_exists?(table, column)
 
             problem!(column: column.name, table: table)
           end
