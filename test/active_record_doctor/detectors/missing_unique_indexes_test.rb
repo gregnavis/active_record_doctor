@@ -30,6 +30,20 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     run_detector
   end
 
+  def test_validates_multiple_attributes
+    create_table(:users) do |t|
+      t.string :email
+      t.string :ref_token
+    end.create_model do
+      validates :email, :ref_token, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(ref_token) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
+  end
+
   def test_present_unique_index
     create_table(:users) do |t|
       t.string :email
@@ -93,6 +107,60 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       t.index [:company_id, :department_id], unique: true
     end.create_model do
       validates :email, uniqueness: { scope: [:company_id, :department_id] }
+    end
+
+    refute_problems
+  end
+
+  def test_missing_unique_index_with_association_attribute
+    create_table(:users) do |t|
+      t.integer :account_id
+    end.create_model do
+      belongs_to :account
+      validates :account, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(account_id) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_present_unique_index_with_association_attribute
+    create_table(:users) do |t|
+      t.integer :account_id
+      t.index :account_id, unique: true
+    end.create_model do
+      belongs_to :account
+      validates :account, uniqueness: true
+    end
+
+    refute_problems
+  end
+
+  def test_missing_unique_index_with_association_scope
+    create_table(:comments) do |t|
+      t.string :title
+      t.integer :commentable_id
+      t.string :commentable_type
+    end.create_model do
+      belongs_to :commentable, polymorphic: true
+      validates :title, uniqueness: { scope: :commentable }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on comments(commentable_type, commentable_id, title) - validating uniqueness in the model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_present_unique_index_with_association_scope
+    create_table(:comments) do |t|
+      t.string :title
+      t.integer :commentable_id
+      t.string :commentable_type
+      t.index [:commentable_id, :commentable_type, :title], unique: true
+    end.create_model do
+      belongs_to :commentable, polymorphic: true
+      validates :title, uniqueness: { scope: :commentable }
     end
 
     refute_problems
@@ -182,7 +250,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_unique_indexes,
-          ignore_columns: ["ModelFactory::Models::User(organization_id, email, role)"]
+          ignore_columns: ["ModelFactory::Models::User(organization_id, email)", "ModelFactory::Models::User(organization_id, role)"]
       end
     CONFIG
 
