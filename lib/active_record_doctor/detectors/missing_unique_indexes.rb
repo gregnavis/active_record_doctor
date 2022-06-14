@@ -38,12 +38,14 @@ module ActiveRecordDoctor
             next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
             next unless supported_validator?(validator)
 
-            columns = (scope + validator.attributes).map(&:to_s)
-            next if unique_index?(model.table_name, columns)
+            validator.attributes.each do |attribute|
+              columns = resolve_attributes(model, scope + [attribute])
 
-            next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
+              next if unique_index?(model.table_name, columns)
+              next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-            problem!(table: model.table_name, columns: columns)
+              problem!(table: model.table_name, columns: columns)
+            end
           end
         end
       end
@@ -58,6 +60,20 @@ module ActiveRecordDoctor
           # ourselves. case_sensitive is the default in 4.2+ so it's safe to
           # put true literally.
           validator.options.fetch(:case_sensitive, true)
+      end
+
+      def resolve_attributes(model, attributes)
+        attributes.flat_map do |attribute|
+          reflection = model.reflect_on_association(attribute)
+
+          if reflection.nil?
+            attribute
+          elsif reflection.polymorphic?
+            [reflection.foreign_type, reflection.foreign_key]
+          else
+            reflection.foreign_key
+          end
+        end.map(&:to_s)
       end
 
       def unique_index?(table_name, columns)
