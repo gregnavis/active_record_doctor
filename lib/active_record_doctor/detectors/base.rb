@@ -38,11 +38,12 @@ module ActiveRecordDoctor
         end
       end
 
-      def initialize(config:, logger:, io:)
+      def initialize(config:, logger:, io:, schema_inspector:)
         @problems = []
         @config = config
         @logger = logger
         @io = io
+        @schema_inspector = schema_inspector
       end
 
       def run
@@ -114,18 +115,31 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name)
-        connection.indexes(table_name)
+        @schema_inspector.indexes(table_name)
+      end
+
+      def tables
+        @schema_inspector.tables
+      end
+
+      def data_sources
+        @schema_inspector.data_sources
+      end
+
+      def views
+        @schema_inspector.views
       end
 
       def primary_key(table_name)
-        primary_key_name = connection.primary_key(table_name)
-        return nil if primary_key_name.nil?
-
-        column(table_name, primary_key_name)
+        @schema_inspector.primary_key(table_name)
       end
 
       def column(table_name, column_name)
-        connection.columns(table_name).find { |column| column.name == column_name }
+        columns(table_name).find { |column| column.name == column_name }
+      end
+
+      def columns(table_name)
+        @schema_inspector.columns(table_name)
       end
 
       def not_null_check_constraint_exists?(table, column)
@@ -135,24 +149,20 @@ module ActiveRecordDoctor
         end
       end
 
-      def check_constraints(table_name)
-        if connection.supports_check_constraints?
-          connection.check_constraints(table_name).select(&:validated?).map(&:expression)
-        elsif Utils.postgresql?(connection)
-          definitions =
-            connection.select_values(<<-SQL)
-              SELECT pg_get_constraintdef(oid, true)
-              FROM pg_constraint
-              WHERE contype = 'c'
-                AND convalidated
-                AND conrelid = #{connection.quote(table_name)}::regclass
-            SQL
+      def table_exists?(table_name)
+        tables.include?(table_name)
+      end
 
-          definitions.map { |definition| definition[/CHECK \((.+)\)/m, 1] }
-        else
-          # We don't support this Rails/database combination yet.
-          []
-        end
+      def data_source_exists?(name)
+        data_sources.include?(name)
+      end
+
+      def check_constraints(table_name)
+        @schema_inspector.check_constraints(table_name)
+      end
+
+      def foreign_keys(table_name)
+        @schema_inspector.foreign_keys(table_name)
       end
 
       def models
@@ -175,7 +185,7 @@ module ActiveRecordDoctor
               log("#{model.name} - non-abstract model; skipping")
             when abstract == false && model.abstract_class?
               log("#{model.name} - abstract model; skipping")
-            when existing_tables_only && (model.table_name.nil? || !model.table_exists?)
+            when existing_tables_only && (model.table_name.nil? || !table_exists?(model.table_name))
               log("#{model.name} - backed by a non-existent table #{model.table_name}; skipping")
             else
               log(model.name) do
@@ -187,7 +197,7 @@ module ActiveRecordDoctor
       end
 
       def each_index(table_name, except: [], multicolumn_only: false)
-        indexes = connection.indexes(table_name)
+        indexes = indexes(table_name)
 
         message =
           if multicolumn_only
@@ -214,7 +224,7 @@ module ActiveRecordDoctor
 
       def each_attribute(model, except: [], type: nil)
         log("Iterating over attributes of #{model.name}") do
-          connection.columns(model.table_name).each do |column|
+          columns(model.table_name).each do |column|
             case
             when ignored?("#{model.name}.#{column.name}", except)
               log("#{model.name}.#{column.name} - ignored via the configuration; skipping")
@@ -231,7 +241,7 @@ module ActiveRecordDoctor
 
       def each_column(table_name, only: nil, except: [])
         log("Iterating over columns of #{table_name}") do
-          connection.columns(table_name).each do |column|
+          columns(table_name).each do |column|
             case
             when ignored?("#{table_name}.#{column.name}", except)
               log("#{column.name} - ignored via the configuration; skipping")
@@ -253,7 +263,7 @@ module ActiveRecordDoctor
 
       def each_foreign_key(table_name)
         log("Iterating over foreign keys on #{table_name}") do
-          connection.foreign_keys(table_name).each do |foreign_key|
+          foreign_keys(table_name).each do |foreign_key|
             log("#{foreign_key.name} - #{foreign_key.from_table}(#{foreign_key.options[:column]}) to #{foreign_key.to_table}(#{foreign_key.options[:primary_key]})") do # rubocop:disable Layout/LineLength
               yield(foreign_key)
             end
@@ -263,7 +273,7 @@ module ActiveRecordDoctor
 
       def each_table(except: [])
         log("Iterating over tables") do
-          connection.tables.each do |table|
+          tables.each do |table|
             case
             when ignored?(table, except)
               log("#{table} - ignored via the configuration; skipping")
@@ -278,7 +288,7 @@ module ActiveRecordDoctor
 
       def each_data_source(except: [])
         log("Iterating over data sources") do
-          connection.data_sources.each do |data_source|
+          data_sources.each do |data_source|
             if ignored?(data_source, except)
               log("#{data_source} - ignored via the configuration; skipping")
             else

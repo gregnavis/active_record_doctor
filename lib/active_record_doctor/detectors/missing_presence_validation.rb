@@ -36,7 +36,7 @@ module ActiveRecordDoctor
         each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
           # List all columns and then remove those that don't need or don't have
           # a missing validator.
-          problematic_columns = connection.columns(model.table_name)
+          problematic_columns = columns(model.table_name)
           problematic_columns.reject! do |column|
             # The primary key, timestamps, and counter caches are special
             # columns that are automatically managed by Rails and don't need
