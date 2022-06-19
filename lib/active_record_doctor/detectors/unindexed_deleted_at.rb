@@ -26,7 +26,7 @@ module ActiveRecordDoctor
 
       def message(index:, column_name:)
         # rubocop:disable Layout/LineLength
-        "consider adding `WHERE #{column_name} IS NULL` to #{index} - a partial index can speed lookups of soft-deletable models"
+        "consider adding `WHERE #{column_name} IS NULL` or `WHERE #{column_name} IS NOT NULL` to #{index} - a partial index can speed lookups of soft-deletable models"
         # rubocop:enable Layout/LineLength
       end
 
@@ -42,8 +42,7 @@ module ActiveRecordDoctor
 
           timestamp_columns.each do |timestamp_column|
             indexes(table, except: config(:ignore_indexes)).each do |index|
-              # TODO: whole word
-              next if index.where =~ /\b#{timestamp_column.name}\s+IS\s+NULL\b/i
+              next if index.where =~ /\b#{timestamp_column.name}\s+IS\s+(NOT\s+)?NULL\b/i
 
               problem!(index: index.name, column_name: timestamp_column.name)
             end

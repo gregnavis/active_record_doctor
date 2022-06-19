@@ -11,6 +11,9 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
       t.index [:first_name, :last_name],
         name: "index_profiles_on_first_name_and_last_name",
         where: "deleted_at IS NULL"
+      t.index [:last_name],
+        name: "index_deleted_profiles_on_last_name",
+        where: "deleted_at IS NOT NULL"
     end
 
     refute_problems
@@ -28,7 +31,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      consider adding `WHERE deleted_at IS NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
+      consider adding `WHERE deleted_at IS NULL` or `WHERE deleted_at IS NOT NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
     OUTPUT
   end
 
@@ -42,6 +45,9 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
       t.index [:first_name, :last_name],
         name: "index_profiles_on_first_name_and_last_name",
         where: "discarded_at IS NULL"
+      t.index [:last_name],
+        name: "index_discarded_profiles_on_last_name",
+        where: "discarded_at IS NOT NULL"
     end
 
     refute_problems
@@ -59,7 +65,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      consider adding `WHERE discarded_at IS NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
+      consider adding `WHERE discarded_at IS NULL` or `WHERE discarded_at IS NOT NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
     OUTPUT
   end
 
@@ -165,7 +171,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
     CONFIG
 
     assert_problems(<<~OUTPUT)
-      consider adding `WHERE obliverated_at IS NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
+      consider adding `WHERE obliverated_at IS NULL` or `WHERE obliverated_at IS NOT NULL` to index_profiles_on_first_name_and_last_name - a partial index can speed lookups of soft-deletable models
     OUTPUT
   end
 end
