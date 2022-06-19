@@ -105,9 +105,15 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
 
   def test_timestamps_are_not_reported
     create_table(:users) do |t|
+      # Create created_at/updated_at timestamps.
       t.timestamps null: false
+
+      # Rails also supports created_on/updated_on. We used datetime, which is
+      # what the timestamps method users under the hood, to avoid default value
+      # errors in some MySQL versions when using t.timestamp.
+      t.datetime :created_on, null: false
+      t.datetime :updated_on, null: false
     end.create_model do
-      validates :name, presence: true
     end
 
     refute_problems

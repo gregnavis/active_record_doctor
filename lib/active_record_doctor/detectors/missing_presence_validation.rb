@@ -37,7 +37,7 @@ module ActiveRecordDoctor
       end
 
       def validator_needed?(model, column)
-        ![model.primary_key, "created_at", "updated_at"].include?(column.name) &&
+        ![model.primary_key, "created_at", "updated_at", "created_on", "updated_on"].include?(column.name) &&
           (!column.null || not_null_check_constraint_exists?(model.table_name, column))
       end
 
