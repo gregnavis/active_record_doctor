@@ -11,6 +11,27 @@ remove index_users_on_id - coincides with the primary key on the table
 OUTPUT
   end
 
+  def test_partial_index_on_primary_key
+    skip("MySQL doesn't support partial indexes") if mysql?
+
+    create_table(:users) do |t|
+      t.boolean :admin
+      t.index :id, where: "admin"
+    end
+
+    refute_problems
+  end
+
+  def test_index_on_non_standard_primary_key
+    create_table(:profiles, primary_key: :user_id) do |t|
+      t.index :user_id
+    end
+
+    assert_problems(<<OUTPUT)
+remove index_profiles_on_user_id - coincides with the primary key on the table
+OUTPUT
+  end
+
   def test_non_unique_version_of_index_is_duplicate
     create_table(:users) do |t|
       t.string :email
