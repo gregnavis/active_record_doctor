@@ -25,6 +25,11 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
     OUTPUT
   end
 
+  def test_non_integer_and_non_uuid_primary_key_is_not_reported
+    create_table(:companies, id: :string, primary_key: :uuid)
+    refute_problems
+  end
+
   def test_long_integer_primary_key_is_not_reported
     create_table(:companies, id: :bigint)
     refute_problems
