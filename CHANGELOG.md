@@ -1,3 +1,38 @@
+# Version 1.10.0
+
+* New feature: incorrect_length_validation detector can identify text-column
+  length mismatches between tables and models (suggested by fatkodima).
+* New feature: each detector can be enabled or disabled globally via the
+  configuration file.
+* Enhancement: missing_non_null_constraints and missing_presence_validation
+  recognized NOT NULL check constraints (contributed by fatkodima).
+* Enhancement: missing_unique_index is aware of has_one associations and
+  recommends creating an index on the corresponding foreign key (contributed by
+  fatkodima).
+* Bug fix: missing_unique_indexes can be satisfied by creating an index on a
+  sublist of scope + column. Previously, it'd not accept such sublists even
+  though they're enough to guarantee uniqueness (contributed by fatkodima).
+* Bug fix: fix missing_unique_indexes crashes on function indexes (contributed
+  by fatkodima).
+* Bug fix: short_primary_key_type no longer complains about UUID primary keys
+  (contributed by fatkodima).
+* Bug fix: extraneous_indexes was made aware of non-standard primary key names
+  and partial indexes (contributed by fatkodima).
+* Bug fix: extraneous_indexes properly recognizes smaller indexes to be enough
+  to guarantee uniqueness. Previously, it'd skip some smaller indexes and ask
+  for a larger index to be created (contributed by fatkodima).
+* Bug fix: unindexed_deleted_at correctly works on partial indexes intended to
+  cover deleted columns. It no longer asks to create a contradictory condition
+  (IS NULL AND IS NOT NULL) in those cases (contributed by fatkodima).
+* Bug fix: incorrect_dependent_option works correctly on polymorphic
+  associations.
+* Bug fix: recognize the PostGIS adapter as PostgreSQL (contributed by
+  fatkodima).
+* Bug fix: index generators use index_name_length (defined by Active Record) to
+  ensure index names aren't too long (contributed by fatkodima).
+* Tested against Ruby 3.1 via CI (contributed by Peter Goldstein).
+* Documentation fixes (contributed by Alistair McKinnell and Kaleb Lape).
+
 # Version 1.9.0
 
 * New feature: support for project-specific configuration and Continuous

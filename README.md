@@ -91,7 +91,8 @@ build steps -- it returns a non-zero exit status if any errors were reported.
 
 ### Obtaining Help
 
-If you'd like to obtain help on a specific detector then use the `help` sub-task:
+If you'd like to obtain help on a specific detector then use the `help`
+sub-task:
 
 ```
 bundle exec rake active_record_doctor:extraneous_indexes:help
@@ -176,7 +177,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose foreign keys should not be checked
-- `ignore_columns` - columns, written as table.column, that should not be checked.
+- `ignore_columns` - columns, written as table.column, that should not be
+  checked.
 
 ### Removing Extraneous Indexes
 
@@ -217,7 +219,11 @@ reported.
 Note that a unique index can _never be replaced by a non-unique one_. For
 example, if there's a unique index on `users.login` and a non-unique index on
 `users.login, users.domain` then the tool will _not_ suggest dropping
-`users.login` as it could violate the uniqueness assumption.
+`users.login` as it could violate the uniqueness assumption. However, a unique
+index on `users.login, user.domain` might be replaceable with `users.login` as
+the uniqueness of the latter implies the uniqueness of the former (if a given
+`login` can appear only once then it can be present in only one `login, domain`
+pair).
 
 Supported configuration options:
 
@@ -230,7 +236,8 @@ Supported configuration options:
 If you soft-delete some models (e.g. with `paranoia`) then you need to modify
 your indexes to include only non-deleted rows. Otherwise they will include
 logically non-existent rows. This will make them larger and slower to use. Most
-of the time they should only cover columns satisfying `deleted_at IS NULL`.
+of the time they should only cover columns satisfying `deleted_at IS NULL` (to
+cover existing records) or `deleted_at IS NOT NULL` (to cover deleted records).
 
 `active_record_doctor` can automatically detect indexes on tables with a
 `deleted_at` column. Just run:
@@ -247,8 +254,10 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose indexes should not be checked.
-- `ignore_columns` - specific columns, written as table.column, that should not be reported as unindexed.
-- `ignore_indexes` - specific indexes that should not be reported as excluding a timestamp column.
+- `ignore_columns` - specific columns, written as table.column, that should not
+  be reported as unindexed.
+- `ignore_indexes` - specific indexes that should not be reported as excluding a
+  timestamp column.
 - `column_names` - deletion timestamp column names.
 
 ### Detecting Missing Foreign Key Constraints
@@ -283,7 +292,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose columns should not be checked.
-- `ignore_columns` - columns, written as table.column, that should not be checked.
+- `ignore_columns` - columns, written as table.column, that should not be
+  checked.
 
 ### Detecting Models Referencing Undefined Tables
 
@@ -316,13 +326,14 @@ this check as part of your Continuous Integration pipeline.
 Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
-- `ignore_models` - models whose underlying tables should not be checked for existence.
+- `ignore_models` - models whose underlying tables should not be checked for
+  existence.
 
 ### Detecting Uniqueness Validations not Backed by an Index
 
-A model-level uniqueness validations should be backed by a database index in
-order to be robust. Otherwise you risk inserting duplicate values under heavy
-load.
+Model-level uniqueness validations and `has_one` associations should be backed
+by a database index in order to be robust. Otherwise you risk inserting
+duplicate values under heavy load.
 
 In order to detect such validations run:
 
@@ -342,12 +353,14 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose uniqueness validators should not be checked.
-- `ignore_columns` - specific validators, written as Model(column1, column2, ...), that should not be checked.
+- `ignore_columns` - specific validators, written as Model(column1, ...), that
+  should not be checked.
 
 ### Detecting Missing Non-`NULL` Constraints
 
 If there's an unconditional presence validation on a column then it should be
-marked as non-`NULL`-able at the database level.
+marked as non-`NULL`-able at the database level or should have a `IS NOT NULL`
+constraint.
 
 In order to detect columns whose presence is required but that are marked
 `null: true` in the database run the following command:
@@ -371,7 +384,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose columns should not be checked.
-- `ignore_columns` - columns, written as table.column, that should not be checked.
+- `ignore_columns` - columns, written as table.column, that should not be
+  checked.
 
 ### Detecting Missing Presence Validations
 
@@ -399,7 +413,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose underlying tables' columns should not be checked.
-- `ignore_attributes` - specific attributes, written as Model.attribute, that should not be checked.
+- `ignore_attributes` - specific attributes, written as Model.attribute, that
+  should not be checked.
 
 ### Detecting Incorrect Presence Validations on Boolean Columns
 
@@ -427,7 +442,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose validators should not be checked.
-- `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
+- `ignore_columns` - attributes, written as Model.attribute, whose validators
+  should not be checked.
 
 ### Detecting Incorrect Length Validations
 
@@ -459,7 +475,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose validators should not be checked.
-- `ignore_columns` - attributes, written as Model.attribute, whose validators should not be checked.
+- `ignore_columns` - attributes, written as Model.attribute, whose validators
+  should not be checked.
 
 ### Detecting Incorrect `dependent` Option on Associations
 
@@ -492,7 +509,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose associations should not be checked.
-- `ignore_columns` - associations, written as Model.association, that should not be checked.
+- `ignore_columns` - associations, written as Model.association, that should not
+  be checked.
 
 ### Detecting Primary Keys Having Short Integer Types
 
@@ -554,7 +572,8 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose foreign keys should not be checked.
-- `ignore_columns` - foreign keys, written as table.column, that should not be checked.
+- `ignore_columns` - foreign keys, written as table.column, that should not be
+  checked.
 
 ## Ruby and Rails Compatibility Policy
 
