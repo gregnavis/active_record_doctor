@@ -179,12 +179,112 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
-  def test_conditions_is_skipped
-    assert_skipped(conditions: -> { where.not(email: nil) })
+  def test_case_insensitive_unique_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+
+      t.index :email, unique: true
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+    OUTPUT
   end
 
-  def test_case_insensitive_is_skipped
-    assert_skipped(case_sensitive: false)
+  def test_case_insensitive_non_unique_lower_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    # ActiveRecord < 5 does not support expression indexes.
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      CREATE INDEX index_users_on_lower_email ON users ((lower(email)))
+    SQL
+
+    assert_problems(<<~OUTPUT)
+      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+    OUTPUT
+  end
+
+  def test_case_insensitive_unique_lower_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    # ActiveRecord < 5 does not support expression indexes.
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      CREATE UNIQUE INDEX index_users_on_lower_email ON users ((lower(email)))
+    SQL
+
+    refute_problems
+  end
+
+  def test_case_insensitive_compound_unique_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :organization_id
+      t.index [:email, :organization_id], unique: true
+    end.define_model do
+      validates :email, uniqueness: { scope: :organization_id, case_sensitive: false }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+    OUTPUT
+  end
+
+  def test_case_insensitive_compound_non_unique_lower_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :organization_id
+    end.define_model do
+      validates :email, uniqueness: { scope: :organization_id, case_sensitive: false }
+    end
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      CREATE INDEX index_users_on_lower_email_and_organization_id ON users ((lower(email)), organization_id)
+    SQL
+
+    assert_problems(<<~OUTPUT)
+      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+    OUTPUT
+  end
+
+  def test_case_insensitive_compound_unique_lower_index_exists
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :email
+      t.integer :organization_id
+    end.define_model do
+      validates :email, uniqueness: { scope: :organization_id, case_sensitive: false }
+    end
+
+    ActiveRecord::Base.connection.execute(<<-SQL)
+      CREATE UNIQUE INDEX index_users_on_lower_email_and_organization_id ON users ((lower(email)), organization_id)
+    SQL
+
+    refute_problems
+  end
+
+  def test_conditions_is_skipped
+    assert_skipped(conditions: -> { where.not(email: nil) })
   end
 
   def test_if_is_skipped

@@ -23,6 +23,9 @@ module ActiveRecordDoctor
         case problem
         when :validations
           "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
+        when :case_insensitive_validations
+          "add a unique expression index on #{table}(#{columns.join(', ')}) - validating case-insensitive uniqueness in the model "\
+            "without an expression index can lead to duplicates (a regular unique index is not enough)"
         when :has_ones
           "add a unique index on #{table}(#{columns.first}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
         end
@@ -40,15 +43,33 @@ module ActiveRecordDoctor
             scope = Array(validator.options.fetch(:scope, []))
 
             next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
-            next unless supported_validator?(validator)
+            next if conditional_validator?(validator)
+
+            # In Rails 6, default option values are no longer explicitly set on
+            # options so if the key is absent we must fetch the default value
+            # ourselves. case_sensitive is the default in 4.2+ so it's safe to
+            # put true literally.
+            case_sensitive = validator.options.fetch(:case_sensitive, true)
+
+            # ActiveRecord < 5.0 does not support expression indexes,
+            # so this will always be a false positive.
+            next if !case_sensitive && Utils.expression_indexes_unsupported?
 
             validator.attributes.each do |attribute|
               columns = resolve_attributes(model, scope + [attribute])
 
-              next if unique_index?(model.table_name, columns)
               next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-              problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
+              columns[-1] = "lower(#{columns[-1]})" unless case_sensitive
+
+              next if unique_index?(model.table_name, columns)
+
+              if case_sensitive
+                problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
+              else
+                problem!(model: model, table: model.table_name, columns: columns,
+                         problem: :case_insensitive_validations)
+              end
             end
           end
         end
@@ -70,16 +91,8 @@ module ActiveRecordDoctor
         end
       end
 
-      def supported_validator?(validator)
-        validator.options[:if].nil? &&
-          validator.options[:unless].nil? &&
-          validator.options[:conditions].nil? &&
-
-          # In Rails 6, default option values are no longer explicitly set on
-          # options so if the key is absent we must fetch the default value
-          # ourselves. case_sensitive is the default in 4.2+ so it's safe to
-          # put true literally.
-          validator.options.fetch(:case_sensitive, true)
+      def conditional_validator?(validator)
+        (validator.options.keys & [:if, :unless, :conditions]).present?
       end
 
       def resolve_attributes(model, attributes)
@@ -99,9 +112,17 @@ module ActiveRecordDoctor
       def unique_index?(table_name, columns, scope = nil)
         columns = (Array(scope) + columns).map(&:to_s)
         indexes(table_name).any? do |index|
+          index_columns =
+            # For expression indexes, Active Record returns columns as string.
+            if index.columns.is_a?(String)
+              extract_index_columns(index.columns)
+            else
+              index.columns
+            end
+
           index.unique &&
             index.where.nil? &&
-            (Array(index.columns) - columns).empty?
+            (index_columns - columns).empty?
         end
       end
 
@@ -109,6 +130,18 @@ module ActiveRecordDoctor
         @ignore_columns ||= config(:ignore_columns).map do |column|
           column.gsub(" ", "")
         end
+      end
+
+      def extract_index_columns(columns)
+        columns
+          .split(",")
+          .map(&:strip)
+          .map do |column|
+            column.gsub(/lower\(/i, "lower(")
+                  .gsub(/\((\w+)\)::\w+/, '\1') # (email)::string
+                  .gsub(/([`'"])(\w+)\1/, '\2') # quoted identifiers
+                  .gsub(/\A\((.+)\)\z/, '\1')   # remove surrounding braces from MySQL
+          end
       end
     end
   end
