@@ -18,7 +18,8 @@ module ActiveRecordDoctor
 
       private
 
-      def message(model:, association:, problem:, associated_models:, associated_models_type:)
+      def message(model:, association:, problem:, associated_models_type: nil,
+                  table_name: nil, column_name: nil, associated_models: [])
         associated_models.sort!
 
         models_part =
@@ -36,6 +37,9 @@ module ActiveRecordDoctor
         case problem
         when :invalid_through
           "ensure #{model}.#{association} is configured correctly - #{associated_models[0]}.#{association} may be undefined"
+        when :destroy_async
+          "don't use `dependent: :destroy_async` on #{model}.#{association} or remove the foreign key from #{table_name}.#{column_name} - "\
+            "associated models will be deleted in the same transaction along with #{model}"
         when :suggest_destroy
           "use `dependent: :destroy` or similar on #{model}.#{association} - associated #{models_part} callbacks that are currently skipped"
         when :suggest_delete
@@ -88,29 +92,40 @@ module ActiveRecordDoctor
 
             deletable_models, destroyable_models = associated_models.partition { |klass| deletable?(klass) }
 
-            if callback_action(association) == :invoke && destroyable_models.empty? && deletable_models.present?
-              suggestion =
-                case association.macro
-                when :has_many then :suggest_delete_all
-                when :has_one, :belongs_to then :suggest_delete
-                else raise("unsupported association type #{association.macro}")
-                end
+            case association.options[:dependent]
+            when :destroy_async
+              foreign_key = foreign_key(association.klass.table_name, model.table_name)
+              if foreign_key
+                problem!(model: model.name, association: association.name,
+                         table_name: foreign_key.from_table, column_name: foreign_key.column, problem: :destroy_async)
+              end
+            when :destroy
+              if destroyable_models.empty? && deletable_models.present?
+                suggestion =
+                  case association.macro
+                  when :has_many then :suggest_delete_all
+                  when :has_one, :belongs_to then :suggest_delete
+                  else raise("unsupported association type #{association.macro}")
+                  end
 
-              problem!(
-                model: model.name,
-                association: association.name,
-                problem: suggestion,
-                associated_models: deletable_models.map(&:name),
-                associated_models_type: associated_models_type
-              )
-            elsif callback_action(association) == :skip && destroyable_models.present?
-              problem!(
-                model: model.name,
-                association: association.name,
-                problem: :suggest_destroy,
-                associated_models: destroyable_models.map(&:name),
-                associated_models_type: associated_models_type
-              )
+                problem!(
+                  model: model.name,
+                  association: association.name,
+                  problem: suggestion,
+                  associated_models: deletable_models.map(&:name),
+                  associated_models_type: associated_models_type
+                )
+              end
+            when :delete, :delete_all
+              if destroyable_models.present?
+                problem!(
+                  model: model.name,
+                  association: association.name,
+                  problem: :suggest_destroy,
+                  associated_models: destroyable_models.map(&:name),
+                  associated_models_type: associated_models_type
+                )
+              end
             end
           end
         end
@@ -124,13 +139,6 @@ module ActiveRecordDoctor
           associations.any? do |association|
             association.options[:as] == as
           end
-        end
-      end
-
-      def callback_action(reflection)
-        case reflection.options[:dependent]
-        when :delete, :delete_all then :skip
-        when :destroy then :invoke
         end
       end
 
