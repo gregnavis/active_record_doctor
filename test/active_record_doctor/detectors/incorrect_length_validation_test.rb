@@ -4,8 +4,10 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
   def test_validation_and_limit_equal_is_ok
     create_table(:users) do |t|
       t.string :email, limit: 64
+      t.string :name, limit: 32
     end.create_model do
       validates :email, length: { maximum: 64 }
+      validates :name, length: { maximum: 32 }
     end
 
     refute_problems
