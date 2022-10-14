@@ -38,7 +38,7 @@ module ActiveRecordDoctor
             next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
             next if ![:string, :text].include?(column.type)
 
-            model_maximum = maximum_allowed_by_validations(model)
+            model_maximum = maximum_allowed_by_validations(model, column.name.to_sym)
             next if model_maximum == column.limit
 
             problem!(
@@ -52,9 +52,11 @@ module ActiveRecordDoctor
         end
       end
 
-      def maximum_allowed_by_validations(model)
+      def maximum_allowed_by_validations(model, column)
         length_validator = model.validators.find do |validator|
-          validator.kind == :length && validator.options.include?(:maximum)
+          validator.kind == :length &&
+            validator.options.include?(:maximum) &&
+            validator.attributes.include?(column)
         end
         length_validator ? length_validator.options[:maximum] : nil
       end
