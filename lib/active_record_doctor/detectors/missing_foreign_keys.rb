@@ -24,7 +24,7 @@ module ActiveRecordDoctor
 
       def detect
         tables(except: config(:ignore_tables)).each do |table|
-          connection.columns(table).each do |column|
+          columns(table).each do |column|
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
 
             # We need to skip polymorphic associations as they can reference
@@ -44,14 +44,14 @@ module ActiveRecordDoctor
       end
 
       def foreign_key?(table, column)
-        connection.foreign_keys(table).any? do |foreign_key|
+        foreign_keys(table).any? do |foreign_key|
           foreign_key.options[:column] == column.name
         end
       end
 
       def polymorphic_foreign_key?(table, column)
         type_column_name = column.name.sub(/_id\Z/, "_type")
-        connection.columns(table).any? do |another_column|
+        columns(table).any? do |another_column|
           another_column.name == type_column_name
         end
       end

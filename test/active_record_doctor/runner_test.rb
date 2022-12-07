@@ -2,8 +2,7 @@
 
 class ActiveRecordDoctor::RunnerTest < Minitest::Test
   def test_run_one_raises_on_unknown_detectors
-    io = StringIO.new
-    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    runner = create_runner
 
     assert_raises(KeyError) do
       runner.run_one(:performance_issues)
@@ -12,7 +11,7 @@ class ActiveRecordDoctor::RunnerTest < Minitest::Test
 
   def test_run_all_returns_true_when_no_errors
     io = StringIO.new
-    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    runner = create_runner(io: io)
 
     assert(runner.run_all)
     assert(io.string.blank?)
@@ -23,7 +22,7 @@ class ActiveRecordDoctor::RunnerTest < Minitest::Test
     create_model(:User)
 
     io = StringIO.new
-    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    runner = create_runner(io: io)
 
     refute(runner.run_all)
     refute(io.string.blank?)
@@ -32,7 +31,7 @@ class ActiveRecordDoctor::RunnerTest < Minitest::Test
   def test_help_prints_help
     ActiveRecordDoctor.detectors.each do |name, _|
       io = StringIO.new
-      runner = ActiveRecordDoctor::Runner.new(load_config, io)
+      runner = create_runner(io: io)
 
       runner.help(name)
 

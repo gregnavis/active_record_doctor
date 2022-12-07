@@ -13,8 +13,8 @@ module ActiveRecordDoctor
       class << self
         attr_reader :description
 
-        def run(config, io)
-          new(config, io).run
+        def run(config, schema_inspector, io)
+          new(config, schema_inspector, io).run
         end
 
         def underscored_name
@@ -38,9 +38,10 @@ module ActiveRecordDoctor
         end
       end
 
-      def initialize(config, io)
+      def initialize(config, schema_inspector, io)
         @problems = []
         @config = config
+        @schema_inspector = schema_inspector
         @io = io
       end
 
@@ -92,33 +93,30 @@ module ActiveRecordDoctor
       end
 
       def indexes(table_name, except: [])
-        connection.indexes(table_name).reject do |index|
+        @schema_inspector.indexes(table_name).reject do |index|
           except.include?(index.name)
         end
       end
 
       def tables(except: [])
-        tables =
-          if ActiveRecord::VERSION::STRING >= "5.1"
-            connection.tables
-          else
-            connection.data_sources
-          end
-
-        tables.reject do |table|
+        @schema_inspector.tables.reject do |table|
           except.include?(table)
         end
       end
 
       def primary_key(table_name)
-        primary_key_name = connection.primary_key(table_name)
+        primary_key_name = @schema_inspector.primary_key(table_name)
         return nil if primary_key_name.nil?
 
         column(table_name, primary_key_name)
       end
 
       def column(table_name, column_name)
-        connection.columns(table_name).find { |column| column.name == column_name }
+        columns(table_name).find { |column| column.name == column_name }
+      end
+
+      def columns(table_name)
+        @schema_inspector.columns(table_name)
       end
 
       def not_null_check_constraint_exists?(table, column)
@@ -128,25 +126,12 @@ module ActiveRecordDoctor
         end
       end
 
-      def check_constraints(table_name)
-        # ActiveRecord 6.1+
-        if connection.respond_to?(:supports_check_constraints?) && connection.supports_check_constraints?
-          connection.check_constraints(table_name).select(&:validated?).map(&:expression)
-        elsif postgresql?
-          definitions =
-            connection.select_values(<<-SQL)
-              SELECT pg_get_constraintdef(oid, true)
-              FROM pg_constraint
-              WHERE contype = 'c'
-                AND convalidated
-                AND conrelid = #{connection.quote(table_name)}::regclass
-            SQL
+      def foreign_keys(table_name)
+        @schema_inspector.foreign_keys(table_name)
+      end
 
-          definitions.map { |definition| definition[/CHECK \((.+)\)/m, 1] }
-        else
-          # We don't support this Rails/database combination yet.
-          []
-        end
+      def check_constraints(table_name)
+        @schema_inspector.check_constraints(table_name)
       end
 
       def models(except: [])
@@ -157,10 +142,6 @@ module ActiveRecordDoctor
 
       def underscored_name
         self.class.underscored_name
-      end
-
-      def postgresql?
-        ["PostgreSQL", "PostGIS"].include?(connection.adapter_name)
       end
     end
   end

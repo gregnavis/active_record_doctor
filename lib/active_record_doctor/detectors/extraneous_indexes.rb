@@ -58,7 +58,7 @@ module ActiveRecordDoctor
           indexes(table).each do |index|
             next if config(:ignore_indexes).include?(index.name)
 
-            primary_key = connection.primary_key(table)
+            primary_key = @schema_inspector.primary_key(table)
             next if index.columns != [primary_key] || index.where
 
             problem!(extraneous_index: index.name, replacement_indexes: nil)

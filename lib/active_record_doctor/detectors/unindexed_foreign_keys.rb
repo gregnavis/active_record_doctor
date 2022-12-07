@@ -26,7 +26,7 @@ module ActiveRecordDoctor
 
       def detect
         tables(except: config(:ignore_tables)).each do |table|
-          connection.columns(table).each do |column|
+          columns(table).each do |column|
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
 
             next unless foreign_key?(column)
@@ -43,14 +43,14 @@ module ActiveRecordDoctor
       end
 
       def indexed?(table, column)
-        connection.indexes(table).any? do |index|
+        indexes(table).any? do |index|
           index.columns.first == column.name
         end
       end
 
       def indexed_as_polymorphic?(table, column)
         type_column_name = column.name.sub(/_id\Z/, "_type")
-        connection.indexes(table).any? do |index|
+        indexes(table).any? do |index|
           index.columns == [type_column_name, column.name]
         end
       end

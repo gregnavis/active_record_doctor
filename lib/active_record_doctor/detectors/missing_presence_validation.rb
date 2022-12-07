@@ -26,7 +26,7 @@ module ActiveRecordDoctor
         models(except: config(:ignore_models)).each do |model|
           next unless model.table_exists?
 
-          connection.columns(model.table_name).each do |column|
+          columns(model.table_name).each do |column|
             next unless validator_needed?(model, column)
             next if validator_present?(model, column)
             next if config(:ignore_attributes).include?("#{model}.#{column.name}")

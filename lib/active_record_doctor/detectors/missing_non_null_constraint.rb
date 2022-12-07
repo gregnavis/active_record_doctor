@@ -32,7 +32,7 @@ module ActiveRecordDoctor
             model.abstract_class? || sti_base_model?(model)
           end
 
-          connection.columns(table).each do |column|
+          columns(table).each do |column|
             next if config(:ignore_columns).include?("#{table}.#{column.name}")
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }

@@ -26,7 +26,7 @@ module ActiveRecordDoctor
 
       def detect
         tables(except: config(:ignore_tables)).each do |table|
-          connection.foreign_keys(table).each do |foreign_key|
+          foreign_keys(table).each do |foreign_key|
             from_column = column(table, foreign_key.column)
 
             next if config(:ignore_columns).include?("#{table}.#{from_column.name}")

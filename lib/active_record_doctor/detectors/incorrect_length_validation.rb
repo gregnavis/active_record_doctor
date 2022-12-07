@@ -34,7 +34,7 @@ module ActiveRecordDoctor
         models(except: config(:ignore_models)).each do |model|
           next unless model.table_exists?
 
-          connection.columns(model.table_name).each do |column|
+          columns(model.table_name).each do |column|
             next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
             next if ![:string, :text].include?(column.type)
 

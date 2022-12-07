@@ -32,7 +32,7 @@ module ActiveRecordDoctor
 
       def detect
         tables(except: config(:ignore_tables)).each do |table|
-          timestamp_columns = connection.columns(table).reject do |column|
+          timestamp_columns = columns(table).reject do |column|
             config(:ignore_columns).include?("#{table}.#{column.name}")
           end.select do |column|
             config(:column_names).include?(column.name)

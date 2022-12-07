@@ -93,9 +93,15 @@ class Minitest::Test
 
   def run_detector
     io = StringIO.new
-    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    runner = create_runner(io: io)
     success = runner.run_one(detector_name)
     [success, io.string]
+  end
+
+  def create_runner(io: StringIO.new)
+    connection = ActiveRecord::Base.connection
+    schema_inspector = ActiveRecordDoctor::CachingSchemaInspector.new(connection)
+    ActiveRecordDoctor::Runner.new(load_config, schema_inspector, io)
   end
 
   def load_config
