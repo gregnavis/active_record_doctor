@@ -23,8 +23,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        table_models = models.group_by(&:table_name)
-        table_models.delete_if { |_table, models| !models.first.table_exists? }
+        table_models = models.select(&:table_exists?).group_by(&:table_name)
 
         table_models.each do |table, models|
           next if config(:ignore_tables).include?(table)
@@ -50,19 +49,22 @@ module ActiveRecordDoctor
       end
 
       def non_null_needed?(model, column)
-        # A foreign key can be validates via the column name (e.g. company_id)
-        # or the association name (e.g. company). We collect the allowed names
-        # in an array to check for their presence in the validator definition
-        # in one go.
-        attribute_name_forms = [column.name.to_sym]
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
-          reflection.foreign_key == column.name
+          reflection.foreign_key == column.name ||
+            (reflection.polymorphic? && reflection.foreign_type == column.name)
         end
-        attribute_name_forms << belongs_to.name.to_sym if belongs_to
 
-        model.validators.any? do |validator|
+        required_presence_validators(model).any? do |validator|
+          attributes = validator.attributes
+
+          attributes.include?(column.name.to_sym) ||
+            (belongs_to && attributes.include?(belongs_to.name.to_sym))
+        end
+      end
+
+      def required_presence_validators(model)
+        model.validators.select do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            (validator.attributes & attribute_name_forms).present? &&
             !validator.options[:allow_nil] &&
             !validator.options[:if] &&
             !validator.options[:unless]

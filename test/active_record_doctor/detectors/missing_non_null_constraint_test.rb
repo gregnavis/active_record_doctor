@@ -26,6 +26,29 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     OUTPUT
   end
 
+  def test_optional_columns_with_required_polymorphic_association_are_disallowed
+    create_table(:comments) do |t|
+      t.references :commentable, polymorphic: true, null: true
+    end.create_model do
+      belongs_to :commentable, polymorphic: true, required: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to comments.commentable_id - models validates its presence but it's not non-NULL in the database
+      add `NOT NULL` to comments.commentable_type - models validates its presence but it's not non-NULL in the database
+    OUTPUT
+  end
+
+  def test_required_columns_with_required_polymorphic_association_are_allowed
+    create_table(:comments) do |t|
+      t.references :commentable, polymorphic: true, null: false
+    end.create_model do
+      belongs_to :commentable, polymorphic: true, required: true
+    end
+
+    refute_problems
+  end
+
   def test_required_columns_with_presence_validators_are_allowed
     create_table(:users) do |t|
       t.string :name, null: false
