@@ -52,17 +52,23 @@ module ActiveRecordDoctor
 
       def inclusion_validator_present?(model, column)
         model.validators.any? do |validator|
+          validator_items = inclusion_validator_items(validator)
+          return true if validator_items.is_a?(Proc)
+
           validator.is_a?(ActiveModel::Validations::InclusionValidator) &&
             validator.attributes.include?(column.name.to_sym) &&
-            !validator.options.fetch(:in, []).include?(nil)
+            !validator_items.include?(nil)
         end
       end
 
       def exclusion_validator_present?(model, column)
         model.validators.any? do |validator|
+          validator_items = inclusion_validator_items(validator)
+          return true if validator_items.is_a?(Proc)
+
           validator.is_a?(ActiveModel::Validations::ExclusionValidator) &&
             validator.attributes.include?(column.name.to_sym) &&
-            validator.options.fetch(:in, []).include?(nil)
+            validator_items.include?(nil)
         end
       end
 
@@ -78,6 +84,10 @@ module ActiveRecordDoctor
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
             (validator.attributes & allowed_attributes).present?
         end
+      end
+
+      def inclusion_validator_items(validator)
+        validator.options[:in] || validator.options[:within] || []
       end
     end
   end

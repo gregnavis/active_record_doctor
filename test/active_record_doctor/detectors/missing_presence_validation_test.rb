@@ -91,6 +91,26 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_boolean_is_not_reported_if_exclusion_is_proc
+    create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.create_model do
+      validates :active, exclusion: { in: ->(_user) { [nil] } }
+    end
+
+    refute_problems
+  end
+
+  def test_non_null_boolean_is_not_reported_if_inclusion_is_proc
+    create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.create_model do
+      validates :active, inclusion: { in: ->(_user) { [true, false] } }
+    end
+
+    refute_problems
+  end
+
   def test_non_null_boolean_is_reported_if_nil_not_excluded
     create_table(:users) do |t|
       t.boolean :active, null: false
