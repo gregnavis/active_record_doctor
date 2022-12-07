@@ -21,7 +21,7 @@ module ActiveRecordDoctor
 
       def detect
         models(except: config(:ignore_models)).each do |model|
-          next if model.table_exists? || views.include?(model.table_name)
+          next if connection.data_source_exists?(model.table_name)
 
           problem!(model: model.name, table: model.table_name)
         end

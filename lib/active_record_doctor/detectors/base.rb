@@ -121,24 +121,6 @@ module ActiveRecordDoctor
         connection.columns(table_name).find { |column| column.name == column_name }
       end
 
-      def views
-        @views ||=
-          if connection.respond_to?(:views)
-            connection.views
-          elsif postgresql?
-            ActiveRecord::Base.connection.select_values(<<-SQL)
-              SELECT relname FROM pg_class WHERE relkind IN ('m', 'v')
-            SQL
-          elsif connection.adapter_name == "Mysql2"
-            ActiveRecord::Base.connection.select_values(<<-SQL)
-              SHOW FULL TABLES WHERE table_type = 'VIEW'
-            SQL
-          else
-            # We don't support this Rails/database combination yet.
-            []
-          end
-      end
-
       def not_null_check_constraint_exists?(table, column)
         check_constraints(table).any? do |definition|
           definition =~ /\A#{column.name} IS NOT NULL\z/i ||
