@@ -15,6 +15,22 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     OUTPUT
   end
 
+  def test_matched_foreign_key_with_non_primary_key_type_is_not_reported
+    # MySQL does not allow foreign keys to have different type than paired primary keys
+    return if mysql?
+
+    create_table(:companies, id: :bigint) do |t|
+      t.integer :entity_id
+      t.index [:entity_id], unique: true
+    end
+    create_table(:users) do |t|
+      t.references :entity, foreign_key: false, type: :integer, index: false
+      t.foreign_key :companies, column: :entity_id, primary_key: :entity_id
+    end
+
+    refute_problems
+  end
+
   def test_matched_foreign_key_type_is_not_reported
     create_table(:companies)
     create_table(:users) do |t|

@@ -32,7 +32,8 @@ module ActiveRecordDoctor
             next if config(:ignore_columns).include?("#{table}.#{from_column.name}")
 
             to_table = foreign_key.to_table
-            primary_key = primary_key(to_table)
+            primary_key_name = foreign_key.primary_key
+            primary_key = column(to_table, primary_key_name)
 
             next if from_column.sql_type == primary_key.sql_type
 
