@@ -24,7 +24,7 @@ module ActiveRecordDoctor
         when :validations
           "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
         when :has_ones
-          "add a unique index on #{table}(#{columns.first}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
+          "add a unique index on #{table}(#{columns.join(', ')}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
         end
       end
       # rubocop:enable Layout/LineLength
@@ -59,13 +59,18 @@ module ActiveRecordDoctor
           each_association(model, type: :has_one, has_scope: false, through: false) do |has_one|
             next if config(:ignore_models).include?(has_one.klass.name)
 
-            foreign_key = has_one.foreign_key
-            next if ignore_columns.include?(foreign_key.to_s)
+            columns =
+              if has_one.options[:as]
+                [has_one.type.to_s, has_one.foreign_key.to_s]
+              else
+                [has_one.foreign_key.to_s]
+              end
+            next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
             table_name = has_one.klass.table_name
-            next if unique_index?(table_name, [foreign_key])
+            next if unique_index?(table_name, columns)
 
-            problem!(model: model, table: table_name, columns: [foreign_key], problem: :has_ones)
+            problem!(model: model, table: table_name, columns: columns, problem: :has_ones)
           end
         end
       end

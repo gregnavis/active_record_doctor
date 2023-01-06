@@ -257,6 +257,38 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_polymorphic_has_one_without_index
+    create_table(:users)
+      .define_model do
+        has_one :account, as: :accountable
+      end
+
+    create_table(:accounts) do |t|
+      t.belongs_to :accountable, polymorphic: true, index: false
+    end.define_model do
+      belongs_to :accountable, polymorphic: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on accounts(accountable_type, accountable_id) - using `has_one` in the TransientRecord::Models::User model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_polymorphic_has_one_with_index
+    create_table(:users)
+      .define_model do
+        has_one :account, as: :accountable
+      end
+
+    create_table(:accounts) do |t|
+      t.belongs_to :accountable, polymorphic: true, index: { unique: true }
+    end.define_model do
+      belongs_to :accountable, polymorphic: true
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :email
