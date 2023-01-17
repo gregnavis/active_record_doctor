@@ -4,7 +4,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_null_column_is_not_reported_if_validation_absent
     create_table(:users) do |t|
       t.string :name
-    end.create_model do
+    end.define_model do
     end
 
     refute_problems
@@ -13,18 +13,18 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_column_is_reported_if_validation_absent
     create_table(:users) do |t|
       t.string :name, null: false
-    end.create_model do
+    end.define_model do
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
+      add a `presence` validator to TransientRecord::Models::User.name - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
     create_table(:users) do |t|
       t.string :name, null: false
-    end.create_model do
+    end.define_model do
       validates :name, presence: true
     end
 
@@ -32,10 +32,10 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_column_is_not_reported_if_association_validation_present
-    create_table(:companies).create_model
+    create_table(:companies).define_model
     create_table(:users) do |t|
       t.references :company, null: false
-    end.create_model do
+    end.define_model do
       belongs_to :company, required: true
     end
 
@@ -43,8 +43,8 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_not_null_column_is_not_reported_if_habtm_association
-    create_table(:users).create_model do
-      has_and_belongs_to_many :projects, class_name: "ModelFactory::Models::Project"
+    create_table(:users).define_model do
+      has_and_belongs_to_many :projects, class_name: "TransientRecord::Models::Project"
     end
 
     create_table(:projects_users) do |t|
@@ -52,8 +52,8 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       t.bigint :user_id, null: false
     end
 
-    create_table(:projects).create_model do
-      has_and_belongs_to_many :users, class_name: "ModelFactory::Models::User"
+    create_table(:projects).define_model do
+      has_and_belongs_to_many :users, class_name: "TransientRecord::Models::User"
     end
 
     refute_problems
@@ -62,19 +62,19 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_boolean_is_reported_if_nil_included
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
+      add a `presence` validator to TransientRecord::Models::User.active - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, inclusion: { in: [true, false] }
     end
 
@@ -84,7 +84,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_boolean_is_not_reported_if_nil_excluded
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, exclusion: { in: [nil] }
     end
 
@@ -94,7 +94,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_boolean_is_not_reported_if_exclusion_is_proc
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, exclusion: { in: ->(_user) { [nil] } }
     end
 
@@ -104,7 +104,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_boolean_is_not_reported_if_inclusion_is_proc
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, inclusion: { in: ->(_user) { [true, false] } }
     end
 
@@ -114,12 +114,12 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_non_null_boolean_is_reported_if_nil_not_excluded
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, exclusion: { in: [false] }
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to ModelFactory::Models::User.active - it's NOT NULL but lacks a validator
+      add a `presence` validator to TransientRecord::Models::User.active - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
@@ -133,14 +133,14 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       # errors in some MySQL versions when using t.timestamp.
       t.datetime :created_on, null: false
       t.datetime :updated_on, null: false
-    end.create_model do
+    end.define_model do
     end
 
     refute_problems
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    create_model(:User)
+    define_model(:User)
 
     refute_problems
   end
@@ -150,14 +150,14 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
 
     create_table(:users) do |t|
       t.string :name
-    end.create_model
+    end.define_model
 
     ActiveRecord::Base.connection.execute(<<-SQL)
       ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL)
     SQL
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to ModelFactory::Models::User.name - it's NOT NULL but lacks a validator
+      add a `presence` validator to TransientRecord::Models::User.name - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
@@ -166,7 +166,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
 
     create_table(:users) do |t|
       t.string :name
-    end.create_model
+    end.define_model
 
     ActiveRecord::Base.connection.execute(<<-SQL)
       ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL) NOT VALID
@@ -178,13 +178,13 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :name, null: false
-    end.create_model do
+    end.define_model do
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_presence_validation,
-          ignore_models: ["ModelFactory::Models::User"]
+          ignore_models: ["TransientRecord::Models::User"]
       end
     CONFIG
 
@@ -194,12 +194,12 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_global_ignore_models
     create_table(:users) do |t|
       t.string :name, null: false
-    end.create_model do
+    end.define_model do
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
-        config.global :ignore_models, ["ModelFactory::Models::User"]
+        config.global :ignore_models, ["TransientRecord::Models::User"]
       end
     CONFIG
 
@@ -209,13 +209,13 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_config_ignore_attributes
     create_table(:users) do |t|
       t.string :name, null: false
-    end.create_model do
+    end.define_model do
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_presence_validation,
-          ignore_attributes: ["ModelFactory::Models::User.name"]
+          ignore_attributes: ["TransientRecord::Models::User.name"]
       end
     CONFIG
 

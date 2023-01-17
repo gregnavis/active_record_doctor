@@ -33,7 +33,7 @@ require "active_record_doctor"
 require "minitest"
 require "minitest/autorun"
 require "minitest/fork_executor"
-require_relative "model_factory"
+require "transient_record"
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
@@ -44,11 +44,11 @@ Minitest.parallel_executor = Minitest::ForkExecutor.new
 
 # Prepare the test class.
 class Minitest::Test
-  include ModelFactory
+  include TransientRecord
 
   def setup
     # Delete remnants (models and tables) of previous test case runs.
-    cleanup_models
+    TransientRecord.cleanup
   end
 
   def teardown
@@ -61,7 +61,7 @@ class Minitest::Test
 
     # Ensure all remnants of previous test runs, most likely in form of tables,
     # are removed.
-    cleanup_models
+    TransientRecord.cleanup
   end
 
   private
@@ -115,6 +115,6 @@ class Minitest::Test
   end
 
   def sort_lines(string)
-    string.split("\n").sort.join("\n")
+    string.split("\n").sort
   end
 end

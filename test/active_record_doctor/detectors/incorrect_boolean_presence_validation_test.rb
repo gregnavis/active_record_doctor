@@ -5,7 +5,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     create_table(:users) do |t|
       t.string :email, null: false
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       # email is a non-boolean column whose presence CAN be validated in the
       # usual way. We include it in the test model to ensure the detector reports
       # only boolean columns.
@@ -13,14 +13,14 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     end
 
     assert_problems(<<~OUTPUT)
-      replace the `presence` validator on ModelFactory::Models::User.active with `inclusion` - `presence` can't be used on booleans
+      replace the `presence` validator on TransientRecord::Models::User.active with `inclusion` - `presence` can't be used on booleans
     OUTPUT
   end
 
   def test_inclusion_is_not_reported
     create_table(:users) do |t|
       t.boolean :active, null: false
-    end.create_model do
+    end.define_model do
       validates :active, inclusion: { in: [true, false] }
     end
 
@@ -28,7 +28,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    create_model(:User)
+    define_model(:User)
 
     refute_problems
   end
@@ -36,7 +36,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :email, null: false
-    end.create_model
+    end.define_model
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
@@ -51,7 +51,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   def test_global_ignore_models
     create_table(:users) do |t|
       t.string :email, null: false
-    end.create_model
+    end.define_model
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
@@ -65,7 +65,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   def test_config_ignore_attributes
     create_table(:users) do |t|
       t.string :email, null: false
-    end.create_model
+    end.define_model
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|

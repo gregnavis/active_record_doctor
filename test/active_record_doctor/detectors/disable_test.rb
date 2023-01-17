@@ -6,7 +6,7 @@ class ActiveRecordDoctor::Detectors::DisableTest < Minitest::Test
   def test_disabling
     create_table(:users) do |t|
       t.string :name, null: true
-    end.create_model do
+    end.define_model do
       validates :name, presence: true
     end
 

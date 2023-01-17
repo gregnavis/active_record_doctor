@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pg", "~> 1.1.4"
   s.add_development_dependency "railties", ACTIVE_RECORD_SPEC
   s.add_development_dependency "rake", "~> 12.3.3"
+  s.add_development_dependency "transient_record", "= 1.0.0.rc1"
 
   # We don't install rubocop in CI because we test against older Rubies that
   # are incompatible with Rubocop.
