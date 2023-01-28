@@ -14,6 +14,20 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     OUTPUT
   end
 
+  def test_unindexed_foreign_key_with_nonstandard_name_is_reported
+    skip("MySQL always indexes foreign keys") if mysql?
+
+    create_table(:companies)
+    create_table(:users) do |t|
+      t.integer :company
+      t.foreign_key :companies, column: :company
+    end
+
+    assert_problems(<<~OUTPUT)
+      add an index on users.company - foreign keys are often used in database lookups and should be indexed for performance reasons
+    OUTPUT
+  end
+
   def test_indexed_foreign_key_is_not_reported
     create_table(:companies)
     create_table(:users) do |t|
