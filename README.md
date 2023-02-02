@@ -509,7 +509,7 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose associations should not be checked.
-- `ignore_columns` - associations, written as Model.association, that should not
+- `ignore_associations` - associations, written as Model.association, that should not
   be checked.
 
 ### Detecting Primary Keys Having Short Integer Types
