@@ -129,3 +129,6 @@ Naming/MethodParameterName:
   AllowedNames:
     - as
     - io
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false

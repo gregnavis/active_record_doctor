@@ -18,9 +18,9 @@ module ActiveRecordDoctor
 
       private
 
-      def message(table:, column:)
+      def message(from_table:, from_column:, from_type:, to_table:, to_column:, to_type:)
         # rubocop:disable Layout/LineLength
-        "#{table}.#{column} references a column of different type - foreign keys should be of the same type as the referenced column"
+        "#{from_table}.#{from_column} is a foreign key of type #{from_type} and references #{to_table}.#{to_column} of type #{to_type} - foreign keys should be of the same type as the referenced column"
         # rubocop:enable Layout/LineLength
       end
 
@@ -32,12 +32,18 @@ module ActiveRecordDoctor
             next if config(:ignore_columns).include?("#{table}.#{from_column.name}")
 
             to_table = foreign_key.to_table
-            primary_key_name = foreign_key.primary_key
-            primary_key = column(to_table, primary_key_name)
+            to_column = column(to_table, foreign_key.primary_key)
 
-            next if from_column.sql_type == primary_key.sql_type
+            next if from_column.sql_type == to_column.sql_type
 
-            problem!(table: table, column: from_column.name)
+            problem!(
+              from_table: table,
+              from_column: from_column.name,
+              from_type: from_column.sql_type,
+              to_table: to_table,
+              to_column: to_column.name,
+              to_type: to_column.sql_type
+            )
           end
         end
       end
