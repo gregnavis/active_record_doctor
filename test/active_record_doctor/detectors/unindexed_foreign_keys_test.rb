@@ -10,7 +10,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add an index on users.company_id - foreign keys are often used in database lookups and should be indexed for performance reasons
+      add an index on users(company_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
     OUTPUT
   end
 
@@ -24,8 +24,32 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add an index on users.company - foreign keys are often used in database lookups and should be indexed for performance reasons
+      add an index on users(company) - foreign keys are often used in database lookups and should be indexed for performance reasons
     OUTPUT
+  end
+
+  def test_unindexed_polymorphic_foreign_key_is_reported
+    create_table(:notes) do |t|
+      t.integer :notable_id
+      t.string :notable_type
+    end
+
+    assert_problems(<<~OUTPUT)
+      add an index on notes(notable_type, notable_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
+    OUTPUT
+  end
+
+  def test_indexed_polymorphic_foreign_key_is_not_reported
+    create_table(:notes) do |t|
+      t.string :title
+      t.integer :notable_id
+      t.string :notable_type
+
+      # Includes additional column except `notable`
+      t.index [:notable_type, :notable_id, :title]
+    end
+
+    refute_problems
   end
 
   def test_indexed_foreign_key_is_not_reported
