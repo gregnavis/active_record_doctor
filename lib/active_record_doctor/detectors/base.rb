@@ -157,7 +157,7 @@ module ActiveRecordDoctor
       end
 
       def models
-        ActiveRecord::Base.descendants
+        ActiveRecord::Base.descendants.sort_by(&:name)
       end
 
       def underscored_name

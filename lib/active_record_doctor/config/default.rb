@@ -52,7 +52,8 @@ ActiveRecordDoctor.configure do
   detector :missing_unique_indexes,
     enabled: true,
     ignore_models: [],
-    ignore_columns: []
+    ignore_columns: [],
+    ignore_join_tables: []
 
   detector :short_primary_key_type,
     enabled: true,
