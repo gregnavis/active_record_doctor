@@ -48,6 +48,8 @@ module ActiveRecordDoctor
                          model.reflect_on_all_associations(:has_one) +
                          model.reflect_on_all_associations(:belongs_to)
 
+          associations = associations.reject { |reflection| through_reflection?(reflection) }
+
           associations.each do |association|
             next if config(:ignore_associations).include?("#{model.name}.#{association.name}")
 
@@ -76,6 +78,11 @@ module ActiveRecordDoctor
             end
           end
         end
+      end
+
+      def through_reflection?(reflection)
+        # For Active Record >= 5, we can use `.through_reflection?`.
+        reflection.is_a?(ActiveRecord::Reflection::ThroughReflection)
       end
 
       def models_having(as:)

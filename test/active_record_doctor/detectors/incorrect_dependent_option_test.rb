@@ -326,6 +326,20 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     refute_problems
   end
 
+  def test_ignores_through_associations
+    create_table(:users) do
+    end.define_model do
+      has_many :posts
+      has_many :comments, through: :posts
+    end
+
+    create_table(:posts) do |t|
+      t.references :users
+    end.define_model
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:companies) do
     end.define_model do
