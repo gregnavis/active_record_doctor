@@ -14,7 +14,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete_all` or similar on TransientRecord::Models::Company.users - associated model TransientRecord::Models::User has no validations and can be deleted in bulk
+      use `dependent: :delete_all` or similar on TransientRecord::Models::Company.users - associated model TransientRecord::Models::User has no callbacks and can be deleted in bulk
     OUTPUT
   end
 
@@ -56,7 +56,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :destroy` or similar on TransientRecord::Models::Company.users - the associated model TransientRecord::Models::User has callbacks that are currently skipped
+      use `dependent: :destroy` or similar on TransientRecord::Models::Company.users - associated model TransientRecord::Models::User has callbacks that are currently skipped
     OUTPUT
   end
 
@@ -93,7 +93,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on TransientRecord::Models::Company.owner - the associated model TransientRecord::Models::User has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on TransientRecord::Models::Company.owner - associated model TransientRecord::Models::User has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -110,7 +110,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on TransientRecord::Models::User.company - the associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on TransientRecord::Models::User.company - associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -134,7 +134,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on TransientRecord::Models::User.company - the associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on TransientRecord::Models::User.company - associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -158,7 +158,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on TransientRecord::Models::User.company - the associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on TransientRecord::Models::User.company - associated model TransientRecord::Models::Company has no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -187,7 +187,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :destroy` or similar on TransientRecord::Models::User.company - the associated model TransientRecord::Models::Company has callbacks that are currently skipped
+      use `dependent: :destroy` or similar on TransientRecord::Models::User.company - associated model TransientRecord::Models::Company has callbacks that are currently skipped
     OUTPUT
   end
 
@@ -247,7 +247,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :delete` or similar on TransientRecord::Models::Image.imageable - the associated models TransientRecord::Models::Company, TransientRecord::Models::User have no callbacks and can be deleted without loading
+      use `dependent: :delete` or similar on TransientRecord::Models::Image.imageable - associated models TransientRecord::Models::Company, TransientRecord::Models::User have no callbacks and can be deleted without loading
     OUTPUT
   end
 
@@ -301,7 +301,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     assert_problems(<<~OUTPUT)
-      use `dependent: :destroy` or similar on TransientRecord::Models::Image.imageable - the associated model TransientRecord::Models::User has callbacks that are currently skipped
+      use `dependent: :destroy` or similar on TransientRecord::Models::Image.imageable - associated model TransientRecord::Models::User has callbacks that are currently skipped
     OUTPUT
   end
 
@@ -324,6 +324,84 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     end
 
     refute_problems
+  end
+
+  def test_works_on_has_through_associations_with_destroy
+    create_table(:users) do
+    end.define_model do
+      has_many :posts
+      has_many :comments, through: :posts, dependent: :destroy
+    end
+
+    create_table(:posts) do |t|
+      t.references :users
+    end.define_model do
+      belongs_to :user
+      has_many :comments
+    end
+
+    create_table(:comments) do |t|
+      t.references :posts
+    end.define_model do
+      belongs_to :post
+    end
+
+    assert_problems(<<~OUTPUT)
+      use `dependent: :delete_all` or similar on TransientRecord::Models::User.comments - associated join model TransientRecord::Models::Post has no callbacks and can be deleted in bulk
+    OUTPUT
+  end
+
+  def test_works_on_has_through_associations_with_delete_all
+    create_table(:users) do
+    end.define_model do
+      has_many :posts
+      has_many :comments, through: :posts, dependent: :delete_all
+    end
+
+    create_table(:posts) do |t|
+      t.references :users
+    end.define_model do
+      belongs_to :user
+      has_many :comments
+
+      before_destroy :log
+
+      def log; end
+    end
+
+    create_table(:comments) do |t|
+      t.references :posts
+    end.define_model do
+      belongs_to :post
+    end
+
+    assert_problems(<<~OUTPUT)
+      use `dependent: :destroy` or similar on TransientRecord::Models::User.comments - associated join model TransientRecord::Models::Post has callbacks that are currently skipped
+    OUTPUT
+  end
+
+  def test_has_through_associations_when_join_model_incomplete
+    create_table(:users) do
+    end.define_model do
+      has_many :posts
+      has_many :comments, through: :posts
+    end
+
+    create_table(:posts) do |t|
+      t.references :users
+    end.define_model do
+      # The join model should define has_many :comments, but intentionally skips
+      # it for this test case's purpose.
+    end
+
+    create_table(:comments) do |t|
+      t.references :posts
+    end.define_model do
+    end
+
+    assert_problems(<<~OUTPUT)
+      ensure TransientRecord::Models::User.comments is configured correctly - TransientRecord::Models::Post.comments may be undefined
+    OUTPUT
   end
 
   def test_config_ignore_models
