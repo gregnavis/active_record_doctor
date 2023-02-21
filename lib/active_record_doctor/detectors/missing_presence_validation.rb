@@ -23,13 +23,10 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models(except: config(:ignore_models)).each do |model|
-          next unless model.table_exists?
-
-          connection.columns(model.table_name).each do |column|
+        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+          each_attribute(model, except: config(:ignore_attributes)) do |column|
             next unless validator_needed?(model, column)
             next if validator_present?(model, column)
-            next if config(:ignore_attributes).include?("#{model}.#{column.name}")
 
             problem!(column: column.name, model: model.name)
           end

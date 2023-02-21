@@ -33,35 +33,36 @@ module ActiveRecordDoctor
       end
 
       def subindexes_of_multi_column_indexes
-        tables(except: config(:ignore_tables)).each do |table|
-          indexes = indexes(table)
+        log(__method__) do
+          each_table(except: config(:ignore_tables)) do |table|
+            each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index, indexes|
+              replacement_indexes = indexes.select do |other_index|
+                index != other_index && replaceable_with?(index, other_index)
+              end
 
-          indexes.each do |index|
-            next if config(:ignore_indexes).include?(index.name)
+              if replacement_indexes.empty?
+                log("Found no replacement indexes; skipping")
+                next
+              end
 
-            replacement_indexes = indexes.select do |other_index|
-              index != other_index && replaceable_with?(index, other_index)
+              problem!(
+                extraneous_index: index.name,
+                replacement_indexes: replacement_indexes.map(&:name).sort
+              )
             end
-
-            next if replacement_indexes.empty?
-
-            problem!(
-              extraneous_index: index.name,
-              replacement_indexes: replacement_indexes.map(&:name).sort
-            )
           end
         end
       end
 
       def indexed_primary_keys
-        tables(except: config(:ignore_tables)).each do |table|
-          indexes(table).each do |index|
-            next if config(:ignore_indexes).include?(index.name)
-
-            primary_key = connection.primary_key(table)
-            next if index.columns != [primary_key] || index.where
-
-            problem!(extraneous_index: index.name, replacement_indexes: nil)
+        log(__method__) do
+          each_table(except: config(:ignore_tables)) do |table|
+            each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index|
+              primary_key = connection.primary_key(table)
+              if index.columns == [primary_key] && index.where.nil?
+                problem!(extraneous_index: index.name, replacement_indexes: nil)
+              end
+            end
           end
         end
       end
@@ -89,10 +90,6 @@ module ActiveRecordDoctor
       def prefix?(lhs, rhs)
         lhs.columns.count <= rhs.columns.count &&
           rhs.columns[0...lhs.columns.count] == lhs.columns
-      end
-
-      def indexes(table_name)
-        super.select { |index| index.columns.is_a?(Array) }
       end
     end
   end

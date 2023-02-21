@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require "active_record_doctor/railtie" if defined?(Rails) && defined?(Rails::Railtie)
+require "active_record_doctor/logger"
+require "active_record_doctor/logger/dummy"
+require "active_record_doctor/logger/hierarchical"
 require "active_record_doctor/detectors"
 require "active_record_doctor/detectors/base"
 require "active_record_doctor/detectors/missing_presence_validation"

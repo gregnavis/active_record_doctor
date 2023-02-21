@@ -23,10 +23,8 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables(except: config(:ignore_tables)).each do |table|
-          connection.columns(table).each do |column|
-            next if config(:ignore_columns).include?("#{table}.#{column.name}")
-
+        each_table(except: config(:ignore_tables)) do |table|
+          each_column(table, except: config(:ignore_columns)) do |column|
             # We need to skip polymorphic associations as they can reference
             # multiple tables but a foreign key constraint can reference
             # a single predefined table.

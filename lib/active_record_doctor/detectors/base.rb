@@ -13,8 +13,8 @@ module ActiveRecordDoctor
       class << self
         attr_reader :description
 
-        def run(config, io)
-          new(config, io).run
+        def run(*args, **kwargs, &block)
+          new(*args, **kwargs, &block).run
         end
 
         def underscored_name
@@ -38,23 +38,36 @@ module ActiveRecordDoctor
         end
       end
 
-      def initialize(config, io)
+      def initialize(config:, logger:, io:)
         @problems = []
         @config = config
+        @logger = logger
         @io = io
       end
 
       def run
-        @problems = []
+        log(underscored_name) do
+          @problems = []
 
-        detect if config(:enabled)
-        @problems.each do |problem|
-          @io.puts(message(**problem))
+          if config(:enabled)
+            detect
+          else
+            log("disabled; skipping")
+          end
+
+          @problems.each do |problem|
+            @io.puts(message(**problem))
+          end
+
+          success = @problems.empty?
+          if success
+            log("No problems found")
+          else
+            log("Found #{@problems.count} problem(s)")
+          end
+          @problems = nil
+          success
         end
-
-        success = @problems.empty?
-        @problems = nil
-        success
       end
 
       private
@@ -79,7 +92,16 @@ module ActiveRecordDoctor
         raise("#message should be implemented by a subclass")
       end
 
+      def log(message, &block)
+        @logger.log(message, &block)
+      end
+
       def problem!(**attrs)
+        log("Problem found") do
+          attrs.each do |key, value|
+            log("#{key}: #{value.inspect}")
+          end
+        end
         @problems << attrs
       end
 
@@ -91,23 +113,8 @@ module ActiveRecordDoctor
         @connection ||= ActiveRecord::Base.connection
       end
 
-      def indexes(table_name, except: [])
-        connection.indexes(table_name).reject do |index|
-          except.include?(index.name)
-        end
-      end
-
-      def tables(except: [])
-        tables =
-          if ActiveRecord::VERSION::STRING >= "5.1"
-            connection.tables
-          else
-            connection.data_sources
-          end
-
-        tables.reject do |table|
-          except.include?(table)
-        end
+      def indexes(table_name)
+        connection.indexes(table_name)
       end
 
       def primary_key(table_name)
@@ -149,10 +156,8 @@ module ActiveRecordDoctor
         end
       end
 
-      def models(except: [])
-        ActiveRecord::Base.descendants.reject do |model|
-          model.name.start_with?("HABTM_") || except.include?(model.name)
-        end
+      def models
+        ActiveRecord::Base.descendants
       end
 
       def underscored_name
@@ -161,6 +166,149 @@ module ActiveRecordDoctor
 
       def postgresql?
         ["PostgreSQL", "PostGIS"].include?(connection.adapter_name)
+      end
+
+      def each_model(except: [], abstract: nil, existing_tables_only: false)
+        log("Iterating over Active Record models") do
+          models.each do |model|
+            case
+            when model.name.start_with?("HABTM_")
+              log("#{model.name} - has-belongs-to-many model; skipping")
+            when except.include?(model.name)
+              log("#{model.name} - ignored via the configuration; skipping")
+            when abstract && !model.abstract_class?
+              log("#{model.name} - non-abstract model; skipping")
+            when abstract == false && model.abstract_class?
+              log("#{model.name} - abstract model; skipping")
+            when existing_tables_only && model.table_name && !model.table_exists?
+              log("#{model.name} - backed by a non-existent table #{model.table_name}; skipping")
+            else
+              log(model.name) do
+                yield(model)
+              end
+            end
+          end
+        end
+      end
+
+      def each_index(table_name, except: [], multicolumn_only: false)
+        indexes = connection.indexes(table_name)
+
+        message =
+          if multicolumn_only
+            "Iterating over multi-column indexes on #{table_name}"
+          else
+            "Iterating over indexes on #{table_name}"
+          end
+
+        log(message) do
+          indexes.each do |index|
+            case
+            when except.include?(index.name)
+              log("#{index.name} - ignored via the configuration; skipping")
+            when multicolumn_only && !index.columns.is_a?(Array)
+              log("#{index.name} - single-column index; skipping")
+            else
+              log("Index #{index.name} on #{table_name}") do
+                yield(index, indexes)
+              end
+            end
+          end
+        end
+      end
+
+      def each_attribute(model, except: [], type: nil)
+        log("Iterating over attributes of #{model.name}") do
+          connection.columns(model.table_name).each do |column|
+            case
+            when except.include?("#{model.name}.#{column.name}")
+              log("#{model.name}.#{column.name} - ignored via the configuration; skipping")
+            when type && !Array(type).include?(column.type)
+              log("#{model.name}.#{column.name} - ignored due to the #{column.type} type; skipping")
+            else
+              log("#{model.name}.#{column.name}") do
+                yield(column)
+              end
+            end
+          end
+        end
+      end
+
+      def each_column(table_name, only: nil, except: [])
+        log("Iterating over columns of #{table_name}") do
+          connection.columns(table_name).each do |column|
+            case
+            when except.include?("#{table_name}.#{column.name}")
+              log("#{column.name} - ignored via the configuration; skipping")
+            when only.nil? || only.include?(column.name)
+              log(column.name.to_s) do
+                yield(column)
+              end
+            end
+          end
+        end
+      end
+
+      def each_foreign_key(table_name)
+        log("Iterating over foreign keys on #{table_name}") do
+          connection.foreign_keys(table_name).each do |foreign_key|
+            log("#{foreign_key.name} - #{foreign_key.from_table}(#{foreign_key.options[:column]}) to #{foreign_key.to_table}(#{foreign_key.options[:primary_key]})") do # rubocop:disable Layout/LineLength
+              yield(foreign_key)
+            end
+          end
+        end
+      end
+
+      def each_table(except: [])
+        tables =
+          if ActiveRecord::VERSION::STRING >= "5.1"
+            connection.tables
+          else
+            connection.data_sources
+          end
+
+        log("Iterating over tables") do
+          tables.each do |table|
+            case
+            when except.include?(table)
+              log("#{table} - ignored via the configuration; skipping")
+            else
+              log(table) do
+                yield(table)
+              end
+            end
+          end
+        end
+      end
+
+      def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to], has_scope: nil, through: nil)
+        type = Array(type)
+
+        log("Iterating over associations on #{model.name}") do
+          associations = []
+          type.each do |type1|
+            associations.concat(model.reflect_on_all_associations(type1))
+          end
+
+          associations.each do |association|
+            case
+            when except.include?("#{model.name}.#{association.name}")
+              log("#{model.name}.#{association.name} - ignored via the configuration; skipping")
+            when through && !association.is_a?(ActiveRecord::Reflection::ThroughReflection)
+              log("#{model.name}.#{association.name} - is not a through association; skipping")
+            when through == false && association.is_a?(ActiveRecord::Reflection::ThroughReflection)
+              log("#{model.name}.#{association.name} - is a through association; skipping")
+            when has_scope && association.scope.nil?
+              log("#{model.name}.#{association.name} - doesn't have a scope; skipping")
+            when has_scope == false && association.scope
+              log("#{model.name}.#{association.name} - has a scope; skipping")
+            else
+              log("#{association.macro} :#{association.name}") do
+                yield(association)
+              end
+            end
+          end
+        end
       end
     end
   end

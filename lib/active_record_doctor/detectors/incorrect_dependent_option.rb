@@ -47,22 +47,16 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models(except: config(:ignore_models)).each do |model|
-          next unless model.table_exists?
-
-          associations = model.reflect_on_all_associations(:has_many) +
-                         model.reflect_on_all_associations(:has_one) +
-                         model.reflect_on_all_associations(:belongs_to)
-
-          associations.each do |association|
-            next if config(:ignore_associations).include?("#{model.name}.#{association.name}")
-
+        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+          each_association(model, except: config(:ignore_associations)) do |association|
             # A properly configured :through association will have a non-nil
             # source_reflection. If it's nil then it indicates the :through
             # model lacks the next leg in the :through relationship. For
             # instance, if user has many comments through posts then a nil
             # source_reflection means that Post doesn't define +has_many :comments+.
             if through?(association) && association.source_reflection.nil?
+              log("through association with nil source_reflection")
+
               through_association = model.reflect_on_association(association.options.fetch(:through))
               association_on_join_model = through_association.klass.reflect_on_association(association.name)
 
@@ -72,7 +66,13 @@ module ActiveRecordDoctor
               # must be caused by something else in those cases. Each further
               # exception will be handled on a case-by-case basis.
               if association_on_join_model.nil?
-                problem!(model: model.name, association: association.name, problem: :invalid_through, associated_models: [through_association.klass.name], associated_models_type: "join")
+                problem!(
+                  model: model.name,
+                  association: association.name,
+                  problem: :invalid_through,
+                  associated_models: [through_association.klass.name],
+                  associated_models_type: "join"
+                )
                 next
               end
             end
@@ -96,11 +96,21 @@ module ActiveRecordDoctor
                 else raise("unsupported association type #{association.macro}")
                 end
 
-              problem!(model: model.name, association: association.name, problem: suggestion,
-                       associated_models: deletable_models.map(&:name), associated_models_type: associated_models_type)
+              problem!(
+                model: model.name,
+                association: association.name,
+                problem: suggestion,
+                associated_models: deletable_models.map(&:name),
+                associated_models_type: associated_models_type
+              )
             elsif callback_action(association) == :skip && destroyable_models.present?
-              problem!(model: model.name, association: association.name, problem: :suggest_destroy,
-                       associated_models: destroyable_models.map(&:name), associated_models_type: associated_models_type)
+              problem!(
+                model: model.name,
+                association: association.name,
+                problem: :suggest_destroy,
+                associated_models: destroyable_models.map(&:name),
+                associated_models_type: associated_models_type
+              )
             end
           end
         end
@@ -137,7 +147,7 @@ module ActiveRecordDoctor
       end
 
       def through?(reflection)
-          reflection.is_a?(ActiveRecord::Reflection::ThroughReflection)
+        reflection.is_a?(ActiveRecord::Reflection::ThroughReflection)
       end
 
       def defines_destroy_callbacks?(model)

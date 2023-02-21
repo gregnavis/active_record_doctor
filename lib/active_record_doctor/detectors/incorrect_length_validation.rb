@@ -31,13 +31,8 @@ module ActiveRecordDoctor
       end
 
       def detect
-        models(except: config(:ignore_models)).each do |model|
-          next unless model.table_exists?
-
-          connection.columns(model.table_name).each do |column|
-            next if config(:ignore_attributes).include?("#{model.name}.#{column.name}")
-            next if ![:string, :text].include?(column.type)
-
+        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+          each_attribute(model, except: config(:ignore_attributes), type: [:string, :text]) do |column|
             model_maximum = maximum_allowed_by_validations(model, column.name.to_sym)
             next if model_maximum == column.limit
 

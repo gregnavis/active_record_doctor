@@ -35,9 +35,7 @@ module ActiveRecordDoctor
       end
 
       def validations_without_indexes
-        models(except: config(:ignore_models)).each do |model|
-          next unless model.table_exists?
-
+        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
           model.validators.each do |validator|
             scope = Array(validator.options.fetch(:scope, []))
 
@@ -57,18 +55,14 @@ module ActiveRecordDoctor
       end
 
       def has_ones_without_indexes # rubocop:disable Naming/PredicateName
-        models.each do |model|
-          has_ones = model.reflect_on_all_associations(:has_one)
-          has_ones.each do |has_one|
-            next if has_one.is_a?(ActiveRecord::Reflection::ThroughReflection) || has_one.scope
-
-            association_model = has_one.klass
-            next if config(:ignore_models).include?(association_model.name)
+        each_model do |model|
+          each_association(model, type: :has_one, has_scope: false, through: false) do |has_one|
+            next if config(:ignore_models).include?(has_one.klass.name)
 
             foreign_key = has_one.foreign_key
             next if ignore_columns.include?(foreign_key.to_s)
 
-            table_name = association_model.table_name
+            table_name = has_one.klass.table_name
             next if unique_index?(table_name, [foreign_key])
 
             problem!(model: model, table: table_name, columns: [foreign_key], problem: :has_ones)

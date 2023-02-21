@@ -20,7 +20,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables(except: config(:ignore_tables)).each do |table|
+        each_table(except: config(:ignore_tables)) do |table|
           column = primary_key(table)
           next if column.nil?
           next if bigint?(column) || uuid?(column)

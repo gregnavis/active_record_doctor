@@ -31,20 +31,12 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables(except: config(:ignore_tables)).each do |table|
-          timestamp_columns = connection.columns(table).reject do |column|
-            config(:ignore_columns).include?("#{table}.#{column.name}")
-          end.select do |column|
-            config(:column_names).include?(column.name)
-          end
+        each_table(except: config(:ignore_tables)) do |table|
+          each_column(table, only: config(:column_names), except: config(:ignore_columns)) do |column|
+            each_index(table, except: config(:ignore_indexes)) do |index|
+              next if index.where =~ /\b#{column.name}\s+IS\s+(NOT\s+)?NULL\b/i
 
-          next if timestamp_columns.empty?
-
-          timestamp_columns.each do |timestamp_column|
-            indexes(table, except: config(:ignore_indexes)).each do |index|
-              next if index.where =~ /\b#{timestamp_column.name}\s+IS\s+(NOT\s+)?NULL\b/i
-
-              problem!(index: index.name, column_name: timestamp_column.name)
+              problem!(index: index.name, column_name: column.name)
             end
           end
         end

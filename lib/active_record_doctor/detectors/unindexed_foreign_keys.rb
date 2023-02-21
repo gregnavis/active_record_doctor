@@ -25,10 +25,8 @@ module ActiveRecordDoctor
       end
 
       def detect
-        tables(except: config(:ignore_tables)).each do |table|
-          connection.columns(table).each do |column|
-            next if config(:ignore_columns).include?("#{table}.#{column.name}")
-
+        each_table(except: config(:ignore_tables)) do |table|
+          each_column(table, except: config(:ignore_columns)) do |column|
             next unless foreign_key?(column)
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)

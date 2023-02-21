@@ -64,7 +64,7 @@ module ActiveRecordDoctor
       private
 
       def runner
-        @runner ||= ActiveRecordDoctor::Runner.new(config)
+        @runner ||= ActiveRecordDoctor::Runner.new(config: config, logger: logger)
       end
 
       def config
@@ -72,6 +72,15 @@ module ActiveRecordDoctor
           path = config_path && File.exist?(config_path) ? config_path : nil
           ActiveRecordDoctor.load_config_with_defaults(path)
         end
+      end
+
+      def logger
+        @logger ||=
+          if ENV.include?("ACTIVE_RECORD_DOCTOR_DEBUG")
+            ActiveRecordDoctor::Logger::Hierarchical.new($stderr)
+          else
+            ActiveRecordDoctor::Logger::Dummy.new
+          end
       end
     end
   end

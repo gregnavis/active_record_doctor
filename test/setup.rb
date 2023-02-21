@@ -93,7 +93,11 @@ class Minitest::Test
 
   def run_detector
     io = StringIO.new
-    runner = ActiveRecordDoctor::Runner.new(load_config, io)
+    runner = ActiveRecordDoctor::Runner.new(
+      config: load_config,
+      logger: ActiveRecordDoctor::Logger::Dummy.new,
+      io: io
+    )
     success = runner.run_one(detector_name)
     [success, io.string]
   end

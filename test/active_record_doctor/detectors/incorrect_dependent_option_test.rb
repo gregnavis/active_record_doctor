@@ -366,7 +366,8 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
 
       before_destroy :log
 
-      def log; end
+      def log
+      end
     end
 
     create_table(:comments) do |t|
