@@ -175,6 +175,14 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_abstract_class
+    define_model(:ApplicationRecord) do
+      self.abstract_class = true
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :name, null: false

@@ -180,7 +180,7 @@ module ActiveRecordDoctor
               log("#{model.name} - non-abstract model; skipping")
             when abstract == false && model.abstract_class?
               log("#{model.name} - abstract model; skipping")
-            when existing_tables_only && model.table_name && !model.table_exists?
+            when existing_tables_only && (model.table_name.nil? || !model.table_exists?)
               log("#{model.name} - backed by a non-existent table #{model.table_name}; skipping")
             else
               log(model.name) do
