@@ -139,6 +139,33 @@ OUTPUT
     refute_problems
   end
 
+  def test_single_column_covered_by_multi_column_on_materialized_view_is_duplicate
+    skip("Only PostgreSQL supports materialized views") unless postgresql?
+
+    begin
+      create_table(:users) do |t|
+        t.string :first_name
+        t.string :last_name
+        t.integer :age
+      end
+
+      connection = ActiveRecord::Base.connection
+      connection.execute(<<-SQL)
+        CREATE MATERIALIZED VIEW user_initials AS
+          SELECT first_name, last_name FROM users
+      SQL
+
+      connection.add_index(:user_initials, [:last_name, :first_name])
+      connection.add_index(:user_initials, :last_name)
+
+      assert_problems(<<OUTPUT)
+remove index_user_initials_on_last_name - can be replaced by index_user_initials_on_last_name_and_first_name
+OUTPUT
+    ensure
+      connection.execute("DROP MATERIALIZED VIEW user_initials")
+    end
+  end
+
   def test_config_ignore_tables
     # The detector recognizes two kinds of errors and both must take
     # ignore_tables into account. We trigger those errors by indexing the

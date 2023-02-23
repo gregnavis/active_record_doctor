@@ -34,7 +34,7 @@ module ActiveRecordDoctor
 
       def subindexes_of_multi_column_indexes
         log(__method__) do
-          each_table(except: config(:ignore_tables)) do |table|
+          each_data_source(except: config(:ignore_tables)) do |table|
             each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index, indexes|
               replacement_indexes = indexes.select do |other_index|
                 index != other_index && replaceable_with?(index, other_index)
