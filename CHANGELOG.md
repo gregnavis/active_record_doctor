@@ -1,3 +1,27 @@
+# Version 1.11.0
+
+* New feature: support for polymorphic associations in
+  missing_non_null_constraint (contributed by fatkodima).
+* New feature: support for foreign tables in PostgreSQL (contributed by
+  fatkodima).
+* New feature: debug logging for easier troubleshooting.
+* Bug fix: incorrect_length_validation used to take the first length validator
+  on the model, even if it didn't correspond to the column under consideration.
+  This is no longer the case (contributed by Julián Lires).
+* Bug fix: inclusion and exclusion validators can contain a proc in in: or
+  within: which makes them impossible to analyze by active_record_doctor; such
+  validations are now skipped (contributed by fatkodima).
+* Fixed to documentation for incorrect_dependent_option (contributed by
+  Erick Santos).
+* Bug fix: mismatched_foreign_key_type used to always look at the type of the
+  primary key in the other table, even if the foreign key was referencing a
+  different column; the right column is now taken into account (contributed by
+  Bruno Gerotto).
+* Bug fix: incorrect_dependent_option didn't work correctly on through:
+  associations as it would look at the final model (instead of the join model);
+  additionally, if the join model lacked the corresponding has_many association
+  it would result in NoMethodError.
+
 # Version 1.10.0
 
 * New feature: incorrect_length_validation detector can identify text-column
