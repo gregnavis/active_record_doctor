@@ -281,6 +281,20 @@ module ActiveRecordDoctor
         end
       end
 
+      def each_data_source(except: [])
+        log("Iterating over data sources") do
+          connection.data_sources.each do |data_source|
+            if except.include?(data_source)
+              log("#{data_source} - ignored via the configuration; skipping")
+            else
+              log(data_source) do
+                yield(data_source)
+              end
+            end
+          end
+        end
+      end
+
       def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to], has_scope: nil, through: nil)
         type = Array(type)
 
