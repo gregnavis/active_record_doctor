@@ -139,7 +139,7 @@ module ActiveRecordDoctor
         # ActiveRecord 6.1+
         if connection.respond_to?(:supports_check_constraints?) && connection.supports_check_constraints?
           connection.check_constraints(table_name).select(&:validated?).map(&:expression)
-        elsif postgresql?
+        elsif Utils.postgresql?(connection)
           definitions =
             connection.select_values(<<-SQL)
               SELECT pg_get_constraintdef(oid, true)
@@ -162,10 +162,6 @@ module ActiveRecordDoctor
 
       def underscored_name
         self.class.underscored_name
-      end
-
-      def postgresql?
-        ["PostgreSQL", "PostGIS"].include?(connection.adapter_name)
       end
 
       def each_model(except: [], abstract: nil, existing_tables_only: false)
