@@ -405,6 +405,45 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     OUTPUT
   end
 
+  def test_destroy_async_and_foreign_key_exists
+    skip("ActiveRecord < 6.1 doesn't support :destroy_async") if ActiveRecord::VERSION::STRING < "6.1"
+
+    create_table(:companies) do
+    end.define_model do
+      # We need an ActiveJob job defined to appease the ActiveRecord
+      class_attribute :destroy_association_async_job, default: Class.new
+
+      has_many :users, dependent: :destroy_async
+    end
+
+    create_table(:users) do |t|
+      t.references :company, foreign_key: true
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      don't use `dependent: :destroy_async` on TransientRecord::Models::Company.users or remove the foreign key from users.company_id - \
+      associated models will be deleted in the same transaction along with TransientRecord::Models::Company
+    OUTPUT
+  end
+
+  def test_destroy_async_and_no_foreign_key
+    skip("ActiveRecord < 6.1 doesn't support :destroy_async") if ActiveRecord::VERSION::STRING < "6.1"
+
+    create_table(:companies) do
+    end.define_model do
+      # We need an ActiveJob job defined to appease the ActiveRecord
+      class_attribute :destroy_association_async_job, default: Class.new
+
+      has_many :users, dependent: :destroy_async
+    end
+
+    create_table(:users) do |t|
+      t.references :company, foreign_key: false
+    end.define_model
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:companies) do
     end.define_model do
