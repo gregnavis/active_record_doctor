@@ -8,6 +8,10 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
   TIMESTAMP = Time.new(2021, 2, 1, 13, 15, 30)
 
   def test_create_migrations
+    create_table(:notes) do |t|
+      t.integer :notable_id, null: false
+      t.string :notable_type, null: false
+    end
     create_table(:users) do |t|
       t.integer :organization_id, null: false
       t.integer :account_id, null: false
@@ -21,9 +25,10 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
 
       path = File.join(dir, "indexes.txt")
       File.write(path, <<~INDEXES)
-        add an index on users.organization_id - foreign keys are often used in database lookups and should be indexed for performance reasons
-        add an index on users.account_id - foreign keys are often used in database lookups and should be indexed for performance reasons
-        add an index on organizations.owner_id - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on users(organization_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on users(account_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on organizations(owner_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on notes(notable_type, notable_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
       INDEXES
 
       capture_io do
@@ -36,25 +41,30 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
           load(File.join("db", "migrate", "20210201131531_index_foreign_keys_in_organizations.rb"))
           IndexForeignKeysInOrganizations.migrate(:up)
 
+          load(File.join("db", "migrate", "20210201131532_index_foreign_keys_in_notes.rb"))
+          IndexForeignKeysInNotes.migrate(:up)
+
           ::Object.send(:remove_const, :IndexForeignKeysInUsers)
           ::Object.send(:remove_const, :IndexForeignKeysInOrganizations)
+          ::Object.send(:remove_const, :IndexForeignKeysInNotes)
         end
       end
 
       assert_indexes([
+        ["notes", ["notable_type", "notable_id"]],
         ["users", ["organization_id"]],
         ["users", ["account_id"]],
         ["organizations", ["owner_id"]]
       ])
 
-      assert_equal(4, Dir.entries("./db/migrate").size)
+      assert_equal(5, Dir.entries("./db/migrate").size)
     end
   end
 
   def test_create_migrations_raises_when_malformed_inpout
     Tempfile.create do |file|
       file.write(<<~INDEXES)
-        add an index on users. - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on users() - foreign keys are often used in database lookups and should be indexed for performance reasons
       INDEXES
       file.flush
 
@@ -95,7 +105,7 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
 
       path = File.join(dir, "indexes.txt")
       File.write(path, <<~INDEXES)
-        add an index on organizations_migrated_from_legacy_app.legacy_owner_id_compatible_with_v1_to_v8 - foreign keys are often used in database lookups and should be indexed for performance reasons
+        add an index on organizations_migrated_from_legacy_app(legacy_owner_id_compatible_with_v1_to_v8) - foreign keys are often used in database lookups and should be indexed for performance reasons
       INDEXES
 
       capture_io do

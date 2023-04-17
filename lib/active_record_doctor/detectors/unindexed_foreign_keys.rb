@@ -18,9 +18,9 @@ module ActiveRecordDoctor
 
       private
 
-      def message(table:, column:)
+      def message(table:, columns:)
         # rubocop:disable Layout/LineLength
-        "add an index on #{table}.#{column} - foreign keys are often used in database lookups and should be indexed for performance reasons"
+        "add an index on #{table}(#{columns.join(', ')}) - foreign keys are often used in database lookups and should be indexed for performance reasons"
         # rubocop:enable Layout/LineLength
       end
 
@@ -31,7 +31,16 @@ module ActiveRecordDoctor
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)
 
-            problem!(table: table, column: column.name)
+            type_column_name = type_column_name(column)
+
+            columns =
+              if column_exists?(table, type_column_name)
+                [type_column_name, column.name]
+              else
+                [column.name]
+              end
+
+            problem!(table: table, columns: columns)
           end
         end
       end
@@ -53,9 +62,20 @@ module ActiveRecordDoctor
       end
 
       def indexed_as_polymorphic?(table, column)
-        type_column_name = column.name.sub(/_id\Z/, "_type")
         connection.indexes(table).any? do |index|
-          index.columns == [type_column_name, column.name]
+          index.columns[0, 2] == [type_column_name(column), column.name]
+        end
+      end
+
+      def column_exists?(table, column_name)
+        connection.columns(table).any? { |column| column.name == column_name }
+      end
+
+      def type_column_name(column)
+        if column.name.end_with?("_id")
+          column.name.sub(/_id\Z/, "_type")
+        else
+          "#{column.name}_type"
         end
       end
     end
