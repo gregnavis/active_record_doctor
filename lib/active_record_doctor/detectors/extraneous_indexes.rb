@@ -75,11 +75,12 @@ module ActiveRecordDoctor
 
         case [index1.unique, index2.unique]
         when [true, true]
-          (index2.columns - index1.columns).empty?
+          contains_all?(index1.columns, index2.columns)
         when [true, false]
           false
         else
-          prefix?(index1, index2)
+          prefix?(index1, index2) &&
+            contains_all?(index2.columns + includes(index2), includes(index1))
         end
       end
 
@@ -90,6 +91,14 @@ module ActiveRecordDoctor
       def prefix?(lhs, rhs)
         lhs.columns.count <= rhs.columns.count &&
           rhs.columns[0...lhs.columns.count] == lhs.columns
+      end
+
+      def contains_all?(array1, array2)
+        (array2 - array1).empty?
+      end
+
+      def includes(index)
+        index.respond_to?(:include) ? Array(index.include) : []
       end
     end
   end
