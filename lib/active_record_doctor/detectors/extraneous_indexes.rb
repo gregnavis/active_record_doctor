@@ -73,13 +73,16 @@ module ActiveRecordDoctor
         return false if index1.where != index2.where
         return false if opclasses(index1) != opclasses(index2)
 
+        index1_columns = Array(index1.columns)
+        index2_columns = Array(index2.columns)
+
         case [index1.unique, index2.unique]
         when [true, true]
-          (index2.columns - index1.columns).empty?
+          (index2_columns - index1_columns).empty?
         when [true, false]
           false
         else
-          prefix?(index1, index2)
+          prefix?(index1_columns, index2_columns)
         end
       end
 
@@ -88,8 +91,7 @@ module ActiveRecordDoctor
       end
 
       def prefix?(lhs, rhs)
-        lhs.columns.count <= rhs.columns.count &&
-          rhs.columns[0...lhs.columns.count] == lhs.columns
+        lhs.count <= rhs.count && rhs[0...lhs.count] == lhs
       end
     end
   end
