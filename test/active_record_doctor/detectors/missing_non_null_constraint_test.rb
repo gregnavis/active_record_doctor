@@ -187,6 +187,14 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     refute_problems
   end
 
+  def test_optional_columns_validated_by_sti_parent_without_child_is_allowed
+    create_table(:users) do |t|
+      t.string :type
+    end.define_model
+
+    refute_problems
+  end
+
   def test_not_null_check_constraint
     skip unless postgresql?
 
