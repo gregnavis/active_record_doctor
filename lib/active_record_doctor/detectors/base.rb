@@ -295,10 +295,11 @@ module ActiveRecordDoctor
         type = Array(type)
 
         log("Iterating over associations on #{model.name}") do
-          associations = []
-          type.each do |type1|
-            associations.concat(model.reflect_on_all_associations(type1))
-          end
+          associations = type.map do |type1|
+            # Skip inherited associations from STI to prevent them
+            # from being reported multiple times on subclasses.
+            model.reflect_on_all_associations(type1) - model.superclass.reflect_on_all_associations(type1)
+          end.flatten
 
           associations.each do |association|
             case

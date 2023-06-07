@@ -10,7 +10,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(email) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
@@ -39,8 +39,8 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
-      add a unique index on users(ref_token) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(email) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
+      add a unique index on users(ref_token) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
@@ -55,6 +55,25 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_missing_unique_index_reported_only_on_base_class
+    create_table(:users) do |t|
+      t.string :type
+      t.string :email
+      t.string :name
+    end.define_model do
+      validates :email, uniqueness: true
+    end
+
+    define_model(:Client, TransientRecord::Models::User) do
+      validates :name, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
+      add a unique index on users(name) - validating uniqueness in TransientRecord::Models::Client without an index can lead to duplicates
+    OUTPUT
+  end
+
   def test_present_partial_unique_index
     skip("MySQL doesn't support partial indexes") if mysql?
 
@@ -67,7 +86,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on users(email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(email) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
@@ -82,7 +101,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on users(company_id, department_id, email) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(company_id, department_id, email) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
@@ -121,7 +140,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on users(account_id) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on users(account_id) - validating uniqueness in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
@@ -148,7 +167,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on comments(commentable_type, commentable_id, title) - validating uniqueness in the model without an index can lead to duplicates
+      add a unique index on comments(commentable_type, commentable_id, title) - validating uniqueness in TransientRecord::Models::Comment without an index can lead to duplicates
     OUTPUT
   end
 
@@ -191,7 +210,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in TransientRecord::Models::User without an expression index can lead to duplicates (a regular unique index is not enough)
     OUTPUT
   end
 
@@ -210,7 +229,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     SQL
 
     assert_problems(<<~OUTPUT)
-      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in TransientRecord::Models::User without an expression index can lead to duplicates (a regular unique index is not enough)
     OUTPUT
   end
 
@@ -243,7 +262,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in TransientRecord::Models::User without an expression index can lead to duplicates (a regular unique index is not enough)
     OUTPUT
   end
 
@@ -262,7 +281,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     SQL
 
     assert_problems(<<~OUTPUT)
-      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in the model without an expression index can lead to duplicates (a regular unique index is not enough)
+      add a unique expression index on users(organization_id, lower(email)) - validating case-insensitive uniqueness in TransientRecord::Models::User without an expression index can lead to duplicates (a regular unique index is not enough)
     OUTPUT
   end
 
@@ -326,8 +345,8 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on accounts(user_id) - using `has_one` in the TransientRecord::Models::User model without an index can lead to duplicates
-      add a unique index on account_histories(account_id) - using `has_one` in the TransientRecord::Models::Account model without an index can lead to duplicates
+      add a unique index on accounts(user_id) - using `has_one` in TransientRecord::Models::User without an index can lead to duplicates
+      add a unique index on account_histories(account_id) - using `has_one` in TransientRecord::Models::Account without an index can lead to duplicates
     OUTPUT
   end
 
@@ -342,6 +361,24 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end.define_model
 
     refute_problems
+  end
+
+  def test_missing_has_one_unique_index_reported_only_on_base_class
+    create_table(:users) do |t|
+      t.string :type
+    end.define_model do
+      has_one :account, class_name: "TransientRecord::Models::Account"
+    end
+
+    define_model(:Client, TransientRecord::Models::User)
+
+    create_table(:accounts) do |t|
+      t.integer :user_id
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on accounts(user_id) - using `has_one` in TransientRecord::Models::User without an index can lead to duplicates
+    OUTPUT
   end
 
   def test_has_one_with_index
@@ -370,7 +407,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     end
 
     assert_problems(<<~OUTPUT)
-      add a unique index on accounts(accountable_type, accountable_id) - using `has_one` in the TransientRecord::Models::User model without an index can lead to duplicates
+      add a unique index on accounts(accountable_type, accountable_id) - using `has_one` in TransientRecord::Models::User without an index can lead to duplicates
     OUTPUT
   end
 
