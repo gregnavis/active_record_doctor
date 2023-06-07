@@ -86,7 +86,7 @@ module ActiveRecordDoctor
               else
                 [has_one.foreign_key.to_s]
               end
-            next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
+            next if ignore_columns.include?("#{has_one.klass.name}(#{columns.join(',')})")
 
             table_name = has_one.klass.table_name
             next if unique_index?(table_name, columns)

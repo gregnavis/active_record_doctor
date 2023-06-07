@@ -440,6 +440,26 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_config_ignore_columns_from_has_one
+    create_table(:users)
+      .define_model do
+        has_one :account, class_name: "TransientRecord::Models::Account"
+      end
+
+    create_table(:accounts) do |t|
+      t.integer :user_id
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_columns: ["TransientRecord::Models::Account(user_id)"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   class DummyValidator < ActiveModel::Validator
     def validate(record)
     end
