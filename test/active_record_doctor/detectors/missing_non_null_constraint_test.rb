@@ -187,6 +187,24 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     refute_problems
   end
 
+  def test_sti_column_is_ignored
+    Context.create_table(:users) do |t|
+      t.string :type
+    end.define_model
+
+    refute_problems
+  end
+
+  def test_custom_sti_column_is_ignored
+    Context.create_table(:users) do |t|
+      t.string :custom_type
+    end.define_model do
+      self.inheritance_column = :custom_type
+    end
+
+    refute_problems
+  end
+
   def test_not_null_check_constraint
     skip unless postgresql?
 

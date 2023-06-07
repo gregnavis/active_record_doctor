@@ -36,6 +36,7 @@ module ActiveRecordDoctor
             next if ignored?("#{table}.#{column.name}", config(:ignore_columns))
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }
+            next if sti_column?(models, column.name)
             next if not_null_check_constraint_exists?(table, column)
 
             problem!(column: column.name, table: table)
@@ -69,6 +70,10 @@ module ActiveRecordDoctor
             !validator.options[:if] &&
             !validator.options[:unless]
         end
+      end
+
+      def sti_column?(models, column_name)
+        models.any? { |model| model.inheritance_column == column_name }
       end
     end
   end
