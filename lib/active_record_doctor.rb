@@ -26,6 +26,7 @@ require "active_record_doctor/runner"
 require "active_record_doctor/version"
 require "active_record_doctor/config"
 require "active_record_doctor/config/loader"
+require "active_record_doctor/rake/task"
 
 module ActiveRecordDoctor # :nodoc:
 end
