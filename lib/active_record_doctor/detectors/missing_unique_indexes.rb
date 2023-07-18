@@ -13,6 +13,9 @@ module ActiveRecordDoctor
         },
         ignore_columns: {
           description: "specific validators, written as Model(column1, column2, ...), that should not be checked"
+        },
+        ignore_join_tables: {
+          description: "join tables that should not be checked for existence of unique indexes"
         }
       }
 
@@ -28,6 +31,8 @@ module ActiveRecordDoctor
             "without an expression index can lead to duplicates (a regular unique index is not enough)"
         when :has_ones
           "add a unique index on #{table}(#{columns.join(', ')}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
+        when :has_and_belongs_to_many
+          "add a unique index on #{table}(#{columns.join(', ')}) - using `has_and_belongs_to_many` in the #{model.name} model without an index can lead to duplicates"
         end
       end
       # rubocop:enable Layout/LineLength
@@ -35,6 +40,7 @@ module ActiveRecordDoctor
       def detect
         validations_without_indexes
         has_ones_without_indexes
+        has_and_belongs_to_many_without_indexes
       end
 
       def validations_without_indexes
@@ -98,6 +104,20 @@ module ActiveRecordDoctor
 
       def conditional_validator?(validator)
         (validator.options.keys & [:if, :unless, :conditions]).present?
+      end
+
+      def has_and_belongs_to_many_without_indexes # rubocop:disable Naming/PredicateName
+        each_model do |model|
+          each_association(model, type: :has_and_belongs_to_many, has_scope: false) do |association|
+            join_table = association.join_table
+            next if config(:ignore_join_tables).include?(join_table)
+
+            columns = [association.foreign_key, association.association_foreign_key]
+            next if unique_index?(join_table, columns)
+
+            problem!(model: model, table: join_table, columns: columns, problem: :has_and_belongs_to_many)
+          end
+        end
       end
 
       def resolve_attributes(model, attributes)

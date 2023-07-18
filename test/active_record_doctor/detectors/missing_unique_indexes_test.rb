@@ -389,6 +389,52 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_has_and_belongs_to_many_without_index
+    create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+    end
+
+    create_table(:roles).define_model
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on roles_users(user_id, role_id) - using `has_and_belongs_to_many` in the TransientRecord::Models::User model without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_has_and_belongs_to_many_with_scope_and_without_index
+    create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles, -> { unique }
+      end
+
+    create_table(:roles).define_model
+
+    refute_problems
+  end
+
+  def test_has_and_belongs_to_many_with_index
+    create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+      t.index [:user_id, :role_id], unique: true
+    end
+
+    create_table(:roles).define_model
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     create_table(:users) do |t|
       t.string :email
@@ -434,6 +480,29 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_unique_indexes,
           ignore_columns: ["TransientRecord::Models::User(organization_id, email)", "TransientRecord::Models::User(organization_id, role)"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_join_tables
+    create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+    end
+
+    create_table(:roles).define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_join_tables: ["roles_users"]
       end
     CONFIG
 
