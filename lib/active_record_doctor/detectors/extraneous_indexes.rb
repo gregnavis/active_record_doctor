@@ -23,7 +23,7 @@ module ActiveRecordDoctor
         if replacement_indexes.nil?
           "remove #{extraneous_index} - coincides with the primary key on the table"
         else
-          "remove #{extraneous_index} - can be replaced by #{replacement_indexes.join(' or ')}"
+          "remove #{extraneous_index} - queries against this will be handled by the following index(es) #{replacement_indexes.join(' or ')}"
         end
       end
 
