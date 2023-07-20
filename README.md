@@ -7,7 +7,7 @@ can detect:
 * unindexed `deleted_at` columns - [`active_record_doctor:unindexed_deleted_at`](#detecting-unindexed-deleted_at-columns)
 * missing foreign key constraints - [`active_record_doctor:missing_foreign_keys`](#detecting-missing-foreign-key-constraints)
 * models referencing undefined tables - [`active_record_doctor:undefined_table_references`](#detecting-models-referencing-undefined-tables)
-* uniqueness validations not backed by an unique index - [`active_record_doctor:missing_unique_indexes`](#detecting-uniqueness-validations-not-backed-by-an-index)
+* uniqueness validations not backed by a unique index - [`active_record_doctor:missing_unique_indexes`](#detecting-uniqueness-validations-not-backed-by-an-index)
 * missing non-`NULL` constraints - [`active_record_doctor:missing_non_null_constraint`](#detecting-missing-non-null-constraints)
 * missing presence validations - [`active_record_doctor:missing_presence_validation`](#detecting-missing-presence-validations)
 * incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
@@ -158,7 +158,7 @@ three-step process:
   ```
 
 2. Remove columns that should _not_ be indexed from `unindexed_foreign_keys.txt`
-   as a column can look like a foreign key (i.e. end with `_id`) without being
+   as a column can look like a foreign key (i.e. ending with `_id`) without being
    one.
 
 3. Generate the migrations
@@ -209,7 +209,7 @@ To discover such indexes automatically just follow these steps:
 
 3. Create a migration to drop the indexes.
 
-The indexes aren't dropped automatically because there's usually just a few of
+The indexes aren't dropped automatically because there are usually just a few of
 them and it's a good idea to double-check that you won't drop something
 necessary.
 
@@ -265,11 +265,11 @@ Supported configuration options:
 If `users.profile_id` references a row in `profiles` then this can be expressed
 at the database level with a foreign key constraint. It _forces_
 `users.profile_id` to point to an existing row in `profiles`. The problem is
-that in many legacy Rails apps the constraint isn't enforced at the database
+that in many legacy Rails apps, the constraint isn't enforced at the database
 level.
 
 `active_record_doctor` can automatically detect foreign keys that could benefit
-from a foreign key constraint (a future version will generate a migrations that
+from a foreign key constraint (a future version will generate a migration that
 add the constraint; for now, it's your job). You can obtain the list of foreign
 keys with the following command:
 
@@ -307,7 +307,7 @@ before they hit production.
 * Rails 5+ and _any_ database or
 * Rails 4.2 with PostgreSQL.
 
-The only think you need to do is run:
+The only thing you need to do is run:
 
 ```
 bundle exec rake active_record_doctor:undefined_table_references
@@ -320,7 +320,7 @@ this:
 Contract references a non-existent table or view named contract_records
 ```
 
-On top of that `rake` will exit with status code of 1. This allows you to use
+On top of that `rake` will exit with a status code of 1. This allows you to use
 this check as part of your Continuous Integration pipeline.
 
 Supported configuration options:
@@ -333,7 +333,7 @@ Supported configuration options:
 
 Model-level uniqueness validations and `has_one` associations should be backed
 by a database index in order to be robust. Otherwise you risk inserting
-duplicate values under heavy load.
+duplicate values under a heavy load.
 
 In order to detect such validations run:
 
@@ -489,7 +489,7 @@ This can lead to two types of errors:
 - Using `delete_all` when dependent models define callbacks - they will NOT be
   invoked.
 - Using `destroy` when dependent models define no callbacks - dependent models
-  will be loaded one-by-one with no reason
+  will be loaded one by one with no reason
 
 In order to detect associations affected by the two aforementioned problems run
 the following command:
@@ -530,8 +530,8 @@ The output of the command looks like this:
 change the type of companies.id to bigint
 ```
 
-The above means `comanies.id` should be migrated to a wider integer type. An
-example migration to accomplish this looks likes this:
+The above means `companies.id` should be migrated to a wider integer type. An
+example migration to accomplish this looks like this:
 
 ```ruby
 class ChangeCompaniesPrimaryKeyType < ActiveRecord::Migration[5.1]
@@ -565,7 +565,7 @@ bundle exec rake active_record_doctor:mismatched_foreign_key_type
 The output of the command looks like this:
 
 ```
-companies.user_id references a column of different type - foreign keys should be of the same type as the referenced column
+companies.user_id references a column of a different type - foreign keys should be of the same type as the referenced column
 ```
 
 Supported configuration options:
@@ -584,7 +584,7 @@ combinations of Ruby and Rails versions. Specifically:
    supported by `active_record_doctor`.
 2. If a Ruby version is compatible with a supported Rails version then it's
    also supported by `active_record_doctor`.
-3. Only most recent teeny Ruby versions and patch Rails versions are supported.
+3. Only the most recent teeny Ruby versions and patch Rails versions are supported.
 
 ## Author
 
