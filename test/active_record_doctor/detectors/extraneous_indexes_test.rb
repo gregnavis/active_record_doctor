@@ -42,7 +42,7 @@ OUTPUT
     ActiveRecord::Base.connection.add_index :users, :email, name: "index_users_on_email"
 
     assert_problems(<<OUTPUT)
-remove index_users_on_email - can be replaced by unique_index_on_users_email
+remove index_users_on_email - queries should be able to use the following index instead: unique_index_on_users_email
 OUTPUT
   end
 
@@ -59,7 +59,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-remove index_users_on_last_name - can be replaced by index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
+remove index_users_on_last_name - queries should be able to use the following indices instead: index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
 OUTPUT
   end
 
@@ -78,7 +78,7 @@ OUTPUT
     ActiveRecord::Base.connection.add_index :users, [:last_name, :first_name]
 
     assert_problems(<<OUTPUT)
-remove index_users_on_last_name_and_first_name - can be replaced by index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
+remove index_users_on_last_name_and_first_name - queries should be able to use the following indices instead: index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
 OUTPUT
   end
 
@@ -91,7 +91,7 @@ OUTPUT
     end
 
     assert_problems(<<OUTPUT)
-remove index_users_on_last_name_and_first_name - can be replaced by index_users_on_first_name
+remove index_users_on_last_name_and_first_name - queries should be able to use the following index instead: index_users_on_first_name
 OUTPUT
   end
 
@@ -159,7 +159,7 @@ OUTPUT
       connection.add_index(:user_initials, :last_name)
 
       assert_problems(<<OUTPUT)
-remove index_user_initials_on_last_name - can be replaced by index_user_initials_on_last_name_and_first_name
+remove index_user_initials_on_last_name - queries should be able to use the following index instead: index_user_initials_on_last_name_and_first_name
 OUTPUT
     ensure
       connection.execute("DROP MATERIALIZED VIEW user_initials")
