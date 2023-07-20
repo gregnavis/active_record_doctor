@@ -19,12 +19,12 @@ module ActiveRecordDoctor
 
       private
 
-      def message(extraneous_index:, replacement_indexes:)
+      def message(table:, extraneous_index:, replacement_indexes:)
         if replacement_indexes.nil?
-          "remove #{extraneous_index} - coincides with the primary key on the table"
+          "remove #{extraneous_index} from #{table} - coincides with the primary key on the table"
         else
           # rubocop:disable Layout/LineLength
-          "remove #{extraneous_index} - queries should be able to use the following #{'index'.pluralize(replacement_indexes.count)} instead: #{replacement_indexes.join(' or ')}"
+          "remove the index #{extraneous_index} from the table #{table} - queries should be able to use the following #{'index'.pluralize(replacement_indexes.count)} instead: #{replacement_indexes.join(' or ')}"
           # rubocop:enable Layout/LineLength
         end
       end
@@ -48,6 +48,7 @@ module ActiveRecordDoctor
               end
 
               problem!(
+                table: table,
                 extraneous_index: index.name,
                 replacement_indexes: replacement_indexes.map(&:name).sort
               )
@@ -62,7 +63,7 @@ module ActiveRecordDoctor
             each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index|
               primary_key = connection.primary_key(table)
               if index.columns == [primary_key] && index.where.nil?
-                problem!(extraneous_index: index.name, replacement_indexes: nil)
+                problem!(table: table, extraneous_index: index.name, replacement_indexes: nil)
               end
             end
           end
