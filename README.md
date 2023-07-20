@@ -475,7 +475,7 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_models` - models whose validators should not be checked.
-- `ignore_columns` - attributes, written as Model.attribute, whose validators
+- `ignore_attributes` - attributes, written as Model.attribute, whose validators
   should not be checked.
 
 ### Detecting Incorrect `dependent` Option on Associations
