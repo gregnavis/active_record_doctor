@@ -23,7 +23,9 @@ module ActiveRecordDoctor
         if replacement_indexes.nil?
           "remove #{extraneous_index} - coincides with the primary key on the table"
         else
-          "remove #{extraneous_index} - can be replaced by #{replacement_indexes.join(' or ')}"
+          # rubocop:disable Layout/LineLength
+          "remove #{extraneous_index} - queries should be able to use the following #{'index'.pluralize(replacement_indexes.count)} instead: #{replacement_indexes.join(' or ')}"
+          # rubocop:enable Layout/LineLength
         end
       end
 
