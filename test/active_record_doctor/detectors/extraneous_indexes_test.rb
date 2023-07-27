@@ -95,6 +95,32 @@ remove the index index_users_on_last_name_and_first_name from the table users - 
 OUTPUT
   end
 
+  def test_expression_index_not_covered_by_multicolumn_index
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :email
+      t.index "(lower(email))"
+      t.index [:first_name, :email]
+    end
+
+    refute_problems
+  end
+
+  def test_unique_expression_index_not_covered_by_unique_multicolumn_index
+    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+
+    create_table(:users) do |t|
+      t.string :first_name
+      t.string :email
+      t.index "(lower(email))", unique: true
+      t.index [:first_name, :email], unique: true
+    end
+
+    refute_problems
+  end
+
   def test_not_covered_by_different_index_type
     create_table(:users) do |t|
       t.string :first_name
