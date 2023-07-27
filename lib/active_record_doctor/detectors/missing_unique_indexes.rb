@@ -22,12 +22,12 @@ module ActiveRecordDoctor
       def message(model:, table:, columns:, problem:)
         case problem
         when :validations
-          "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in the model without an index can lead to duplicates"
+          "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in #{model.name} without an index can lead to duplicates"
         when :case_insensitive_validations
-          "add a unique expression index on #{table}(#{columns.join(', ')}) - validating case-insensitive uniqueness in the model "\
+          "add a unique expression index on #{table}(#{columns.join(', ')}) - validating case-insensitive uniqueness in #{model.name} "\
             "without an expression index can lead to duplicates (a regular unique index is not enough)"
         when :has_ones
-          "add a unique index on #{table}(#{columns.join(', ')}) - using `has_one` in the #{model.name} model without an index can lead to duplicates"
+          "add a unique index on #{table}(#{columns.join(', ')}) - using `has_one` in #{model.name} without an index can lead to duplicates"
         end
       end
       # rubocop:enable Layout/LineLength
@@ -39,7 +39,10 @@ module ActiveRecordDoctor
 
       def validations_without_indexes
         each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
-          model.validators.each do |validator|
+          # Skip inherited validators from STI to prevent them
+          # from being reported multiple times on subclasses.
+          validators = model.validators - model.superclass.validators
+          validators.each do |validator|
             scope = Array(validator.options.fetch(:scope, []))
 
             next unless validator.is_a?(ActiveRecord::Validations::UniquenessValidator)
