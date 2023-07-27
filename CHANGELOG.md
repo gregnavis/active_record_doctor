@@ -1,3 +1,26 @@
+# Version 1.12.0
+
+* New feature: detect extraneous indexes on PostgreSQL materialized views
+  (contributed by fatkodima).
+* New feature: support for case-insensitive validations in
+  missing_unique_indexes (contributed by fatkodima).
+* New feature: support for has_one in missing_unique_indexes (contributed by
+  fatkodima).
+* New feature: support for async options in incorrect_dependent_option
+  (contributed by fatkodima).
+* Bug fix: make Rake integration work in non-Rails projects (contributed by
+  fatkodima).
+* Bug fix: ignore inherited validations in missing_unique_indexes (contributed
+  by fatkodima).
+* Bug fix: make extraneous_indexes work on expression indexes (contributed
+  by fatkodima).
+* short_primary_key type checks only integer indexes as they are the ones at the
+  risk of running out (contributed by fatkodima).
+* unindexed_foreign_keys looks at actual foreign keys, instead of guessing based
+  on column name (contributed by fatkodima).
+* Improvements and clarifications to documentation and error messages
+  (contributed by Kurtis Rainbolt-Greene, Vincent Glennon, and fatkodima).
+
 # Version 1.11.0
 
 * New feature: support for polymorphic associations in
