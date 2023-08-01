@@ -502,7 +502,7 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_dependent_option,
-          ignore_associations: ["TransientRecord::Models::Company.users"]
+          ignore_associations: [/users/]
       end
     CONFIG
 

@@ -79,6 +79,24 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     refute_problems
   end
 
+  def test_config_ignore_tables_regexp
+    skip("MySQL always indexes foreign keys") if mysql?
+
+    create_table(:companies)
+    create_table(:users_tmp) do |t|
+      t.references :company, foreign_key: true, index: false
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :unindexed_foreign_keys,
+          ignore_tables: [/_tmp\\z/]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_global_ignore_tables
     skip("MySQL always indexes foreign keys") if mysql?
 
@@ -108,6 +126,25 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
       ActiveRecordDoctor.configure do |config|
         config.detector :unindexed_foreign_keys,
           ignore_columns: ["users.company_id"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_columns_regexp
+    skip("MySQL always indexes foreign keys") if mysql?
+
+    create_table(:companies)
+    create_table(:users) do |t|
+      t.integer :company_id_tmp
+      t.foreign_key :companies, column: :company_id_tmp, index: false
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :unindexed_foreign_keys,
+          ignore_columns: [/_tmp\\z/]
       end
     CONFIG
 
