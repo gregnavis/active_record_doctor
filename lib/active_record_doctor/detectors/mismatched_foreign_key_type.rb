@@ -29,7 +29,7 @@ module ActiveRecordDoctor
           each_foreign_key(table) do |foreign_key|
             from_column = column(table, foreign_key.column)
 
-            next if config(:ignore_columns).include?("#{table}.#{from_column.name}")
+            next if ignored?("#{table}.#{from_column.name}", config(:ignore_columns))
 
             to_table = foreign_key.to_table
             to_column = column(to_table, foreign_key.primary_key)

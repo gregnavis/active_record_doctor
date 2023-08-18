@@ -35,13 +35,32 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
 
   def test_config_ignore_models
     create_table(:users) do |t|
-      t.string :email, null: false
-    end.define_model
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_boolean_presence_validation,
-          ignore_models: ["ModelFactory.User"]
+          ignore_models: ["TransientRecord::Models::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_models_regexp
+    create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_models: [/User/]
       end
     CONFIG
 
@@ -50,12 +69,14 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
 
   def test_global_ignore_models
     create_table(:users) do |t|
-      t.string :email, null: false
-    end.define_model
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
-        config.global :ignore_models, ["ModelFactory.User"]
+        config.global :ignore_models, ["TransientRecord::Models::User"]
       end
     CONFIG
 
@@ -64,13 +85,32 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
 
   def test_config_ignore_attributes
     create_table(:users) do |t|
-      t.string :email, null: false
-    end.define_model
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_boolean_presence_validation,
-          ignore_attributes: ["ModelFactory.User.email"]
+          ignore_attributes: ["TransientRecord::Models::User.active"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_attributes_regexp
+    create_table(:users) do |t|
+      t.boolean :active_old, null: false
+    end.define_model do
+      validates :active_old, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_attributes: [/_old\\z/]
       end
     CONFIG
 

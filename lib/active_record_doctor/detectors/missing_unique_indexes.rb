@@ -81,7 +81,7 @@ module ActiveRecordDoctor
       def has_ones_without_indexes # rubocop:disable Naming/PredicateName
         each_model do |model|
           each_association(model, type: :has_one, has_scope: false, through: false) do |has_one|
-            next if config(:ignore_models).include?(has_one.klass.name)
+            next if ignored?(has_one.klass.name, config(:ignore_models))
 
             columns =
               if has_one.options[:as]
@@ -89,7 +89,7 @@ module ActiveRecordDoctor
               else
                 [has_one.foreign_key.to_s]
               end
-            next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
+            next if ignored?("#{model.name}(#{columns.join(',')})", ignore_columns)
 
             table_name = has_one.klass.table_name
             next if unique_index?(table_name, columns)
@@ -136,7 +136,11 @@ module ActiveRecordDoctor
 
       def ignore_columns
         @ignore_columns ||= config(:ignore_columns).map do |column|
-          column.gsub(" ", "")
+          if column.is_a?(String)
+            column.gsub(" ", "")
+          else
+            column
+          end
         end
       end
 

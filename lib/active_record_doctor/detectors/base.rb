@@ -170,7 +170,7 @@ module ActiveRecordDoctor
             case
             when model.name.start_with?("HABTM_")
               log("#{model.name} - has-belongs-to-many model; skipping")
-            when except.include?(model.name)
+            when ignored?(model.name, except)
               log("#{model.name} - ignored via the configuration; skipping")
             when abstract && !model.abstract_class?
               log("#{model.name} - non-abstract model; skipping")
@@ -200,7 +200,7 @@ module ActiveRecordDoctor
         log(message) do
           indexes.each do |index|
             case
-            when except.include?(index.name)
+            when ignored?(index.name, except)
               log("#{index.name} - ignored via the configuration; skipping")
             when multicolumn_only && !index.columns.is_a?(Array)
               log("#{index.name} - single-column index; skipping")
@@ -217,7 +217,7 @@ module ActiveRecordDoctor
         log("Iterating over attributes of #{model.name}") do
           connection.columns(model.table_name).each do |column|
             case
-            when except.include?("#{model.name}.#{column.name}")
+            when ignored?("#{model.name}.#{column.name}", except)
               log("#{model.name}.#{column.name} - ignored via the configuration; skipping")
             when type && !Array(type).include?(column.type)
               log("#{model.name}.#{column.name} - ignored due to the #{column.type} type; skipping")
@@ -234,7 +234,7 @@ module ActiveRecordDoctor
         log("Iterating over columns of #{table_name}") do
           connection.columns(table_name).each do |column|
             case
-            when except.include?("#{table_name}.#{column.name}")
+            when ignored?("#{table_name}.#{column.name}", except)
               log("#{column.name} - ignored via the configuration; skipping")
             when only.nil? || only.include?(column.name)
               log(column.name.to_s) do
@@ -266,7 +266,7 @@ module ActiveRecordDoctor
         log("Iterating over tables") do
           tables.each do |table|
             case
-            when except.include?(table)
+            when ignored?(table, except)
               log("#{table} - ignored via the configuration; skipping")
             else
               log(table) do
@@ -280,7 +280,7 @@ module ActiveRecordDoctor
       def each_data_source(except: [])
         log("Iterating over data sources") do
           connection.data_sources.each do |data_source|
-            if except.include?(data_source)
+            if ignored?(data_source, except)
               log("#{data_source} - ignored via the configuration; skipping")
             else
               log(data_source) do
@@ -303,7 +303,7 @@ module ActiveRecordDoctor
 
           associations.each do |association|
             case
-            when except.include?("#{model.name}.#{association.name}")
+            when ignored?("#{model.name}.#{association.name}", except)
               log("#{model.name}.#{association.name} - ignored via the configuration; skipping")
             when through && !association.is_a?(ActiveRecord::Reflection::ThroughReflection)
               log("#{model.name}.#{association.name} - is not a through association; skipping")
@@ -320,6 +320,10 @@ module ActiveRecordDoctor
             end
           end
         end
+      end
+
+      def ignored?(name, patterns)
+        patterns.any? { |pattern| pattern === name } # rubocop:disable Style/CaseEquality
       end
     end
   end

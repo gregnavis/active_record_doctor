@@ -215,6 +215,38 @@ OUTPUT
     refute_problems
   end
 
+  def test_config_ignore_tables_regexp
+    create_table(:users_tmp) do |t|
+      t.index :id
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :extraneous_indexes,
+          ignore_tables: [/_tmp\\z/]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_tables_string_ignores_exact_match
+    create_table(:users) do |t|
+      t.index :id
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :extraneous_indexes,
+          ignore_tables: ["users_profiles"]
+      end
+    CONFIG
+
+    assert_problems(<<OUTPUT)
+remove index_users_on_id from users - coincides with the primary key on the table
+OUTPUT
+  end
+
   def test_config_global_ignore_tables
     create_table(:users) do |t|
       t.index :id
@@ -269,6 +301,26 @@ OUTPUT
       ActiveRecordDoctor.configure do |config|
         config.detector :extraneous_indexes,
           ignore_indexes: ["index_users_on_id", "index_on_users_email"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_detector_ignore_indexes_regexp
+    create_table(:users) do |t|
+      t.index :id
+      t.string :email
+      t.string :api_key
+
+      t.index :email, name: "index_users_on_email"
+      t.index [:email, :api_key], name: "index_users_on_email_and_api_key"
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :extraneous_indexes,
+          ignore_indexes: [/\\Aindex_users_/]
       end
     CONFIG
 

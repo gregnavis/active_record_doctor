@@ -26,14 +26,14 @@ module ActiveRecordDoctor
         table_models = models.select(&:table_exists?).group_by(&:table_name)
 
         table_models.each do |table, models|
-          next if config(:ignore_tables).include?(table)
+          next if ignored?(table, config(:ignore_tables))
 
           concrete_models = models.reject do |model|
             model.abstract_class? || sti_base_model?(model)
           end
 
           connection.columns(table).each do |column|
-            next if config(:ignore_columns).include?("#{table}.#{column.name}")
+            next if ignored?("#{table}.#{column.name}", config(:ignore_columns))
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }
             next if not_null_check_constraint_exists?(table, column)
