@@ -139,6 +139,17 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_composite_primary_key_is_not_reported
+    skip("ActiveRecord < 7.1 doesn't support composite primary keys") if ActiveRecord::VERSION::STRING < "7.1"
+
+    create_table(:users, primary_key: [:company_id, :id]) do |t|
+      t.bigint :company_id
+      t.bigint :id
+    end.define_model
+
+    refute_problems
+  end
+
   def test_models_with_non_existent_tables_are_skipped
     define_model(:User)
 

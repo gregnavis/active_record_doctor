@@ -21,7 +21,7 @@ module ActiveRecordDoctor
 
       def message(table:, extraneous_index:, replacement_indexes:)
         if replacement_indexes.nil?
-          "remove #{extraneous_index} from #{table} - coincides with the primary key on the table"
+          "remove #{extraneous_index} from #{table} - covered by the primary key index on the table"
         else
           # rubocop:disable Layout/LineLength
           "remove the index #{extraneous_index} from the table #{table} - queries should be able to use the following #{'index'.pluralize(replacement_indexes.count)} instead: #{replacement_indexes.join(' or ')}"
@@ -62,7 +62,8 @@ module ActiveRecordDoctor
           each_table(except: config(:ignore_tables)) do |table|
             each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index|
               primary_key = connection.primary_key(table)
-              if index.columns == [primary_key] && index.where.nil?
+
+              if replaceable_columns?(index.columns, index.unique, primary_key, true) && index.where.nil?
                 problem!(table: table, extraneous_index: index.name, replacement_indexes: nil)
               end
             end
@@ -76,21 +77,25 @@ module ActiveRecordDoctor
         return false if index1.where != index2.where
         return false if opclasses(index1) != opclasses(index2)
 
-        index1_columns = Array(index1.columns)
-        index2_columns = Array(index2.columns)
-
-        case [index1.unique, index2.unique]
-        when [true, true]
-          (index2_columns - index1_columns).empty?
-        when [true, false]
-          false
-        else
-          prefix?(index1_columns, index2_columns)
-        end
+        replaceable_columns?(index1.columns, index1.unique, index2.columns, index2.unique)
       end
 
       def opclasses(index)
         index.respond_to?(:opclasses) ? index.opclasses : nil
+      end
+
+      def replaceable_columns?(columns1, unique1, columns2, unique2)
+        columns1 = Array(columns1)
+        columns2 = Array(columns2)
+
+        case [unique1, unique2]
+        when [true, true]
+          (columns2 - columns1).empty?
+        when [true, false]
+          false
+        else
+          prefix?(columns1, columns2)
+        end
       end
 
       def prefix?(lhs, rhs)

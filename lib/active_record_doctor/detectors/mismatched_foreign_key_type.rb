@@ -31,6 +31,7 @@ module ActiveRecordDoctor
 
             next if ignored?("#{table}.#{from_column.name}", config(:ignore_columns))
 
+            # TODO: Add support for composite primary keys when https://github.com/rails/rails/pull/47637 is merged.
             to_table = foreign_key.to_table
             to_column = column(to_table, foreign_key.primary_key)
 

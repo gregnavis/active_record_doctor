@@ -7,7 +7,7 @@ class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
     end
 
     assert_problems(<<OUTPUT)
-remove index_users_on_id from users - coincides with the primary key on the table
+remove index_users_on_id from users - covered by the primary key index on the table
 OUTPUT
   end
 
@@ -22,13 +22,35 @@ OUTPUT
     refute_problems
   end
 
+  def test_index_on_composite_primary_key_columns
+    skip("ActiveRecord < 7.1 doesn't support composite primary keys") if ActiveRecord::VERSION::STRING < "7.1"
+
+    create_table(:users, primary_key: [:company_id, :id]) do |t|
+      t.bigint :company_id
+      t.bigint :id
+      t.string :email
+      t.index [:company_id, :id], name: "index_1"
+      t.index [:company_id], name: "index_2"
+      t.index [:id], name: "index_3"
+      t.index [:company_id, :id, :email], unique: true, name: "index_4"
+    end
+
+    assert_problems(<<OUTPUT)
+remove index_1 from users - covered by the primary key index on the table
+remove index_2 from users - covered by the primary key index on the table
+remove index_4 from users - covered by the primary key index on the table
+remove the index index_1 from the table users - queries should be able to use the following index instead: index_4
+remove the index index_2 from the table users - queries should be able to use the following indices instead: index_1 or index_4
+OUTPUT
+  end
+
   def test_index_on_non_standard_primary_key
     create_table(:profiles, primary_key: :user_id) do |t|
       t.index :user_id
     end
 
     assert_problems(<<OUTPUT)
-remove index_profiles_on_user_id from profiles - coincides with the primary key on the table
+remove index_profiles_on_user_id from profiles - covered by the primary key index on the table
 OUTPUT
   end
 
@@ -243,7 +265,7 @@ OUTPUT
     CONFIG
 
     assert_problems(<<OUTPUT)
-remove index_users_on_id from users - coincides with the primary key on the table
+remove index_users_on_id from users - covered by the primary key index on the table
 OUTPUT
   end
 
