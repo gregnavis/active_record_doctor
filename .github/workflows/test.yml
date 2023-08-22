@@ -104,9 +104,9 @@ jobs:
           - ruby-version: 3.0.5
             gemfile: gemfiles/Gemfile.activerecord-6.0.x
           - ruby-version: 3.1.3
-            gemfile: gemfiles/Gemfile.activerecord-6.1.x
+            gemfile: gemfiles/Gemfile.activerecord-6.0.x
           - ruby-version: 3.2.0
-            gemfile: gemfiles/Gemfile.activerecord-6.1.x
+            gemfile: gemfiles/Gemfile.activerecord-6.0.x
 
           - ruby-version: 2.5.9
             gemfile: gemfiles/Gemfile.activerecord-6.1.x
@@ -128,7 +128,16 @@ jobs:
           - ruby-version: 3.1.3
             gemfile: gemfiles/Gemfile.activerecord-7.0.x
           - ruby-version: 3.2.0
-            gemfile: gemfiles/Gemfile.activerecord-6.1.x
+            gemfile: gemfiles/Gemfile.activerecord-7.0.x
+
+          - ruby-version: 2.7.7
+            gemfile: gemfiles/Gemfile.activerecord-head
+          - ruby-version: 3.0.5
+            gemfile: gemfiles/Gemfile.activerecord-head
+          - ruby-version: 3.1.3
+            gemfile: gemfiles/Gemfile.activerecord-head
+          - ruby-version: 3.2.0
+            gemfile: gemfiles/Gemfile.activerecord-head
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}
     steps:

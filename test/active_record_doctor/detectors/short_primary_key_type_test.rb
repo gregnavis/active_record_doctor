@@ -50,6 +50,17 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
     refute_problems
   end
 
+  def test_composite_primary_key_is_not_reported
+    skip("ActiveRecord < 7.1 doesn't support composite primary keys") if ActiveRecord::VERSION::STRING < "7.1"
+
+    create_table(:companies, primary_key: [:country_id, :id]) do |t|
+      t.integer :country_id
+      t.integer :id
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     create_table(:companies, id: :integer)
 
