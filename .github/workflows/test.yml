@@ -129,6 +129,15 @@ jobs:
             gemfile: Gemfile.activerecord-7.0.x
           - ruby-version: 3.2
             gemfile: Gemfile.activerecord-7.0.x
+
+          - ruby-version: 2.7
+            gemfile: Gemfile.activerecord-7.1.x
+          - ruby-version: 3.0
+            gemfile: Gemfile.activerecord-7.1.x
+          - ruby-version: 3.1
+            gemfile: Gemfile.activerecord-7.1.x
+          - ruby-version: 3.2
+            gemfile: Gemfile.activerecord-7.1.x
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}
     steps:
