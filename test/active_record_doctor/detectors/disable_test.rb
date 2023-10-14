@@ -4,7 +4,7 @@ class ActiveRecordDoctor::Detectors::DisableTest < Minitest::Test
   # Disabling detectors is implemented in the base class. It's enought to test
   # it on a single detector to be reasonably certain it works on all of them.
   def test_disabling
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true

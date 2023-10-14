@@ -26,7 +26,7 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_DB: active_record_doctor_test
+          POSTGRES_DB: active_record_doctor_primary
           POSTGRES_USER: github
           POSTGRES_PASSWORD: github
         options: >-
@@ -42,7 +42,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: github
           MYSQL_USER: github
           MYSQL_PASSWORD: github
-          MYSQL_DATABASE: active_record_doctor_test
+          MYSQL_DATABASE: active_record_doctor_primary
         options: >-
           --health-cmd "mysqladmin ping -h 127.0.0.1"
           --health-interval 10s
@@ -152,7 +152,16 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
+          rubygems: ${{ matrix.rubygems }}
           bundler-cache: true
+      - name: Prepare PostgreSQL
+        run: createdb active_record_doctor_secondary
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: github
+          PGPASSWORD: github
+          PGDATABASE: postgres
       - name: Run the test suite against PostgreSQL
         run: bundle exec rake test:postgresql
         env:
@@ -160,6 +169,10 @@ jobs:
           DATABASE_PORT: 5432
           DATABASE_USERNAME: github
           DATABASE_PASSWORD: github
+      - name: Prepare MySQL
+        run: |
+          mysqladmin -h127.0.0.1 -uroot -pgithub create active_record_doctor_secondary
+          mysql -h127.0.0.1 -uroot -pgithub -e "GRANT ALL PRIVILEGES ON active_record_doctor_secondary.* TO 'github'"
       - name: Run the test suite against MySQL
         run: bundle exec rake test:mysql2
         env:

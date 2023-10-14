@@ -5,8 +5,8 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint)
-    create_table(:users) do |t|
+    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true, type: :integer
     end
 
@@ -16,8 +16,8 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
   end
 
   def test_matched_foreign_key_type_is_not_reported
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true
     end
 
@@ -28,11 +28,11 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint) do |t|
+    Context.create_table(:companies, id: :bigint) do |t|
       t.string :code
       t.index :code, unique: true
     end
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.text :code
       t.foreign_key :companies, table: :companies, column: :code, primary_key: :code
     end
@@ -46,11 +46,11 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint) do |t|
+    Context.create_table(:companies, id: :bigint) do |t|
       t.string :code
       t.index :code, unique: true
     end
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :code
       t.foreign_key :companies, table: :companies, column: :code, primary_key: :code
     end
@@ -62,8 +62,8 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint)
-    create_table(:users) do |t|
+    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true, type: :integer
     end
 
@@ -81,8 +81,8 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint)
-    create_table(:users) do |t|
+    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true, type: :integer
     end
 
@@ -99,8 +99,8 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
     # MySQL does not allow foreign keys to have different type than paired primary keys
     return if mysql?
 
-    create_table(:companies, id: :bigint)
-    create_table(:users) do |t|
+    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true, type: :integer
     end
 

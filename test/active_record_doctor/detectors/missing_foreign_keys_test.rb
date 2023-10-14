@@ -2,8 +2,8 @@
 
 class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   def test_missing_foreign_key_is_reported
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
     end
 
@@ -13,8 +13,8 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   end
 
   def test_present_foreign_key_is_not_reported
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: true
     end
 
@@ -22,8 +22,8 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_models
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
     end
 
@@ -38,8 +38,8 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   end
 
   def test_global_ignore_models
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
     end
 
@@ -53,8 +53,8 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_columns
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
     end
 

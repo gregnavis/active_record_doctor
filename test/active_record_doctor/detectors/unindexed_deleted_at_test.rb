@@ -4,7 +4,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_indexed_deleted_at_is_not_reported
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :deleted_at
@@ -22,7 +22,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_unindexed_deleted_at_is_reported
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :deleted_at
@@ -38,7 +38,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_indexed_discarded_at_is_not_reported
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -56,7 +56,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_unindexed_discarded_at_is_reported
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -72,7 +72,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_config_ignore_tables
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -93,7 +93,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_global_ignore_tables
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -113,7 +113,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_config_ignore_columns
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -134,7 +134,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_config_ignore_indexes
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :discarded_at
@@ -155,7 +155,7 @@ class ActiveRecordDoctor::Detectors::UnindexedDeletedAtTest < Minitest::Test
   def test_config_column_names
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.datetime :obliverated_at

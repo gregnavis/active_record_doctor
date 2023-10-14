@@ -11,20 +11,42 @@ require "pg"
 require "mysql2"
 
 adapter = ENV.fetch("DATABASE_ADAPTER")
-ActiveRecord::Base.establish_connection(
-  adapter: adapter,
-  host: ENV["DATABASE_HOST"],
-  port: ENV["DATABASE_PORT"],
-  username: ENV["DATABASE_USERNAME"],
-  password: ENV["DATABASE_PASSWORD"],
-  database: "active_record_doctor_test"
-)
+ActiveRecord::Base.configurations =
+  if ActiveRecord::VERSION::MAJOR >= 6
+    {
+      "default_env" => {
+        "primary" => {
+          "adapter" => adapter,
+          "host" => ENV["DATABASE_HOST"],
+          "port" => ENV["DATABASE_PORT"],
+          "username" => ENV["DATABASE_USERNAME"],
+          "password" => ENV["DATABASE_PASSWORD"],
+          "database" => "active_record_doctor_primary"
+        },
+        "secondary" => {
+          "adapter" => adapter,
+          "host" => ENV["DATABASE_HOST"],
+          "port" => ENV["DATABASE_PORT"],
+          "username" => ENV["DATABASE_USERNAME"],
+          "password" => ENV["DATABASE_PASSWORD"],
+          "database" => "active_record_doctor_secondary"
+        }
+      }
+    }
+  else
+    {
+      "primary" => {
+        "adapter" => adapter,
+        "host" => ENV["DATABASE_HOST"],
+        "port" => ENV["DATABASE_PORT"],
+        "username" => ENV["DATABASE_USERNAME"],
+        "password" => ENV["DATABASE_PASSWORD"],
+        "database" => "active_record_doctor_primary"
+      }
+    }
+  end
 
 puts "Using #{adapter}"
-
-# We need to call #connection to enfore Active Record to actually establish
-# the connection.
-ActiveRecord::Base.connection
 
 # Load Active Record Doctor.
 require "active_record_doctor"
@@ -33,6 +55,7 @@ require "active_record_doctor"
 require "minitest"
 require "minitest/autorun"
 require "minitest/fork_executor"
+
 require "transient_record"
 
 # Filter out Minitest backtrace while allowing backtrace from other libraries
@@ -42,10 +65,42 @@ Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 # Uncomment in case there's test case interference.
 Minitest.parallel_executor = Minitest::ForkExecutor.new
 
+# Set up Active Record models to mimic a real-world Active Record setup.
+class ApplicationRecord < ActiveRecord::Base
+  if ActiveRecord::VERSION::MAJOR >= 7
+    primary_abstract_class
+  else
+    self.abstract_class = true
+  end
+
+  if ActiveRecord::VERSION::MAJOR >= 6
+    connects_to database: { writing: :primary }
+  end
+end
+
+ActiveRecord::Base.establish_connection :primary
+
+# Transient Record contexts used by the test class below.
+Context = TransientRecord.context_for ApplicationRecord
+
+# Connect to another database when testing against a version that supports
+# multiple databases.
+if ActiveRecord::VERSION::MAJOR >= 6
+  class SecondaryRecord < ApplicationRecord
+    self.abstract_class = true
+
+    if ActiveRecord::VERSION::MAJOR >= 6
+      connects_to database: { writing: :secondary }
+    end
+  end
+
+  SecondaryRecord.establish_connection :secondary
+
+  SecondaryContext = TransientRecord.context_for SecondaryRecord
+end
+
 # Prepare the test class.
 class Minitest::Test
-  include TransientRecord
-
   def setup
     # Delete remnants (models and tables) of previous test case runs.
     TransientRecord.cleanup

@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Test
   def test_optional_columns_with_presence_validator_are_disallowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true
@@ -14,8 +14,8 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_foreign_keys_with_required_association_are_disallowed
-    create_table(:companies)
-    create_table(:users) do |t|
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
       t.references :company, null: true
     end.define_model do
       belongs_to :company, required: true
@@ -27,7 +27,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_columns_with_required_polymorphic_association_are_disallowed
-    create_table(:comments) do |t|
+    Context.create_table(:comments) do |t|
       t.references :commentable, polymorphic: true, null: true
     end.define_model do
       belongs_to :commentable, polymorphic: true, required: true
@@ -40,7 +40,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_required_columns_with_required_polymorphic_association_are_allowed
-    create_table(:comments) do |t|
+    Context.create_table(:comments) do |t|
       t.references :commentable, polymorphic: true, null: false
     end.define_model do
       belongs_to :commentable, polymorphic: true, required: true
@@ -50,7 +50,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_required_columns_with_presence_validators_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
       validates :name, presence: true
@@ -60,7 +60,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_columns_without_presence_validator_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
       validates :name, presence: false
@@ -70,7 +70,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_validators_matched_to_correct_columns
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       # The age validator is a form of regression test against a bug that
@@ -86,7 +86,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_validators_with_if_on_optional_columns_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true, if: -> { false }
@@ -96,7 +96,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_validators_with_unless_on_optional_columns_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true, unless: -> { false }
@@ -106,7 +106,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_validators_allowing_nil_on_optional_columns_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true, allow_nil: true
@@ -116,18 +116,18 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    define_model(:User)
+    Context.define_model(:User)
 
     refute_problems
   end
 
   def test_optional_columns_validated_by_all_sti_models_are_disallowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :type, null: false
       t.string :email, null: true
     end.define_model
 
-    define_model(:Client, TransientRecord::Models::User) do
+    Context.define_model(:Client, Context::User) do
       validates :email, presence: true
     end
 
@@ -137,16 +137,16 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_columns_validated_by_some_sti_models_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :type, null: false
       t.string :email, null: true
     end.define_model
 
-    define_model(:Client, TransientRecord::Models::User) do
+    Context.define_model(:Client, Context::User) do
       validates :email, presence: true
     end
 
-    define_model(:Admin, TransientRecord::Models::User) do
+    Context.define_model(:Admin, Context::User) do
       validates :email, presence: false
     end
 
@@ -154,13 +154,13 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_columns_validated_by_all_non_sti_models_are_disallowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email, null: true
     end.define_model do
       validates :email, presence: true
     end
 
-    define_model(:Client) do
+    Context.define_model(:Client) do
       self.table_name = :users
 
       validates :email, presence: true
@@ -172,13 +172,13 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_columns_validated_by_some_non_sti_models_are_allowed
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email, null: true
     end.define_model do
       validates :email, presence: true
     end
 
-    define_model(:Client) do
+    Context.define_model(:Client) do
       self.table_name = :users
 
       validates :email, presence: false
@@ -190,7 +190,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   def test_not_null_check_constraint
     skip unless postgresql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email
     end.define_model do
       validates :email, presence: true
@@ -206,7 +206,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   def test_not_null_check_constraint_not_valid
     skip unless postgresql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email
     end.define_model do
       validates :email, presence: true
@@ -222,7 +222,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_config_ignore_tables
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true
@@ -239,7 +239,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_global_ignore_tables
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true
@@ -255,7 +255,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_config_ignore_columns
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: true
     end.define_model do
       validates :name, presence: true

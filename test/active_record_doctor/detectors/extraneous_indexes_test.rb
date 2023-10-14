@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::ExtraneousIndexesTest < Minitest::Test
   def test_index_on_primary_key_is_duplicate
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
     end
 
@@ -14,7 +14,7 @@ OUTPUT
   def test_partial_index_on_primary_key
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :admin
       t.index :id, where: "admin"
     end
@@ -23,7 +23,7 @@ OUTPUT
   end
 
   def test_index_on_non_standard_primary_key
-    create_table(:profiles, primary_key: :user_id) do |t|
+    Context.create_table(:profiles, primary_key: :user_id) do |t|
       t.index :user_id
     end
 
@@ -33,7 +33,7 @@ OUTPUT
   end
 
   def test_non_unique_version_of_index_is_duplicate
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email
       t.index :email, unique: true, name: "unique_index_on_users_email"
     end
@@ -47,7 +47,7 @@ OUTPUT
   end
 
   def test_single_column_covered_by_unique_and_non_unique_multi_column_is_duplicate
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.string :email
@@ -64,7 +64,7 @@ OUTPUT
   end
 
   def test_multi_column_covered_by_unique_and_non_unique_multi_column_is_duplicate
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.string :email
@@ -83,7 +83,7 @@ OUTPUT
   end
 
   def test_unique_index_with_fewer_columns
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.index :first_name, unique: true
@@ -98,7 +98,7 @@ OUTPUT
   def test_expression_index_not_covered_by_multicolumn_index
     skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :email
       t.index "(lower(email))"
@@ -111,7 +111,7 @@ OUTPUT
   def test_unique_expression_index_not_covered_by_unique_multicolumn_index
     skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :email
       t.index "(lower(email))", unique: true
@@ -122,7 +122,7 @@ OUTPUT
   end
 
   def test_not_covered_by_different_index_type
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.index [:last_name, :first_name], using: :btree
@@ -140,7 +140,7 @@ OUTPUT
   def test_not_covered_by_partial_index
     skip("MySQL doesn't support partial indexes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.boolean :active
@@ -155,7 +155,7 @@ OUTPUT
     skip("ActiveRecord < 5.2 doesn't support operator classes") if ActiveRecord::VERSION::STRING < "5.2"
     skip("MySQL doesn't support operator classes") if mysql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
       t.index [:last_name, :first_name], opclass: :varchar_pattern_ops
@@ -169,7 +169,7 @@ OUTPUT
     skip("Only PostgreSQL supports materialized views") unless postgresql?
 
     begin
-      create_table(:users) do |t|
+      Context.create_table(:users) do |t|
         t.string :first_name
         t.string :last_name
         t.integer :age
@@ -197,7 +197,7 @@ OUTPUT
     # ignore_tables into account. We trigger those errors by indexing the
     # primary key (the first extraneous index) and then indexing email twice
     # (index2... is the other extraneous index).
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
       t.string :email
 
@@ -216,7 +216,7 @@ OUTPUT
   end
 
   def test_config_ignore_tables_regexp
-    create_table(:users_tmp) do |t|
+    Context.create_table(:users_tmp) do |t|
       t.index :id
     end
 
@@ -231,7 +231,7 @@ OUTPUT
   end
 
   def test_config_ignore_tables_string_ignores_exact_match
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
     end
 
@@ -248,7 +248,7 @@ OUTPUT
   end
 
   def test_config_global_ignore_tables
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
       t.string :email
 
@@ -266,7 +266,7 @@ OUTPUT
   end
 
   def test_config_global_ignore_indexes
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
       t.string :email
 
@@ -288,7 +288,7 @@ OUTPUT
   end
 
   def test_config_detector_ignore_indexes
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
       t.string :email
       t.string :api_key
@@ -308,7 +308,7 @@ OUTPUT
   end
 
   def test_config_detector_ignore_indexes_regexp
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.index :id
       t.string :email
       t.string :api_key

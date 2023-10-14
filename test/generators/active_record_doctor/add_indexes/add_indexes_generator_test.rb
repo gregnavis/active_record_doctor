@@ -8,15 +8,15 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
   TIMESTAMP = Time.new(2021, 2, 1, 13, 15, 30)
 
   def test_create_migrations
-    create_table(:notes) do |t|
+    Context.create_table(:notes) do |t|
       t.integer :notable_id, null: false
       t.string :notable_type, null: false
     end
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.integer :organization_id, null: false
       t.integer :account_id, null: false
     end
-    create_table(:organizations) do |t|
+    Context.create_table(:organizations) do |t|
       t.integer :owner_id
     end
 
@@ -96,7 +96,7 @@ class ActiveRecordDoctor::AddIndexesGeneratorTest < Minitest::Test
     # Both the table and column names must be quite long. Otherwise, the
     # we might reach table or column name length limits and fail to generate an
     # index name that's long enough.
-    create_table(:organizations_migrated_from_legacy_app) do |t|
+    Context.create_table(:organizations_migrated_from_legacy_app) do |t|
       t.integer :legacy_owner_id_compatible_with_v1_to_v8
     end
 

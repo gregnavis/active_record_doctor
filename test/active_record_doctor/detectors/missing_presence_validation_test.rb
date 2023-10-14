@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::Test
   def test_null_column_is_not_reported_if_validation_absent
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name
     end.define_model do
     end
@@ -11,18 +11,18 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_column_is_reported_if_validation_absent
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to TransientRecord::Models::User.name - it's NOT NULL but lacks a validator
+      add a `presence` validator to Context::User.name - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_non_null_column_is_not_reported_if_validation_present
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
       validates :name, presence: true
@@ -32,8 +32,8 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_column_is_not_reported_if_association_validation_present
-    create_table(:companies).define_model
-    create_table(:users) do |t|
+    Context.create_table(:companies).define_model
+    Context.create_table(:users) do |t|
       t.references :company, null: false
     end.define_model do
       belongs_to :company, required: true
@@ -43,36 +43,36 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_not_null_column_is_not_reported_if_habtm_association
-    create_table(:users).define_model do
-      has_and_belongs_to_many :projects, class_name: "TransientRecord::Models::Project"
+    Context.create_table(:users).define_model do
+      has_and_belongs_to_many :projects, class_name: "Context::Project"
     end
 
-    create_table(:projects_users) do |t|
+    Context.create_table(:projects_users) do |t|
       t.bigint :project_id, null: false
       t.bigint :user_id, null: false
     end
 
-    create_table(:projects).define_model do
-      has_and_belongs_to_many :users, class_name: "TransientRecord::Models::User"
+    Context.create_table(:projects).define_model do
+      has_and_belongs_to_many :users, class_name: "Context::User"
     end
 
     refute_problems
   end
 
   def test_non_null_boolean_is_reported_if_nil_included
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, inclusion: { in: [nil, true, false] }
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to TransientRecord::Models::User.active - it's NOT NULL but lacks a validator
+      add a `presence` validator to Context::User.active - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_not_included
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, inclusion: { in: [true, false] }
@@ -82,7 +82,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_boolean_is_not_reported_if_nil_excluded
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, exclusion: { in: [nil] }
@@ -92,7 +92,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_boolean_is_not_reported_if_exclusion_is_proc
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, exclusion: { in: ->(_user) { [nil] } }
@@ -102,7 +102,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_boolean_is_not_reported_if_inclusion_is_proc
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, inclusion: { in: ->(_user) { [true, false] } }
@@ -112,19 +112,19 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_non_null_boolean_is_reported_if_nil_not_excluded
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, exclusion: { in: [false] }
     end
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to TransientRecord::Models::User.active - it's NOT NULL but lacks a validator
+      add a `presence` validator to Context::User.active - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_timestamps_are_not_reported
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       # Create created_at/updated_at timestamps.
       t.timestamps null: false
 
@@ -140,7 +140,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    define_model(:User)
+    Context.define_model(:User)
 
     refute_problems
   end
@@ -148,7 +148,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   def test_not_null_check_constraint
     skip unless postgresql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name
     end.define_model
 
@@ -157,14 +157,14 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     SQL
 
     assert_problems(<<~OUTPUT)
-      add a `presence` validator to TransientRecord::Models::User.name - it's NOT NULL but lacks a validator
+      add a `presence` validator to Context::User.name - it's NOT NULL but lacks a validator
     OUTPUT
   end
 
   def test_not_null_check_constraint_not_valid
     skip unless postgresql?
 
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name
     end.define_model
 
@@ -176,7 +176,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_abstract_class
-    define_model(:ApplicationRecord) do
+    Context.define_model(:ApplicationRecord) do
       self.abstract_class = true
     end
 
@@ -184,7 +184,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_config_ignore_models
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
     end
@@ -192,7 +192,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_presence_validation,
-          ignore_models: ["TransientRecord::Models::User"]
+          ignore_models: ["Context::User"]
       end
     CONFIG
 
@@ -200,14 +200,14 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_global_ignore_models
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
-        config.global :ignore_models, ["TransientRecord::Models::User"]
+        config.global :ignore_models, ["Context::User"]
       end
     CONFIG
 
@@ -215,7 +215,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_config_ignore_attributes
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :name, null: false
     end.define_model do
     end
@@ -223,7 +223,7 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_presence_validation,
-          ignore_attributes: ["TransientRecord::Models::User.name"]
+          ignore_attributes: ["Context::User.name"]
       end
     CONFIG
 

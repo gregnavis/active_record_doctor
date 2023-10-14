@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Minitest::Test
   def test_presence_true_is_reported_on_boolean_only
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.string :email, null: false
       t.boolean :active, null: false
     end.define_model do
@@ -13,12 +13,12 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     end
 
     assert_problems(<<~OUTPUT)
-      replace the `presence` validator on TransientRecord::Models::User.active with `inclusion` - `presence` can't be used on booleans
+      replace the `presence` validator on Context::User.active with `inclusion` - `presence` can't be used on booleans
     OUTPUT
   end
 
   def test_inclusion_is_not_reported
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, inclusion: { in: [true, false] }
@@ -28,13 +28,13 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_models_with_non_existent_tables_are_skipped
-    define_model(:User)
+    Context.define_model(:User)
 
     refute_problems
   end
 
   def test_config_ignore_models
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, presence: true
@@ -43,7 +43,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_boolean_presence_validation,
-          ignore_models: ["TransientRecord::Models::User"]
+          ignore_models: ["Context::User"]
       end
     CONFIG
 
@@ -51,7 +51,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_config_ignore_models_regexp
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, presence: true
@@ -68,7 +68,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_global_ignore_models
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, presence: true
@@ -76,7 +76,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
-        config.global :ignore_models, ["TransientRecord::Models::User"]
+        config.global :ignore_models, ["Context::User"]
       end
     CONFIG
 
@@ -84,7 +84,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_config_ignore_attributes
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active, null: false
     end.define_model do
       validates :active, presence: true
@@ -93,7 +93,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_boolean_presence_validation,
-          ignore_attributes: ["TransientRecord::Models::User.active"]
+          ignore_attributes: ["Context::User.active"]
       end
     CONFIG
 
@@ -101,7 +101,7 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
   end
 
   def test_config_ignore_attributes_regexp
-    create_table(:users) do |t|
+    Context.create_table(:users) do |t|
       t.boolean :active_old, null: false
     end.define_model do
       validates :active_old, presence: true
