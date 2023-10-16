@@ -38,8 +38,8 @@ module ActiveRecordDoctor
         when :invalid_through
           "ensure #{model}.#{association} is configured correctly - #{associated_models[0]}.#{association} may be undefined"
         when :destroy_async
-          "don't use `dependent: :destroy_async` on #{model}.#{association} or remove the foreign key from #{table_name}.#{column_name} - "\
-            "associated models will be deleted in the same transaction along with #{model}"
+          "don't use `dependent: :destroy_async` on #{model}.#{association} or remove the foreign key from #{table_name}.#{column_name} - " \
+          "associated models will be deleted in the same transaction along with #{model}"
         when :suggest_destroy
           "use `dependent: :destroy` or similar on #{model}.#{association} - associated #{models_part} callbacks that are currently skipped"
         when :suggest_delete
@@ -96,8 +96,13 @@ module ActiveRecordDoctor
             when :destroy_async
               foreign_key = foreign_key(association.klass.table_name, model.table_name)
               if foreign_key
-                problem!(model: model.name, association: association.name,
-                         table_name: foreign_key.from_table, column_name: foreign_key.column, problem: :destroy_async)
+                problem!(
+                  model: model.name,
+                  association: association.name,
+                  table_name: foreign_key.from_table,
+                  column_name: foreign_key.column,
+                  problem: :destroy_async
+                )
               end
             when :destroy
               if destroyable_models.empty? && deletable_models.present?

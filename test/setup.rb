@@ -17,18 +17,18 @@ ActiveRecord::Base.configurations =
       "default_env" => {
         "primary" => {
           "adapter" => adapter,
-          "host" => ENV["DATABASE_HOST"],
-          "port" => ENV["DATABASE_PORT"],
-          "username" => ENV["DATABASE_USERNAME"],
-          "password" => ENV["DATABASE_PASSWORD"],
+          "host" => ENV.fetch("DATABASE_HOST", nil),
+          "port" => ENV.fetch("DATABASE_PORT", nil),
+          "username" => ENV.fetch("DATABASE_USERNAME", nil),
+          "password" => ENV.fetch("DATABASE_PASSWORD", nil),
           "database" => "active_record_doctor_primary"
         },
         "secondary" => {
           "adapter" => adapter,
-          "host" => ENV["DATABASE_HOST"],
-          "port" => ENV["DATABASE_PORT"],
-          "username" => ENV["DATABASE_USERNAME"],
-          "password" => ENV["DATABASE_PASSWORD"],
+          "host" => ENV.fetch("DATABASE_HOST", nil),
+          "port" => ENV.fetch("DATABASE_PORT", nil),
+          "username" => ENV.fetch("DATABASE_USERNAME", nil),
+          "password" => ENV.fetch("DATABASE_PASSWORD", nil),
           "database" => "active_record_doctor_secondary"
         }
       }
@@ -37,10 +37,10 @@ ActiveRecord::Base.configurations =
     {
       "primary" => {
         "adapter" => adapter,
-        "host" => ENV["DATABASE_HOST"],
-        "port" => ENV["DATABASE_PORT"],
-        "username" => ENV["DATABASE_USERNAME"],
-        "password" => ENV["DATABASE_PASSWORD"],
+        "host" => ENV.fetch("DATABASE_HOST", nil),
+        "port" => ENV.fetch("DATABASE_PORT", nil),
+        "username" => ENV.fetch("DATABASE_USERNAME", nil),
+        "password" => ENV.fetch("DATABASE_PASSWORD", nil),
         "database" => "active_record_doctor_primary"
       }
     }

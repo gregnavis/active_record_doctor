@@ -1,8 +1,12 @@
 # We upgrade to new versions of rubocop manually so it won't harm to enable all
 # new cops.
 AllCops:
+  TargetRubyVersion: 2.4
   NewCops: enable
   SuggestExtensions: false
+
+Style/ArgumentsForwarding:
+  Enabled: false
 
 # We don't want to be switching between styles depending on whether
 # we're interpolating or not.
@@ -27,7 +31,6 @@ Style/WordArray:
 
 Style/IfUnlessModifier:
   Enabled: false
-
 Style/SymbolProc:
   Enabled: false
 
@@ -120,6 +123,9 @@ Naming/PredicateName:
   AllowedMethods:
     - "has_presence_validator?"
     - "has_mandatory_presence_validator?"
+
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
 
 # We support a broad range of versions and it's impossible to satisfy this.
 Gemspec/RequiredRubyVersion:

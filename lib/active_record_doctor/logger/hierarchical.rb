@@ -9,7 +9,7 @@ module ActiveRecordDoctor
       end
 
       def log(message)
-        @io.puts("  " * @nesting + message.to_s)
+        @io.puts(("  " * @nesting) + message.to_s)
         return if !block_given?
 
         @nesting += 1

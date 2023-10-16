@@ -7,16 +7,16 @@ require "active_record_doctor/version"
 ACTIVE_RECORD_SPEC = ">= 4.2.0"
 
 Gem::Specification.new do |s|
-  s.name        = "active_record_doctor"
-  s.version     = ActiveRecordDoctor::VERSION
-  s.authors     = ["Greg Navis"]
-  s.email       = ["contact@gregnavis.com"]
-  s.homepage    = "https://github.com/gregnavis/active_record_doctor"
-  s.summary     = "Identify database issues before they hit production."
-  s.license     = "MIT"
+  s.name     = "active_record_doctor"
+  s.version  = ActiveRecordDoctor::VERSION
+  s.authors  = ["Greg Navis"]
+  s.email    = ["contact@gregnavis.com"]
+  s.homepage = "https://github.com/gregnavis/active_record_doctor"
+  s.summary  = "Identify database issues before they hit production."
+  s.license  = "MIT"
+  s.files    = Dir["lib/**/*", "MIT-LICENSE.txt", "README.md"]
 
-  s.files = Dir["lib/**/*", "MIT-LICENSE.txt", "README.md"]
-  s.test_files = Dir["test/**/*"]
+  s.metadata["rubygems_mfa_required"] = "true"
 
   s.required_ruby_version = ">= 2.1.0"
 
@@ -32,6 +32,6 @@ Gem::Specification.new do |s|
   # We don't install rubocop in CI because we test against older Rubies that
   # are incompatible with Rubocop.
   if ENV["CI"].nil? || ENV["LINT"]
-    s.add_development_dependency "rubocop", "~> 1.14.0"
+    s.add_development_dependency "rubocop", "~> 1.57.1"
   end
 end

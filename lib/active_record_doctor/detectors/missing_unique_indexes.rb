@@ -24,8 +24,8 @@ module ActiveRecordDoctor
         when :validations
           "add a unique index on #{table}(#{columns.join(', ')}) - validating uniqueness in #{model.name} without an index can lead to duplicates"
         when :case_insensitive_validations
-          "add a unique expression index on #{table}(#{columns.join(', ')}) - validating case-insensitive uniqueness in #{model.name} "\
-            "without an expression index can lead to duplicates (a regular unique index is not enough)"
+          "add a unique expression index on #{table}(#{columns.join(', ')}) - validating case-insensitive uniqueness in #{model.name} " \
+          "without an expression index can lead to duplicates (a regular unique index is not enough)"
         when :has_ones
           "add a unique index on #{table}(#{columns.join(', ')}) - using `has_one` in #{model.name} without an index can lead to duplicates"
         end
@@ -70,8 +70,12 @@ module ActiveRecordDoctor
               if case_sensitive
                 problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
               else
-                problem!(model: model, table: model.table_name, columns: columns,
-                         problem: :case_insensitive_validations)
+                problem!(
+                  model: model,
+                  table: model.table_name,
+                  columns: columns,
+                  problem: :case_insensitive_validations
+                )
               end
             end
           end

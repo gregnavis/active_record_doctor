@@ -1,0 +1,20 @@
+name: Lint
+on: [push, pull_request]
+
+jobs:
+  # Run the linter first for rapid feedback if some trivial stylistic issues
+  # slipped through the cracks.
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      # When running in CI the gemspec does NOT pull rubocop as a dependency
+      # to avoid conflicting with various Ruby/Rails setups. We need to
+      # set LINT to explicitly request rubocop as a dependency.
+      LINT: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0
+          bundler-cache: true
+      - run: bundle exec rake rubocop
