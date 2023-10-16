@@ -86,6 +86,8 @@ end
 
 SecondaryRecord.establish_connection :secondary
 
+SecondaryContext = TransientRecord.context_for SecondaryRecord
+
 if ActiveRecord.version >= Gem::Version.new("7.1")
   # See https://github.com/rails/rails/pull/46522 for details.
   # When `false` (default in Rails 7.1) - validate presence only when the foreign key changed.

@@ -163,12 +163,16 @@ module ActiveRecordDoctor
         self.class.underscored_name
       end
 
-      def each_model(except: [], abstract: nil, existing_tables_only: false)
+      def each_model(except: [], ignore_databases: [], abstract: nil, existing_tables_only: false)
         log("Iterating over Active Record models") do
           models.each do |model|
+            connection_name = connection_name(model)
+
             case
             when model.name.start_with?("HABTM_")
               log("#{model.name} - has-belongs-to-many model; skipping")
+            when connection_name && ignored?(connection_name, ignore_databases)
+              log("#{model.name} - connects to the #{model.connection_db_config.name} which is ignored; skipping")
             when ignored?(model.name, except)
               log("#{model.name} - ignored via the configuration; skipping")
             when abstract && !model.abstract_class?
@@ -184,6 +188,10 @@ module ActiveRecordDoctor
             end
           end
         end
+      end
+
+      def connection_name(model)
+        model.connection_db_config.name
       end
 
       def each_index(table_name, except: [], multicolumn_only: false)
@@ -214,7 +222,7 @@ module ActiveRecordDoctor
 
       def each_attribute(model, except: [], type: nil)
         log("Iterating over attributes of #{model.name}") do
-          connection.columns(model.table_name).each do |column|
+          model.connection.columns(model.table_name).each do |column|
             case
             when ignored?("#{model.name}.#{column.name}", except)
               log("#{model.name}.#{column.name} - ignored via the configuration; skipping")
