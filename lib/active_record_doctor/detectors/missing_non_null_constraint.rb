@@ -66,9 +66,19 @@ module ActiveRecordDoctor
         model.validators.select do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
             !validator.options[:allow_nil] &&
-            !validator.options[:if] &&
-            !validator.options[:unless]
+            (required_with_if?(validator) || !conditional_validator?(validator))
         end
+      end
+
+      def required_with_if?(validator)
+        ActiveRecord.version >= Gem::Version.new("7.1") &&
+          !ActiveRecord.belongs_to_required_validates_foreign_key &&
+          validator.options[:message] == :required &&
+          validator.options[:if].present?
+      end
+
+      def conditional_validator?(validator)
+        validator.options[:if] || validator.options[:unless]
       end
     end
   end

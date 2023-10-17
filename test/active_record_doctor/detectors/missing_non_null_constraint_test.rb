@@ -39,6 +39,28 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     OUTPUT
   end
 
+  def test_optional_foreign_keys_with_required_with_if_association_are_disallowed
+    skip("ActiveRecord < 7.1 doesn't support optimized association presence validation") if ActiveRecord::VERSION::STRING < "7.1"
+
+    begin
+      previous = ActiveRecord.belongs_to_required_validates_foreign_key
+      ActiveRecord.belongs_to_required_validates_foreign_key = false
+
+      Context.create_table(:companies)
+      Context.create_table(:users) do |t|
+        t.references :company, null: true
+      end.define_model do
+        belongs_to :company, required: true
+      end
+
+      assert_problems(<<~OUTPUT)
+        add `NOT NULL` to users.company_id - models validates its presence but it's not non-NULL in the database
+      OUTPUT
+    ensure
+      ActiveRecord.belongs_to_required_validates_foreign_key = previous
+    end
+  end
+
   def test_required_columns_with_required_polymorphic_association_are_allowed
     Context.create_table(:comments) do |t|
       t.references :commentable, polymorphic: true, null: false
