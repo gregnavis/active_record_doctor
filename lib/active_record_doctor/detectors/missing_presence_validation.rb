@@ -27,6 +27,7 @@ module ActiveRecordDoctor
           each_attribute(model, except: config(:ignore_attributes)) do |column|
             next unless validator_needed?(model, column)
             next if validator_present?(model, column)
+            next if attribute_with_default?(model, column.name)
 
             problem!(column: column.name, model: model.name)
           end
@@ -85,6 +86,18 @@ module ActiveRecordDoctor
 
       def inclusion_validator_items(validator)
         validator.options[:in] || validator.options[:within] || []
+      end
+
+      def attribute_with_default?(model, attribute_name)
+        return false unless Utils.attributes_api_supported?
+
+        attribute = model._default_attributes[attribute_name]
+
+        if ActiveRecord::VERSION::STRING < "5.2"
+          attribute.is_a?(ActiveRecord::Attribute::UserProvidedDefault) && !attribute.value.nil?
+        else
+          attribute.is_a?(ActiveModel::Attribute::UserProvidedDefault) && !attribute.value.nil?
+        end
       end
     end
   end

@@ -16,6 +16,10 @@ module ActiveRecordDoctor
           # Active Record is unable to correctly parse expression indexes for MySQL.
           (mysql?(connection) && ActiveRecord::VERSION::STRING < "7.1")
       end
+
+      def attributes_api_supported?
+        ActiveRecord::VERSION::STRING >= "5.0"
+      end
     end
   end
 end

@@ -139,6 +139,42 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_enums_with_default_are_not_reported
+    skip unless ActiveRecordDoctor::Utils.attributes_api_supported?
+    skip("ActiveRecord < 6.1 does not support enums with defaults") if ActiveRecord::VERSION::STRING < "6.1"
+
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      if ActiveRecord::VERSION::MAJOR >= 7
+        # New syntax.
+        enum :role, ["regular", "admin"], default: "regular"
+      else
+        enum role: ["regular", "admin"], _default: "regular"
+      end
+    end
+
+    refute_problems
+  end
+
+  def test_custom_attributes_with_default_are_not_reported
+    skip unless ActiveRecordDoctor::Utils.attributes_api_supported?
+
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      attribute :role, :string, default: "regular"
+
+      if ActiveRecord::VERSION::MAJOR <= 5
+        # Attributes are defined lazily after the schema loads,
+        # so we need to load it manually.
+        load_schema
+      end
+    end
+
+    refute_problems
+  end
+
   def test_models_with_non_existent_tables_are_skipped
     Context.define_model(:User)
 
