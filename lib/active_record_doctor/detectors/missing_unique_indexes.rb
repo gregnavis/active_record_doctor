@@ -97,6 +97,7 @@ module ActiveRecordDoctor
 
             table_name = has_one.klass.table_name
             next if unique_index?(table_name, columns)
+            next if Array(connection.primary_key(table_name)) == columns
 
             problem!(model: model, table: table_name, columns: columns, problem: :has_ones)
           end

@@ -426,6 +426,22 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_has_one_on_primary_key_column
+    Context
+      .create_table(:parents)
+      .define_model do
+        has_one :child
+      end
+
+    Context
+      .create_table(:children, primary_key: :parent_id)
+      .define_model do
+        belongs_to :parent
+      end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email
