@@ -30,6 +30,7 @@ module ActiveRecordDoctor
             next unless named_like_foreign_key?(column) || foreign_key?(table, column)
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)
+            next if connection.primary_key(table) == column.name
 
             type_column_name = type_column_name(column)
 

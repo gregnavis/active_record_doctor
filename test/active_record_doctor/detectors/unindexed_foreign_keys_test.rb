@@ -61,6 +61,14 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     refute_problems
   end
 
+  def test_foreign_key_is_a_primary_key_not_reported
+    Context.create_table(:parents)
+    Context.create_table(:children, primary_key: :parent_id)
+    ActiveRecord::Base.connection.add_foreign_key(:children, :parents)
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     skip("MySQL always indexes foreign keys") if mysql?
 
