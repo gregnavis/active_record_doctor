@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ActiveRecordDoctor # :nodoc:
-  # An excecution environment for active_record_doctor that provides a config
+  # An execution environment for active_record_doctor that provides a config
   # and an output device for use by detectors.
   class Runner
     # io is injected via constructor parameters to facilitate testing.

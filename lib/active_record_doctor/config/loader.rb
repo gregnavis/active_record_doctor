@@ -27,7 +27,7 @@ module ActiveRecordDoctor # :nodoc:
       end
 
       # The same global can be used by multiple detectors so we must remove
-      # duplicates to ensure they aren't reported mutliple times via the user
+      # duplicates to ensure they aren't reported multiple times via the user
       # interface (e.g. in error messages).
       recognized_globals.uniq!
 

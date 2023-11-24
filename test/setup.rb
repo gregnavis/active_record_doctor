@@ -2,7 +2,7 @@
 
 # Configure Active Record.
 
-# We must import "uri" explicitly as otherwsie URI won't be accessible in
+# We must import "uri" explicitly as otherwise URI won't be accessible in
 # Ruby 2.7.2 / Rails 6.
 require "uri"
 
