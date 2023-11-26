@@ -69,7 +69,24 @@ module ActiveRecordDoctor
 
       def config
         @config ||= begin
-          path = config_path && File.exist?(config_path) ? config_path : nil
+          path = nil
+
+          if config_path
+            if File.exist?(config_path)
+              path = config_path
+            elsif config_path.to_s.end_with?(".rb")
+              config_path_without_extension = config_path.to_s.gsub(/\.rb\z/, "")
+              if File.exist?(config_path_without_extension)
+                warn <<~WARN.squish
+                  [DEPRECATED] The default configuration
+                  file #{config_path_without_extension} is deprecated.
+                  Use #{config_path} instead.
+                WARN
+                path = config_path_without_extension
+              end
+            end
+          end
+
           ActiveRecordDoctor.load_config_with_defaults(path)
         end
       end

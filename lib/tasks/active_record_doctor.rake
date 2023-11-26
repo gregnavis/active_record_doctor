@@ -19,6 +19,6 @@ ActiveRecordDoctor::Rake::Task.new do |task|
   # This file is imported when active_record_doctor is being used as part of a
   # Rails app so it's the right place for all Rails-specific settings.
   task.deps = [:environment]
-  task.config_path = Rails.root.join(".active_record_doctor")
+  task.config_path = Rails.root.join(".active_record_doctor.rb")
   task.setup = -> { Rails.application.eager_load! }
 end
