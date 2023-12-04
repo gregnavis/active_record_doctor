@@ -144,6 +144,33 @@ as extraneous.
 Configuration options for each detector are listed below. They can also be
 obtained via the help mechanism described in the previous section.
 
+### Regexp-Based Ignores
+
+Settings like `ignore_tables`, `ignore_indexes`, and so on accept list of
+identifiers to ignore. These can be either:
+
+1. Strings - in which case an exact match is needed.
+2. Regexps - which are matched against object names, and matching ones are
+   excluded from output.
+
+For example, to ignore all tables starting with `legacy_` you can write:
+
+```ruby
+ActiveRecordDoctor.configure do
+  global :ignore_tables, [
+    # Ignore internal Rails-related tables.
+    "ar_internal_metadata",
+    "schema_migrations",
+    "active_storage_blobs",
+    "active_storage_attachments",
+    "action_text_rich_texts",
+
+    # Ignore all legacy tables.
+    /^legacy_/
+  ]
+end
+```
+
 ### Indexing Unindexed Foreign Keys
 
 Foreign keys should be indexed unless it's proven ineffective. However, Rails

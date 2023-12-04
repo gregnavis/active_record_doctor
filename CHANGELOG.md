@@ -1,3 +1,13 @@
+# Version 1.13.0
+
+* New feature: regexp-based ignore settings (contributed by fatkodima).
+* Bug fix: ignore_columns is correctly handed in missing_unique_indexes (
+  contributed by fatkodima).
+* Bug fix: primary keys are automatically recognized as indexed and unique by
+  unindexed_foreign_keys and missing_unique_indexes (contributed by fatkodima).
+* Bug fix: a typo in the description of incorrect_boolean_presence_validation
+  is fixed (contributed by Jon Dufresne).
+
 # Version 1.12.0
 
 * New feature: detect extraneous indexes on PostgreSQL materialized views
