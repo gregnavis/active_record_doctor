@@ -5,7 +5,7 @@ require "active_record_doctor/detectors/base"
 module ActiveRecordDoctor
   module Detectors
     class IncorrectBooleanPresenceValidation < Base # :nodoc:
-      @description = "detect persence (instead of inclusion) validators on boolean columns"
+      @description = "detect presence (instead of inclusion) validators on boolean columns"
       @config = {
         ignore_models: {
           description: "models whose validators should not be checked",

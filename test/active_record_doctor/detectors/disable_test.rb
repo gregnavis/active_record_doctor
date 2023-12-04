@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ActiveRecordDoctor::Detectors::DisableTest < Minitest::Test
-  # Disabling detectors is implemented in the base class. It's enought to test
+  # Disabling detectors is implemented in the base class. It's enough to test
   # it on a single detector to be reasonably certain it works on all of them.
   def test_disabling
     Context.create_table(:users) do |t|
