@@ -55,7 +55,7 @@ ActiveRecordDoctor::Rake::Task.new do |task|
   task.deps = []
 
   # A path to your active_record_doctor configuration file.
-  task.config_path = ::Rails.root.join(".active_record_doctor")
+  task.config_path = ::Rails.root.join(".active_record_doctor.rb")
 
   # A Proc called right before running detectors that should ensure your Active
   # Record models are preloaded and a database connection is ready.
@@ -111,7 +111,7 @@ If you want to use the default configuration then you don't have to do anything.
 Just run `active_record_doctor` in your project directory.
 
 If you want to customize the tool you should create a file named
-`.active_record_doctor` in your project root directory with content like:
+`.active_record_doctor.rb` in your project root directory with content like:
 
 ```ruby
 ActiveRecordDoctor.configure do

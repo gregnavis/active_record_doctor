@@ -127,7 +127,7 @@ class Minitest::Test
     @previous_dir = Dir.pwd
 
     directory = Dir.mktmpdir("active_record_doctor")
-    @config_path = File.join(directory, ".active_record_doctor")
+    @config_path = File.join(directory, ".active_record_doctor.rb")
     File.write(@config_path, content)
     Dir.chdir(directory)
 
