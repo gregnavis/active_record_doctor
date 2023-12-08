@@ -13,80 +13,80 @@
 * New feature: detect extraneous indexes on PostgreSQL materialized views
   (contributed by fatkodima).
 * New feature: support for case-insensitive validations in
-  missing_unique_indexes (contributed by fatkodima).
-* New feature: support for has_one in missing_unique_indexes (contributed by
+  `missing_unique_indexes` (contributed by fatkodima).
+* New feature: support for has_one in `missing_unique_indexes` (contributed by
   fatkodima).
-* New feature: support for async options in incorrect_dependent_option
+* New feature: support for async options in `incorrect_dependent_option`
   (contributed by fatkodima).
 * Bug fix: make Rake integration work in non-Rails projects (contributed by
   fatkodima).
-* Bug fix: ignore inherited validations in missing_unique_indexes (contributed
+* Bug fix: ignore inherited validations in `missing_unique_indexes` (contributed
   by fatkodima).
-* Bug fix: make extraneous_indexes work on expression indexes (contributed
+* Bug fix: make `extraneous_indexes` work on expression indexes (contributed
   by fatkodima).
-* short_primary_key type checks only integer indexes as they are the ones at the
-  risk of running out (contributed by fatkodima).
-* unindexed_foreign_keys looks at actual foreign keys, instead of guessing based
-  on column name (contributed by fatkodima).
+* `short_primary_key` type checks only integer indexes as they are the ones at
+  the risk of running out (contributed by fatkodima).
+* `unindexed_foreign_keys` looks at actual foreign keys, instead of guessing
+  based on column name (contributed by fatkodima).
 * Improvements and clarifications to documentation and error messages
   (contributed by Kurtis Rainbolt-Greene, Vincent Glennon, and fatkodima).
 
 # Version 1.11.0
 
 * New feature: support for polymorphic associations in
-  missing_non_null_constraint (contributed by fatkodima).
+  `missing_non_null_constraint` (contributed by fatkodima).
 * New feature: support for foreign tables in PostgreSQL (contributed by
   fatkodima).
 * New feature: debug logging for easier troubleshooting.
-* Bug fix: incorrect_length_validation used to take the first length validator
+* Bug fix: `incorrect_length_validation` used to take the first length validator
   on the model, even if it didn't correspond to the column under consideration.
   This is no longer the case (contributed by Julián Lires).
 * Bug fix: inclusion and exclusion validators can contain a proc in in: or
   within: which makes them impossible to analyze by active_record_doctor; such
   validations are now skipped (contributed by fatkodima).
-* Fixed to documentation for incorrect_dependent_option (contributed by
+* Fixed to documentation for `incorrect_dependent_option` (contributed by
   Erick Santos).
-* Bug fix: mismatched_foreign_key_type used to always look at the type of the
+* Bug fix: `mismatched_foreign_key_type` used to always look at the type of the
   primary key in the other table, even if the foreign key was referencing a
   different column; the right column is now taken into account (contributed by
   Bruno Gerotto).
-* Bug fix: incorrect_dependent_option didn't work correctly on through:
+* Bug fix: `incorrect_dependent_option` didn't work correctly on through:
   associations as it would look at the final model (instead of the join model);
   additionally, if the join model lacked the corresponding has_many association
-  it would result in NoMethodError.
+  it would result in `NoMethodError`.
 
 # Version 1.10.0
 
-* New feature: incorrect_length_validation detector can identify text-column
+* New feature: `incorrect_length_validation` detector can identify text-column
   length mismatches between tables and models (suggested by fatkodima).
 * New feature: each detector can be enabled or disabled globally via the
   configuration file.
-* Enhancement: missing_non_null_constraints and missing_presence_validation
-  recognized NOT NULL check constraints (contributed by fatkodima).
-* Enhancement: missing_unique_index is aware of has_one associations and
+* Enhancement: `missing_non_null_constraints` and `missing_presence_validation`
+  recognized `NOT NULL` check constraints (contributed by fatkodima).
+* Enhancement: `missing_unique_index` is aware of `has_one` associations and
   recommends creating an index on the corresponding foreign key (contributed by
   fatkodima).
-* Bug fix: missing_unique_indexes can be satisfied by creating an index on a
+* Bug fix: `missing_unique_indexes` can be satisfied by creating an index on a
   sublist of scope + column. Previously, it'd not accept such sublists even
   though they're enough to guarantee uniqueness (contributed by fatkodima).
-* Bug fix: fix missing_unique_indexes crashes on function indexes (contributed
+* Bug fix: fix `missing_unique_indexes` crashes on function indexes (contributed
   by fatkodima).
-* Bug fix: short_primary_key_type no longer complains about UUID primary keys
+* Bug fix: `short_primary_key_type` no longer complains about UUID primary keys
   (contributed by fatkodima).
-* Bug fix: extraneous_indexes was made aware of non-standard primary key names
+* Bug fix: `extraneous_indexes` was made aware of non-standard primary key names
   and partial indexes (contributed by fatkodima).
-* Bug fix: extraneous_indexes properly recognizes smaller indexes to be enough
+* Bug fix: `extraneous_indexes` properly recognizes smaller indexes to be enough
   to guarantee uniqueness. Previously, it'd skip some smaller indexes and ask
   for a larger index to be created (contributed by fatkodima).
-* Bug fix: unindexed_deleted_at correctly works on partial indexes intended to
+* Bug fix: `unindexed_deleted_at` correctly works on partial indexes intended to
   cover deleted columns. It no longer asks to create a contradictory condition
-  (IS NULL AND IS NOT NULL) in those cases (contributed by fatkodima).
-* Bug fix: incorrect_dependent_option works correctly on polymorphic
+  (`IS NULL AND IS NOT NULL`) in those cases (contributed by fatkodima).
+* Bug fix: `incorrect_dependent_option` works correctly on polymorphic
   associations.
 * Bug fix: recognize the PostGIS adapter as PostgreSQL (contributed by
   fatkodima).
-* Bug fix: index generators use index_name_length (defined by Active Record) to
-  ensure index names aren't too long (contributed by fatkodima).
+* Bug fix: index generators use `index_name_length` (defined by Active Record)
+  to ensure index names aren't too long (contributed by fatkodima).
 * Tested against Ruby 3.1 via CI (contributed by Peter Goldstein).
 * Documentation fixes (contributed by Alistair McKinnell and Kaleb Lape).
 
@@ -107,8 +107,8 @@
 * Enhancement: more built-in Rails tables are ignored by default.
 * Bug fix: make `extraneous_indexes` take index options into account when
   comparing them for equivalence (contributed by fatkodima).
-* Bug fix: add_indexes_generator uses the correct migration version.
-* Bug fix: add_indexes_generattor truncates long index names (contributed by
+* Bug fix: `add_indexes_generator` uses the correct migration version.
+* Bug fix: `add_indexes_generattor` truncates long index names (contributed by
   Dusan Orlovic).
 * Bug fix: `missing_unique_indexes` reports tables instead of indexes - it
   didn't make sense to talk about indexes on _models_.
@@ -129,16 +129,16 @@
 
 * All rake tasks added by active_record_doctor have a description so that they
   are now shown by `rake -T`.
-* Bug fix: incorrect_boolean_presence_validation, missing_non_null_constraint and
-  missing_presence_validation skip models whose underlying tables don't exist
-  (thanks to rhymes for the fix).
-* Bug fix: fix a bug in incorrect_boolean_presence_validation that caused
+* Bug fix: `incorrect_boolean_presence_validation`, missing_non_null_constraint
+  and missing_presence_validation skip models whose underlying tables don't
+  exist (thanks to rhymes for the fix).
+* Bug fix: fix a bug in `incorrect_boolean_presence_validation` that caused
   exceptions (thanks to Eito Katagiri for the fix).
-* Bug fix: add a missing dependency on activesupport (thanks to Yuto Ito for
+* Bug fix: add a missing dependency on `activesupport` (thanks to Yuto Ito for
   the fix).
-* Bug fix: make missing_unique_indexes work on custom validators (thanks to Max
-  Schwenk for the fix).
-* Bug fix: make missing_unique_indexes order-independent so that it no longer
+* Bug fix: make `missing_unique_indexes` work on custom validators (thanks to
+  Max Schwenk for the fix).
+* Bug fix: make `missing_unique_indexes` order-independent so that it no longer
   reports false-positives when columns are reordered (thanks to rhymes for the
   fix).
 
@@ -157,9 +157,9 @@
   defined on the association instead of the foreign key column.
 * Bug fix: report missing non-NULL constraints on foreign keys when the presence
   validation is defined on the association.
-* Bug fix: make missing_unique_indexes work in Rails 6 (thanks for Hrvoje Šimić
-  for the fix).
-* Enhancement: support view-backed models in undefined_table_references.
+* Bug fix: make `missing_unique_indexes` work in Rails 6 (thanks to Hrvoje
+  Šimić for the fix).
+* Enhancement: support view-backed models in `undefined_table_references`.
 
 # Version 1.6.0
 
