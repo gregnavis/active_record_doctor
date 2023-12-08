@@ -1,3 +1,8 @@
+# Version 1.14.0
+
+* Enhancement: the default configuration file has the .rb suffix to help editors
+  automatically recognize the content Ruby (contributed by Jon Dufresne).
+
 # Version 1.13.0
 
 * New feature: regexp-based ignore settings (contributed by fatkodima).
