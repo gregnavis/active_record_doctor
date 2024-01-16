@@ -66,7 +66,7 @@ module ActiveRecordDoctor
               columns[-1] = "lower(#{columns[-1]})" unless case_sensitive
 
               next if unique_index?(model.table_name, columns)
-              next if model.columns_hash[attribute.to_s].type == :citext # citext is case-insensitive by default
+              next if model.columns_hash[attribute.to_s]&.type == :citext # citext is case-insensitive by default
 
               if case_sensitive
                 problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
