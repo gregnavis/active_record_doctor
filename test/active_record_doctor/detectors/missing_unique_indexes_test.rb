@@ -305,9 +305,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   def test_case_insensitive_unique_index_with_citext
     skip unless postgresql?
 
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      CREATE EXTENSION IF NOT EXISTS citext;
-    SQL
+    enable_extension :citext
 
     Context.create_table(:users) do |t|
       t.citext :email
@@ -325,9 +323,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
     skip unless postgresql?
 
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      CREATE EXTENSION IF NOT EXISTS citext;
-    SQL
+    enable_extension :citext
 
     Context.create_table(:users) do |t|
       t.citext :email
