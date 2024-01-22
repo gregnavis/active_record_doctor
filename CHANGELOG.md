@@ -1,6 +1,9 @@
 # Unreleased
 
-* Bug fix: avoid false positives on missing case-insensitive uniqueness indexes when using [Postgres `citext`](https://www.postgresql.org/docs/current/citext.html) strings (contributed by gee-forr)
+* Bug fix: avoid false positives on missing case-insensitive uniqueness indexes
+  when using [Postgres
+  `citext`](https://www.postgresql.org/docs/current/citext.html) strings
+  (contributed by gee-forr)
 
 # Version 1.14.0
 
