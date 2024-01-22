@@ -305,11 +305,11 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   def test_case_insensitive_unique_index_with_citext
     skip unless postgresql?
 
-    enable_extension :citext
-
     Context.create_table(:users) do |t|
       t.citext :email
       t.index :email, unique: true
+
+      t.enable_extension :citext
     end.define_model do
       validates :email, uniqueness: { case_sensitive: false }
     end
@@ -323,13 +323,13 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
     skip unless postgresql?
 
-    enable_extension :citext
-
     Context.create_table(:users) do |t|
       t.citext :email
       t.integer :organization_id
 
       t.index [:email, :organization_id], unique: true
+
+      t.enable_extension :citext
     end.define_model do
       validates :email, uniqueness: { scope: :organization_id, case_sensitive: false }
     end
