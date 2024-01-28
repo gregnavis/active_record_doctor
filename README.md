@@ -456,6 +456,7 @@ Supported configuration options:
 - `ignore_models` - models whose underlying tables' columns should not be checked.
 - `ignore_attributes` - specific attributes, written as Model.attribute, that
   should not be checked.
+- `ignore_columns_with_default` - set to `true` to ignore columns with default values.
 
 ### Detecting Incorrect Presence Validations on Boolean Columns
 

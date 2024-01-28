@@ -47,7 +47,8 @@ ActiveRecordDoctor.configure do
   detector :missing_presence_validation,
     enabled: true,
     ignore_models: [],
-    ignore_attributes: []
+    ignore_attributes: [],
+    ignore_columns_with_default: false
 
   detector :missing_unique_indexes,
     enabled: true,
