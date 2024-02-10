@@ -58,6 +58,10 @@ ActiveRecordDoctor.configure do
     enabled: true,
     ignore_tables: []
 
+  detector :table_without_primary_key,
+    enabled: true,
+    ignore_tables: []
+
   detector :undefined_table_references,
     enabled: true,
     ignore_models: []

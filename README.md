@@ -15,6 +15,7 @@ can detect:
 * incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
 * primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
+* tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 
 It can also:
 
@@ -601,6 +602,29 @@ Supported configuration options:
 - `ignore_tables` - tables whose foreign keys should not be checked.
 - `ignore_columns` - foreign keys, written as table.column, that should not be
   checked.
+
+### Detecting Tables Without Primary Keys
+
+Tables should have primary keys. Otherwise, it becomes problematic to easily find a specific record,
+logical replication in PostgreSQL will be troublesome, because all the rows need to be unique
+in the table then etc.
+
+Running the command below will list all tables without primary keys:
+
+```
+bundle exec rake active_record_doctor:table_without_primary_key
+```
+
+The output of the command looks like this:
+
+```
+add a primary key to companies
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_tables` - tables whose primary key existense should not be checked
 
 ## Ruby and Rails Compatibility Policy
 
