@@ -20,7 +20,9 @@ It can also:
 
 * index unindexed foreign keys - [`active_record_doctor:unindexed_foreign_keys`](#indexing-unindexed-foreign-keys)
 
-[![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/test.yml)
+[![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/lint.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/lint.yml)
+[![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/mysql.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/mysql.yml)
+[![Build Status](https://github.com/gregnavis/active_record_doctor/actions/workflows/postgresql.yml/badge.svg?branch=master)](https://github.com/gregnavis/active_record_doctor/actions/workflows/postgresql.yml)
 
 ## Installation
 
