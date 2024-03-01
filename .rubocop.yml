@@ -17,7 +17,7 @@ Style/SymbolArray:
   EnforcedStyle: brackets
 
 # Block chains allow processing to be broken down into discrete steps
-# similarily to Elixir pipelines. They actually increase readability so
+# similarly to Elixir pipelines. They actually increase readability so
 # forbidding them isn't a good idea.
 Style/MultilineBlockChain:
   Enabled: false
@@ -117,7 +117,7 @@ Metrics/BlockLength:
 # In general, it's a good recommendation but there are two exceptions in
 # active_record_doctor where it harms readability. has_presence_validator?
 # is more intention revealing than presence_validator? Does the former take
-# a model as a parameter and check wheter it has a presence validator? Or does
+# a model as a parameter and check whether it has a presence validator? Or does
 # it take a validator and check its type?
 Naming/PredicateName:
   AllowedMethods:
