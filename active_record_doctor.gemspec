@@ -24,10 +24,10 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
   s.add_development_dependency "mysql2", "~> 0.5.3"
-  s.add_development_dependency "pg", "~> 1.1.4"
+  s.add_development_dependency "pg", "~> 1.5.6"
   s.add_development_dependency "railties", ACTIVE_RECORD_SPEC
   s.add_development_dependency "rake", "~> 12.3.3"
-  s.add_development_dependency "transient_record", "= 2.0.0.rc2"
+  s.add_development_dependency "transient_record", "~> 2.0.0"
 
   # We don't install rubocop in CI because we test against older Rubies that
   # are incompatible with Rubocop.
