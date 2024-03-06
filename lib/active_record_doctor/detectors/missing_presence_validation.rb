@@ -73,7 +73,8 @@ module ActiveRecordDoctor
         allowed_attributes = [column.name.to_sym]
 
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
-          reflection.foreign_key == column.name
+          reflection.foreign_key == column.name ||
+            (reflection.polymorphic? && reflection.foreign_type == column.name)
         end
         allowed_attributes << belongs_to.name.to_sym if belongs_to
 
