@@ -139,6 +139,15 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_column_with_default_is_not_reported
+    Context.create_table(:users) do |t|
+      t.integer :posts_count, null: false, default: 0
+    end.define_model do
+    end
+
+    refute_problems
+  end
+
   def test_models_with_non_existent_tables_are_skipped
     Context.define_model(:User)
 
