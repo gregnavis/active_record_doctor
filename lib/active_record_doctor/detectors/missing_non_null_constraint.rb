@@ -32,6 +32,9 @@ module ActiveRecordDoctor
             model.abstract_class? || sti_base_model?(model)
           end
 
+          # There are no STI child models.
+          concrete_models = models if concrete_models.empty?
+
           connection.columns(table).each do |column|
             next if ignored?("#{table}.#{column.name}", config(:ignore_columns))
             next if !column.null
