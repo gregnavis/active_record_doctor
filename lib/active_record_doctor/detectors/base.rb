@@ -323,7 +323,7 @@ module ActiveRecordDoctor
       end
 
       def ignored?(name, patterns)
-        patterns.any? { |pattern| pattern === name } # rubocop:disable Style/CaseEquality
+        patterns.any? { |pattern| pattern === name || name == pattern.to_s } # rubocop:disable Style/CaseEquality
       end
     end
   end
