@@ -104,6 +104,17 @@ bundle exec rake active_record_doctor:extraneous_indexes:help
 This will show the detector help text in the terminal, along with supported
 configuration options, their meaning, and whether they're global or local.
 
+### Debug Logging
+
+It may be that `active_record_doctor` fails with an exception and it is hard to tell
+what went wrong. For easier debugging, use `ACTIVE_RECORD_DOCTOR_DEBUG` environment variable.
+If `active_record_doctor` fails for some reason for your application, feel free
+to open an issue or a PR with the fix.
+
+```
+ACTIVE_RECORD_DOCTOR_DEBUG=1 bundle exec rake active_record_doctor
+```
+
 ### Configuration
 
 `active_record_doctor` can be configured to better suit your project's needs.
