@@ -139,6 +139,38 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_counter_caches_are_not_reported
+    Context.create_table(:companies) do |t|
+      t.integer :users_count, default: 0, null: false
+    end.define_model do
+      has_many :users
+    end
+
+    Context.create_table(:users) do |t|
+      t.integer :company_id
+    end.define_model do
+      belongs_to :company, counter_cache: true
+    end
+
+    refute_problems
+  end
+
+  def test_counter_caches_with_custom_names_are_not_reported
+    Context.create_table(:companies) do |t|
+      t.integer :custom_users_count, default: 0, null: false
+    end.define_model do
+      has_many :users, counter_cache: :custom_users_count
+    end
+
+    Context.create_table(:users) do |t|
+      t.integer :company_id
+    end.define_model do
+      belongs_to :company, counter_cache: :custom_users_count
+    end
+
+    refute_problems
+  end
+
   def test_models_with_non_existent_tables_are_skipped
     Context.define_model(:User)
 
