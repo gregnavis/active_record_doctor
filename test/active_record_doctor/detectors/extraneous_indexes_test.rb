@@ -192,6 +192,54 @@ OUTPUT
     end
   end
 
+  def test_include_index_covered_by_other_non_include_index
+    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
+    skip("Only PostgreSQL supports include indexes") unless postgresql?
+
+    Context.create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.index [:last_name, :first_name]
+      t.index :last_name, include: :first_name
+    end
+
+    assert_problems(<<OUTPUT)
+remove the index index_users_on_last_name from the table users - queries should be able to use the following index instead: index_users_on_last_name_and_first_name
+OUTPUT
+  end
+
+  def test_include_index_covered_by_other_include_index
+    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
+    skip("Only PostgreSQL supports include indexes") unless postgresql?
+
+    Context.create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.integer :age
+      t.index :last_name, include: [:age, :first_name], name: "index1_users_on_last_name"
+      t.index :last_name, include: :first_name, name: "index2_users_on_last_name"
+    end
+
+    assert_problems(<<OUTPUT)
+remove the index index2_users_on_last_name from the table users - queries should be able to use the following index instead: index1_users_on_last_name
+OUTPUT
+  end
+
+  def test_include_index_not_covered_by_other_index
+    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
+    skip("Only PostgreSQL supports include indexes") unless postgresql?
+
+    Context.create_table(:users) do |t|
+      t.string :first_name
+      t.string :last_name
+      t.integer :age
+      t.index [:first_name, :last_name]
+      t.index :last_name, include: :first_name
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     # The detector recognizes two kinds of errors and both must take
     # ignore_tables into account. We trigger those errors by indexing the
