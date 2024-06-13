@@ -67,6 +67,23 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
     refute_problems
   end
 
+  def test_config_ignore_models_class
+    Context.create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_models: [Context::User]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_global_ignore_models
     Context.create_table(:users) do |t|
       t.boolean :active, null: false
