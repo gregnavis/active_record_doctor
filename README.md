@@ -31,14 +31,14 @@ In order to use the latest production release, please add the following to
 your `Gemfile`:
 
 ```ruby
-gem 'active_record_doctor', group: :development
+gem 'active_record_doctor', group: [:development, :test]
 ```
 
 and run `bundle install`. If you'd like to use the most recent development
 version then use this instead:
 
 ```ruby
-gem 'active_record_doctor', github: 'gregnavis/active_record_doctor'
+gem 'active_record_doctor', github: 'gregnavis/active_record_doctor', group: [:development, :test]
 ```
 
 That's it when it comes to Rails projects. If your project doesn't use Rails
