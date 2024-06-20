@@ -12,8 +12,17 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       validates :email, :active, presence: true
     end
 
+    # Another model is defined in a different database to ensure that all
+    # databases are checked.
+    SecondaryContext.create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
+
     assert_problems(<<~OUTPUT)
       replace the `presence` validator on Context::User.active with `inclusion` - `presence` can't be used on booleans
+      replace the `presence` validator on SecondaryContext::User.active with `inclusion` - `presence` can't be used on booleans
     OUTPUT
   end
 
@@ -29,6 +38,23 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
 
   def test_models_with_non_existent_tables_are_skipped
     Context.define_model(:User)
+
+    refute_problems
+  end
+
+  def test_config_ignore_databases
+    SecondaryContext.create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_boolean_presence_validation,
+          ignore_databases: ["secondary"]
+      end
+    CONFIG
 
     refute_problems
   end
@@ -61,6 +87,22 @@ class ActiveRecordDoctor::Detectors::IncorrectBooleanPresenceValidationTest < Mi
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_boolean_presence_validation,
           ignore_models: [/User/]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_databases
+    SecondaryContext.create_table(:users) do |t|
+      t.boolean :active, null: false
+    end.define_model do
+      validates :active, presence: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, ["secondary"]
       end
     CONFIG
 

@@ -164,12 +164,14 @@ module ActiveRecordDoctor
         self.class.underscored_name
       end
 
-      def each_model(except: [], abstract: nil, existing_tables_only: false)
+      def each_model(except: [], ignore_databases: [], abstract: nil, existing_tables_only: false)
         log("Iterating over Active Record models") do
           models.each do |model|
             case
             when model.name.start_with?("HABTM_")
               log("#{model.name} - has-belongs-to-many model; skipping")
+            when model.respond_to?(:connection_db_config) && ignored?(model.connection_db_config.name, ignore_databases)
+              log("#{model.name} - connects to the #{model.connection_db_config.name} which is ignored; skipping")
             when ignored?(model.name, except)
               log("#{model.name} - ignored via the configuration; skipping")
             when abstract && !model.abstract_class?
