@@ -372,9 +372,9 @@ Supported configuration options:
 
 ### Detecting Uniqueness Validations not Backed by an Index
 
-Model-level uniqueness validations and `has_one` associations should be backed
-by a database index in order to be robust. Otherwise you risk inserting
-duplicate values under a heavy load.
+Model-level uniqueness validations, `has_one` and `has_and_belongs_to_many`
+associations should be backed by a database index in order to be robust.
+Otherwise you risk inserting duplicate values under a heavy load.
 
 In order to detect such validations run:
 
@@ -396,6 +396,8 @@ Supported configuration options:
 - `ignore_models` - models whose uniqueness validators should not be checked.
 - `ignore_columns` - specific validators, written as Model(column1, ...), that
   should not be checked.
+- `ignore_join_tables` - join tables that should not be checked for existence
+  of unique indexes.
 
 ### Detecting Missing Non-`NULL` Constraints
 

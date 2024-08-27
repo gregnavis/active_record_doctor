@@ -442,6 +442,67 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_has_and_belongs_to_many_without_index
+    Context
+      .create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    Context.create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+    end
+
+    Context
+      .create_table(:roles)
+      .define_model do
+        has_and_belongs_to_many :users
+      end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on roles_users(role_id, user_id) - using `has_and_belongs_to_many` in Context::Role without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_has_and_belongs_to_many_with_scope_and_without_index
+    Context
+      .create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles, -> { unique }
+      end
+
+    Context
+      .create_table(:roles)
+      .define_model do
+        has_and_belongs_to_many :users, -> { unique }
+      end
+
+    refute_problems
+  end
+
+  def test_has_and_belongs_to_many_with_index
+    Context
+      .create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    Context.create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+      t.index [:user_id, :role_id], unique: true
+    end
+
+    Context
+      .create_table(:roles)
+      .define_model do
+        has_and_belongs_to_many :users
+      end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email
@@ -506,6 +567,34 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_unique_indexes,
           ignore_columns: ["Context::Account(user_id)"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_join_tables
+    Context
+      .create_table(:users)
+      .define_model do
+        has_and_belongs_to_many :roles
+      end
+
+    Context.create_table(:roles_users) do |t|
+      t.integer :user_id
+      t.integer :role_id
+    end
+
+    Context
+      .create_table(:roles)
+      .define_model do
+        has_and_belongs_to_many :users
+      end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_join_tables: ["roles_users"]
       end
     CONFIG
 
