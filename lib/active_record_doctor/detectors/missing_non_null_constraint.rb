@@ -67,13 +67,27 @@ module ActiveRecordDoctor
         model.validators.select do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
             !validator.options[:allow_nil] &&
-            !validator.options[:if] &&
-            !validator.options[:unless]
+            (rails_belongs_to_presence_validator?(validator) || !conditional_validator?(validator))
         end
       end
 
       def sti_column?(models, column_name)
         models.any? { |model| model.inheritance_column == column_name }
+      end
+
+      def rails_belongs_to_presence_validator?(validator)
+        ActiveRecord.version >= Gem::Version.new("7.1") &&
+          !ActiveRecord.belongs_to_required_validates_foreign_key &&
+          validator.options[:message] == :required &&
+          proc_from_activerecord?(validator.options[:if])
+      end
+
+      def conditional_validator?(validator)
+        validator.options[:if] || validator.options[:unless]
+      end
+
+      def proc_from_activerecord?(object)
+        object.is_a?(Proc) && object.binding.receiver.name.start_with?("ActiveRecord::")
       end
     end
   end

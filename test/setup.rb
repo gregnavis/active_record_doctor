@@ -99,6 +99,13 @@ if ActiveRecord::VERSION::MAJOR >= 6
   SecondaryContext = TransientRecord.context_for SecondaryRecord
 end
 
+if ActiveRecord.version >= Gem::Version.new("7.1")
+  # See https://github.com/rails/rails/pull/46522 for details.
+  # When `false` (default in Rails 7.1) - validate presence only when the foreign key changed.
+  # When `true` - always validate the association presence.
+  ActiveRecord.belongs_to_required_validates_foreign_key = true
+end
+
 # Prepare the test class.
 class Minitest::Test
   def setup
