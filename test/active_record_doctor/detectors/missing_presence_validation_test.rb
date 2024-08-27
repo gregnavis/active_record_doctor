@@ -229,4 +229,29 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
 
     refute_problems
   end
+
+  def test_config_ignore_columns_with_default_columns_are_not_ignored_by_default
+    Context.create_table(:users) do |t|
+      t.integer :posts_count, null: false, default: 0
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::User.posts_count - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
+  def test_config_ignore_columns_with_default
+    Context.create_table(:users) do |t|
+      t.integer :posts_count, null: false, default: 0
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_columns_with_default: true
+      end
+    CONFIG
+
+    refute_problems
+  end
 end

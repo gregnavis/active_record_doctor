@@ -13,6 +13,9 @@ module ActiveRecordDoctor
         },
         ignore_attributes: {
           description: "specific attributes, written as Model.attribute, that should not be checked"
+        },
+        ignore_columns_with_default: {
+          description: "ignore columns with default values, should be provided as boolean"
         }
       }
 
@@ -35,7 +38,12 @@ module ActiveRecordDoctor
 
       def validator_needed?(model, column)
         ![model.primary_key, "created_at", "updated_at", "created_on", "updated_on"].include?(column.name) &&
-          (!column.null || not_null_check_constraint_exists?(model.table_name, column))
+          (!column.null || not_null_check_constraint_exists?(model.table_name, column)) &&
+          !default_value_instead_of_validation?(column)
+      end
+
+      def default_value_instead_of_validation?(column)
+        !column.default.nil? && config(:ignore_columns_with_default)
       end
 
       def validator_present?(model, column)
