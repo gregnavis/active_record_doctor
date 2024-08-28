@@ -1,8 +1,22 @@
-# Unreleased
+# Version 1.15.0
 
+* New feature: detector to find tables without a primary key (contributed by
+  fatkodima).
+* Enhancement: `extraneous_indexes` takes into account the `INCLUDE` part of
+  index definitions (contributed by fatkodima).
+* Enhancement: `missing_presence_validation` takes a new setting `ignore_columns_with_default`
+  (contributed by fatkodima).
+* Enhancement: `missing_unique_indexes` supports HABTM associations (contributed
+  by fatkodima).
+* Enhancement: `missing_non_null_constraint` support STI columns (contributed
+  by fatkodima).
+* Enhancement: `missing_non_null_contraint` supports `belongs_to_required_validates_foreign_key`
+  (contributed by fatkodima).
+* Enhancement: `ignore_models` can be passed class objects (contributed by
+  fatkodima).
 * Bug fix: avoid false positives on missing case-insensitive uniqueness indexes
   when using [Postgres `citext`](https://www.postgresql.org/docs/current/citext.html) strings
-  (contributed by gee-forr)
+  (contributed by gee-forr).
 
 # Version 1.14.0
 
