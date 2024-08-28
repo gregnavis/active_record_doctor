@@ -406,8 +406,6 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
   end
 
   def test_destroy_async_and_foreign_key_exists
-    skip("ActiveRecord < 6.1 doesn't support :destroy_async") if ActiveRecord::VERSION::STRING < "6.1"
-
     Context.create_table(:companies) do
     end.define_model do
       # We need an ActiveJob job defined to appease the ActiveRecord
@@ -427,8 +425,6 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
   end
 
   def test_destroy_async_and_no_foreign_key
-    skip("ActiveRecord < 6.1 doesn't support :destroy_async") if ActiveRecord::VERSION::STRING < "6.1"
-
     Context.create_table(:companies) do
     end.define_model do
       # We need an ActiveJob job defined to appease the ActiveRecord

@@ -15,7 +15,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_missing_unique_index_on_functional_index
-    skip if !(ActiveRecord::VERSION::STRING >= "5.0" && postgresql?)
+    skip if !postgresql?
 
     Context.create_table(:users) do |t|
       t.string :email

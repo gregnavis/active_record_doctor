@@ -36,10 +36,8 @@ OUTPUT
     Context.create_table(:users) do |t|
       t.string :email
       t.index :email, unique: true, name: "unique_index_on_users_email"
+      t.index :email, name: "index_users_on_email"
     end
-
-    # Rails 4.2 compatibility - can't be pulled into the block above.
-    ActiveRecord::Base.connection.add_index :users, :email, name: "index_users_on_email"
 
     assert_problems(<<OUTPUT)
 remove the index index_users_on_email from the table users - queries should be able to use the following index instead: unique_index_on_users_email
@@ -72,10 +70,8 @@ OUTPUT
       t.index [:last_name, :first_name],
         unique: true,
         name: "unique_index_on_users_last_name_and_first_name"
+      t.index [:last_name, :first_name]
     end
-
-    # Rails 4.2 compatibility - can't be pulled into the block above.
-    ActiveRecord::Base.connection.add_index :users, [:last_name, :first_name]
 
     assert_problems(<<OUTPUT)
 remove the index index_users_on_last_name_and_first_name from the table users - queries should be able to use the following indices instead: index_users_on_last_name_and_first_name_and_email or unique_index_on_users_last_name_and_first_name
@@ -152,7 +148,6 @@ OUTPUT
   end
 
   def test_not_covered_with_different_opclasses
-    skip("ActiveRecord < 5.2 doesn't support operator classes") if ActiveRecord::VERSION::STRING < "5.2"
     skip("MySQL doesn't support operator classes") if mysql?
 
     Context.create_table(:users) do |t|

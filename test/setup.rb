@@ -12,29 +12,8 @@ require "mysql2"
 
 adapter = ENV.fetch("DATABASE_ADAPTER")
 ActiveRecord::Base.configurations =
-  if ActiveRecord::VERSION::MAJOR >= 6
-    {
-      "default_env" => {
-        "primary" => {
-          "adapter" => adapter,
-          "host" => ENV.fetch("DATABASE_HOST", nil),
-          "port" => ENV.fetch("DATABASE_PORT", nil),
-          "username" => ENV.fetch("DATABASE_USERNAME", nil),
-          "password" => ENV.fetch("DATABASE_PASSWORD", nil),
-          "database" => "active_record_doctor_primary"
-        },
-        "secondary" => {
-          "adapter" => adapter,
-          "host" => ENV.fetch("DATABASE_HOST", nil),
-          "port" => ENV.fetch("DATABASE_PORT", nil),
-          "username" => ENV.fetch("DATABASE_USERNAME", nil),
-          "password" => ENV.fetch("DATABASE_PASSWORD", nil),
-          "database" => "active_record_doctor_secondary"
-        }
-      }
-    }
-  else
-    {
+  {
+    "default_env" => {
       "primary" => {
         "adapter" => adapter,
         "host" => ENV.fetch("DATABASE_HOST", nil),
@@ -42,9 +21,17 @@ ActiveRecord::Base.configurations =
         "username" => ENV.fetch("DATABASE_USERNAME", nil),
         "password" => ENV.fetch("DATABASE_PASSWORD", nil),
         "database" => "active_record_doctor_primary"
+      },
+      "secondary" => {
+        "adapter" => adapter,
+        "host" => ENV.fetch("DATABASE_HOST", nil),
+        "port" => ENV.fetch("DATABASE_PORT", nil),
+        "username" => ENV.fetch("DATABASE_USERNAME", nil),
+        "password" => ENV.fetch("DATABASE_PASSWORD", nil),
+        "database" => "active_record_doctor_secondary"
       }
     }
-  end
+  }
 
 puts "Using #{adapter}"
 
@@ -73,9 +60,7 @@ class ApplicationRecord < ActiveRecord::Base
     self.abstract_class = true
   end
 
-  if ActiveRecord::VERSION::MAJOR >= 6
-    connects_to database: { writing: :primary }
-  end
+  connects_to database: { writing: :primary }
 end
 
 ActiveRecord::Base.establish_connection :primary
@@ -83,21 +68,14 @@ ActiveRecord::Base.establish_connection :primary
 # Transient Record contexts used by the test class below.
 Context = TransientRecord.context_for ApplicationRecord
 
-# Connect to another database when testing against a version that supports
-# multiple databases.
-if ActiveRecord::VERSION::MAJOR >= 6
-  class SecondaryRecord < ApplicationRecord
-    self.abstract_class = true
+# Connect to another database.
+class SecondaryRecord < ApplicationRecord
+  self.abstract_class = true
 
-    if ActiveRecord::VERSION::MAJOR >= 6
-      connects_to database: { writing: :secondary }
-    end
-  end
-
-  SecondaryRecord.establish_connection :secondary
-
-  SecondaryContext = TransientRecord.context_for SecondaryRecord
+  connects_to database: { writing: :secondary }
 end
+
+SecondaryRecord.establish_connection :secondary
 
 if ActiveRecord.version >= Gem::Version.new("7.1")
   # See https://github.com/rails/rails/pull/46522 for details.
