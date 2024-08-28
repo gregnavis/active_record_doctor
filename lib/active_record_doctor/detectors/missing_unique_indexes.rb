@@ -74,8 +74,11 @@ module ActiveRecordDoctor
 
               next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-              columns[-1] = "lower(#{columns[-1]})" unless case_sensitive
-
+              # citext is case-insensitive by default, so it doesn't have to be
+              # lowered.
+              if !case_sensitive && model.columns_hash[columns[-1]].type != :citext
+                columns[-1] = "lower(#{columns[-1]})"
+              end
               next if unique_index?(model.table_name, columns)
 
               if case_sensitive
