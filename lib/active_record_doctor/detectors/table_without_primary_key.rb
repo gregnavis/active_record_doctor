@@ -8,7 +8,7 @@ module ActiveRecordDoctor
       @description = "detect tables without primary keys"
       @config = {
         ignore_tables: {
-          description: "tables whose primary key existense should not be checked",
+          description: "tables whose primary key existence should not be checked",
           global: true
         }
       }

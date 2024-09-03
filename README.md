@@ -640,7 +640,7 @@ add a primary key to companies
 Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
-- `ignore_tables` - tables whose primary key existense should not be checked
+- `ignore_tables` - tables whose primary key existence should not be checked
 
 ## Ruby and Rails Compatibility Policy
 
