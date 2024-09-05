@@ -18,14 +18,8 @@ end
 
 Bundler::GemHelper.install_tasks
 
-begin
-  require "rubocop/rake_task"
-rescue LoadError
-  # We don't mind not having Rubocop in CI when testing against an older version
-  # of Ruby and Rails.
-else
-  RuboCop::RakeTask.new
-end
+require "rubocop/rake_task"
+RuboCop::RakeTask.new
 
 require "rake/testtask"
 

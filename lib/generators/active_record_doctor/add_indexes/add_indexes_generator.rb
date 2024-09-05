@@ -47,7 +47,7 @@ module ActiveRecordDoctor
       # rubocop rule below.
 
       <<MIGRATION
-class IndexForeignKeysIn#{table.camelize} < ActiveRecord::Migration#{migration_version}
+class IndexForeignKeysIn#{table.camelize} < ActiveRecord::Migration[#{ActiveRecord::Migration.current_version}]
   def change
 #{add_indexes(table, indexes)}
   end
@@ -69,14 +69,6 @@ MIGRATION
         "    add_index :#{table}, #{columns.inspect}, name: '#{index_name.first(connection.index_name_length)}'"
       else
         "    add_index :#{table}, #{columns.inspect}"
-      end
-    end
-
-    def migration_version
-      if ActiveRecord::VERSION::STRING >= "5.1"
-        "[#{ActiveRecord::Migration.current_version}]"
-      else
-        ""
       end
     end
   end

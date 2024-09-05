@@ -1,7 +1,7 @@
 # We upgrade to new versions of rubocop manually so it won't harm to enable all
 # new cops.
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.5
   NewCops: enable
   SuggestExtensions: false
 

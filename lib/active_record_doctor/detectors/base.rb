@@ -136,8 +136,7 @@ module ActiveRecordDoctor
       end
 
       def check_constraints(table_name)
-        # ActiveRecord 6.1+
-        if connection.respond_to?(:supports_check_constraints?) && connection.supports_check_constraints?
+        if connection.supports_check_constraints?
           connection.check_constraints(table_name).select(&:validated?).map(&:expression)
         elsif Utils.postgresql?(connection)
           definitions =
@@ -256,15 +255,8 @@ module ActiveRecordDoctor
       end
 
       def each_table(except: [])
-        tables =
-          if ActiveRecord::VERSION::STRING >= "5.1"
-            connection.tables
-          else
-            connection.data_sources
-          end
-
         log("Iterating over tables") do
-          tables.each do |table|
+          connection.tables.each do |table|
             case
             when ignored?(table, except)
               log("#{table} - ignored via the configuration; skipping")

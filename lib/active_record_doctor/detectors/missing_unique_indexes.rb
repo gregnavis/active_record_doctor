@@ -65,8 +65,7 @@ module ActiveRecordDoctor
             # put true literally.
             case_sensitive = validator.options.fetch(:case_sensitive, true)
 
-            # ActiveRecord < 5.0 does not support expression indexes,
-            # so this will always be a false positive.
+            # Avoid a false positive if expression indexes are unsupported.
             next if !case_sensitive && Utils.expression_indexes_unsupported?
 
             validator.attributes.each do |attribute|

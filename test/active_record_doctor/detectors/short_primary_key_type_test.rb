@@ -15,11 +15,6 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
   def test_short_integer_primary_key_is_reported
     Context.create_table(:companies, id: :int)
 
-    # In Rails 4.2 and MySQL primary key is not created due to a bug
-    if mysql? && ActiveRecord::VERSION::STRING < "5.0"
-      @connection.execute("ALTER TABLE companies ADD PRIMARY KEY(id)")
-    end
-
     assert_problems(<<~OUTPUT)
       change the type of companies.id to bigint
     OUTPUT

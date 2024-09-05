@@ -4,7 +4,7 @@ $LOAD_PATH.push File.expand_path("lib", __dir__)
 
 require "active_record_doctor/version"
 
-ACTIVE_RECORD_SPEC = ">= 4.2.0"
+ACTIVE_RECORD_SPEC = ">= 6.1.0"
 
 Gem::Specification.new do |s|
   s.name     = "active_record_doctor"
@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.metadata["rubygems_mfa_required"] = "true"
 
-  s.required_ruby_version = ">= 2.1.0"
+  s.required_ruby_version = ">= 2.5.0"
 
   s.add_dependency "activerecord", ACTIVE_RECORD_SPEC
 
@@ -27,11 +27,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pg", "~> 1.5.6"
   s.add_development_dependency "railties", ACTIVE_RECORD_SPEC
   s.add_development_dependency "rake", "~> 12.3.3"
+  s.add_development_dependency "rubocop", "~> 1.57.1"
   s.add_development_dependency "transient_record", "~> 2.0.0"
-
-  # We don't install rubocop in CI because we test against older Rubies that
-  # are incompatible with Rubocop.
-  if ENV["CI"].nil? || ENV["LINT"]
-    s.add_development_dependency "rubocop", "~> 1.57.1"
-  end
 end
