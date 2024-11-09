@@ -1,5 +1,6 @@
 source "https://rubygems.org"
 gemspec path: File.join(File.dirname(__FILE__), "..")
 
-gem "activerecord", "~> 4.2.0"
-gem "pg", "<= 0.20"
+gem "activerecord", "~> 7.2.0"
+gem "pg", "~> 1.5.9"
+gem "mysql2", "~> 0.5.6"

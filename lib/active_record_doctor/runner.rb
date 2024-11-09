@@ -27,7 +27,7 @@ module ActiveRecordDoctor # :nodoc:
       # We can't use #all? because of its short-circuit behavior - it stops
       # iteration and returns false upon the first falsey value. This
       # prevents other detectors from running if there's a failure.
-      ActiveRecordDoctor.detectors.each do |name, _|
+      ActiveRecordDoctor.detectors.each_key do |name|
         success = false if !run_one(name)
       end
 

@@ -30,7 +30,7 @@ class ActiveRecordDoctor::RunnerTest < Minitest::Test
   end
 
   def test_help_prints_help
-    ActiveRecordDoctor.detectors.each do |name, _|
+    ActiveRecordDoctor.detectors.each_key do |name|
       @io.truncate(0)
 
       @runner.help(name)

@@ -13,7 +13,7 @@ module ActiveRecordDoctor
 
       def expression_indexes_unsupported?(connection = ActiveRecord::Base.connection)
         # Active Record is unable to correctly parse expression indexes for MySQL.
-        (mysql?(connection) && ActiveRecord::VERSION::STRING < "7.1")
+        mysql?(connection) && ActiveRecord::VERSION::STRING < "7.1"
       end
     end
   end
