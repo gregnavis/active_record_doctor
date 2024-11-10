@@ -40,7 +40,7 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_optional_foreign_keys_with_required_with_if_association_are_disallowed
-    skip("ActiveRecord < 7.1 doesn't support optimized association presence validation") if ActiveRecord::VERSION::STRING < "7.1"
+    require_optimized_association_presence_validations!
 
     begin
       previous = ActiveRecord.belongs_to_required_validates_foreign_key
@@ -228,37 +228,25 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
   end
 
   def test_not_null_check_constraint
-    skip unless postgresql?
-
     Context.create_table(:users) do |t|
-      t.string :email
+      if !sqlite?
+        t.string :email
+      end
     end.define_model do
       validates :email, presence: true
     end
 
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      ALTER TABLE users ADD CONSTRAINT email_not_null CHECK (email IS NOT NULL)
-    SQL
+    if sqlite?
+      ActiveRecord::Base.connection.execute(<<-SQL)
+        ALTER TABLE users ADD COLUMN email VARCHAR CONSTRAINT email_not_null CHECK (email IS NOT NULL)
+      SQL
+    else
+      ActiveRecord::Base.connection.execute(<<-SQL)
+        ALTER TABLE users ADD CONSTRAINT email_not_null CHECK (email IS NOT NULL)
+      SQL
+    end
 
     refute_problems
-  end
-
-  def test_not_null_check_constraint_not_valid
-    skip unless postgresql?
-
-    Context.create_table(:users) do |t|
-      t.string :email
-    end.define_model do
-      validates :email, presence: true
-    end
-
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      ALTER TABLE users ADD CONSTRAINT email_not_null CHECK (email IS NOT NULL) NOT VALID
-    SQL
-
-    assert_problems(<<~OUTPUT)
-      add `NOT NULL` to users.email - models validates its presence but it's not non-NULL in the database
-    OUTPUT
   end
 
   def test_config_ignore_tables

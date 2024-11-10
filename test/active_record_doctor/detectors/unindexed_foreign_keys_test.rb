@@ -2,7 +2,7 @@
 
 class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   def test_unindexed_foreign_key_is_reported
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
@@ -15,7 +15,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_unindexed_foreign_key_with_nonstandard_name_is_reported
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
@@ -70,7 +70,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_tables
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
@@ -88,7 +88,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_tables_regexp
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users_tmp) do |t|
@@ -106,7 +106,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_global_ignore_tables
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
@@ -123,7 +123,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_columns
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
@@ -141,7 +141,7 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
   end
 
   def test_config_ignore_columns_regexp
-    skip("MySQL always indexes foreign keys") if mysql?
+    require_non_indexed_foreign_keys!
 
     Context.create_table(:companies)
     Context.create_table(:users) do |t|

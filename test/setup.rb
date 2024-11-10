@@ -9,8 +9,17 @@ require "uri"
 require "active_record"
 require "pg"
 require "mysql2"
+require "sqlite3"
 
 adapter = ENV.fetch("DATABASE_ADAPTER")
+
+if adapter == "sqlite3"
+  primary_database = secondary_database = ":memory:"
+else
+  primary_database = "active_record_doctor_primary"
+  secondary_database = "active_record_doctor_secondary"
+end
+
 ActiveRecord::Base.configurations =
   {
     "default_env" => {
@@ -20,7 +29,7 @@ ActiveRecord::Base.configurations =
         "port" => ENV.fetch("DATABASE_PORT", nil),
         "username" => ENV.fetch("DATABASE_USERNAME", nil),
         "password" => ENV.fetch("DATABASE_PASSWORD", nil),
-        "database" => "active_record_doctor_primary"
+        "database" => primary_database
       },
       "secondary" => {
         "adapter" => adapter,
@@ -28,7 +37,7 @@ ActiveRecord::Base.configurations =
         "port" => ENV.fetch("DATABASE_PORT", nil),
         "username" => ENV.fetch("DATABASE_USERNAME", nil),
         "password" => ENV.fetch("DATABASE_PASSWORD", nil),
-        "database" => "active_record_doctor_secondary"
+        "database" => secondary_database
       }
     }
   }
@@ -119,12 +128,69 @@ class Minitest::Test
     @config_path
   end
 
+  def require_partial_indexes!
+    skip("#{current_adapter} doesn't support partial indexes") if !postgresql?
+  end
+
+  def require_operator_classes!
+    skip("#{current_adapter} doesn't support operator classes") if !postgresql?
+  end
+
+  def require_materialized_views!
+    skip("#{current_adapter} doesn't support materialized views") if !postgresql?
+  end
+
+  def require_non_key_index_columns!
+    skip("Active Record < 7.1 doesn't support non-key index columns") if ActiveRecord::VERSION::STRING < "7.1"
+    skip("#{current_adapter} doesn't support non-key index columns") if !postgresql?
+  end
+
+  def require_expression_indexes!
+    skip("#{current_adapter} doesn't support expression indexes") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+  end
+
+  def require_non_indexed_foreign_keys!
+    skip("#{current_adapter} doesn't support unindexed foreign keys") if mysql?
+  end
+
+  def require_citext!
+    skip("#{current_adapter} doesn't support CITEXT column type") if !postgresql?
+  end
+
+  def require_arbitrary_long_text_columns!
+    skip("#{current_adapter} doesn't support text columns of arbitrary length") if mysql?
+  end
+
+  def require_uuid_column_type!
+    skip("#{current_adapter} doesn't support UUID column types") if !postgresql?
+  end
+
+  def require_optimized_association_presence_validations!
+    skip("ActiveRecord < 7.1 doesn't support optimized association presence validation") if ActiveRecord::VERSION::STRING < "7.1"
+  end
+
+  def require_additional_index_types!
+    skip("#{current_adapter} doesn't support additional index types") if sqlite?
+  end
+
+  def require_foreign_keys_of_different_type!
+    skip("#{current_adapter} doesn't support foreign keys of different type than the referenced column") if mysql?
+  end
+
+  def current_adapter
+    ActiveRecord::Base.connection.adapter_name
+  end
+
   def postgresql?
-    ActiveRecord::Base.connection.adapter_name == "PostgreSQL"
+    current_adapter == "PostgreSQL"
   end
 
   def mysql?
-    ActiveRecord::Base.connection.adapter_name == "Mysql2"
+    current_adapter == "Mysql2"
+  end
+
+  def sqlite?
+    current_adapter == "SQLite"
   end
 
   def detector_name

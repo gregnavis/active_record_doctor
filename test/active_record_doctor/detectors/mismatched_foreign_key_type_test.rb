@@ -2,17 +2,22 @@
 
 class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Test
   def test_mismatched_foreign_key_type_is_reported
-    # MySQL does not allow foreign keys to have different type than paired primary keys
-    return if mysql?
+    require_foreign_keys_of_different_type!
 
-    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:companies, id: :smallint)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: true, type: :integer
     end
 
-    assert_problems(<<~OUTPUT)
-      users.company_id is a foreign key of type integer and references companies.id of type bigint - foreign keys should be of the same type as the referenced column
-    OUTPUT
+    if sqlite?
+      assert_problems(<<~OUTPUT)
+        users.company_id is a foreign key of type INTEGER and references companies.id of type smallint - foreign keys should be of the same type as the referenced column
+      OUTPUT
+    else
+      assert_problems(<<~OUTPUT)
+        users.company_id is a foreign key of type integer and references companies.id of type smallint - foreign keys should be of the same type as the referenced column
+      OUTPUT
+    end
   end
 
   def test_matched_foreign_key_type_is_not_reported
@@ -25,8 +30,7 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
   end
 
   def test_mismatched_foreign_key_with_non_primary_key_type_is_reported
-    # MySQL does not allow foreign keys to have different type than paired primary keys
-    return if mysql?
+    require_foreign_keys_of_different_type!
 
     Context.create_table(:companies, id: :bigint) do |t|
       t.string :code
@@ -37,9 +41,15 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
       t.foreign_key :companies, table: :companies, column: :code, primary_key: :code
     end
 
-    assert_problems(<<~OUTPUT)
-      users.code is a foreign key of type text and references companies.code of type character varying - foreign keys should be of the same type as the referenced column
-    OUTPUT
+    if sqlite?
+      assert_problems(<<~OUTPUT)
+        users.code is a foreign key of type TEXT and references companies.code of type varchar - foreign keys should be of the same type as the referenced column
+      OUTPUT
+    else
+      assert_problems(<<~OUTPUT)
+        users.code is a foreign key of type text and references companies.code of type character varying - foreign keys should be of the same type as the referenced column
+      OUTPUT
+    end
   end
 
   def test_matched_foreign_key_with_non_primary_key_type_is_not_reported
@@ -59,8 +69,7 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
   end
 
   def test_config_ignore_tables
-    # MySQL does not allow foreign keys to have different type than paired primary keys
-    return if mysql?
+    require_foreign_keys_of_different_type!
 
     Context.create_table(:companies, id: :bigint)
     Context.create_table(:users) do |t|
@@ -78,8 +87,7 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
   end
 
   def test_global_ignore_tables
-    # MySQL does not allow foreign keys to have different type than paired primary keys
-    return if mysql?
+    require_foreign_keys_of_different_type!
 
     Context.create_table(:companies, id: :bigint)
     Context.create_table(:users) do |t|
@@ -96,8 +104,7 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
   end
 
   def test_config_ignore_columns
-    # MySQL does not allow foreign keys to have different type than paired primary keys
-    return if mysql?
+    require_foreign_keys_of_different_type!
 
     Context.create_table(:companies, id: :bigint)
     Context.create_table(:users) do |t|

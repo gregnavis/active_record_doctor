@@ -12,7 +12,17 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
     super
   end
 
+  def test_sqlite3_generates_no_errors
+    skip if !sqlite?
+
+    Context.create_table(:companies, id: :int)
+
+    refute_problems
+  end
+
   def test_short_integer_primary_key_is_reported
+    skip if sqlite?
+
     Context.create_table(:companies, id: :int)
 
     assert_problems(<<~OUTPUT)
@@ -21,23 +31,31 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
   end
 
   def test_non_integer_and_non_uuid_primary_key_is_not_reported
+    skip if sqlite?
+
     Context.create_table(:companies, id: :string, primary_key: :uuid)
     refute_problems
   end
 
   def test_long_integer_primary_key_is_not_reported
+    skip if sqlite?
+
     Context.create_table(:companies, id: :bigint)
     refute_problems
   end
 
   def test_uuid_primary_key_is_not_reported
-    skip unless postgresql?
+    skip if sqlite?
+
+    require_uuid_column_type!
 
     Context.create_table(:companies, id: :uuid)
     refute_problems
   end
 
   def test_no_primary_key_is_not_reported
+    skip if sqlite?
+
     Context.create_table(:companies, id: false) do |t|
       t.string :name, null: false
     end
@@ -46,6 +64,8 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
   end
 
   def test_config_ignore_tables
+    skip if sqlite?
+
     Context.create_table(:companies, id: :integer)
 
     config_file(<<-CONFIG)
@@ -59,6 +79,8 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
   end
 
   def test_global_ignore_tables
+    skip if sqlite?
+
     Context.create_table(:companies, id: :integer)
 
     config_file(<<-CONFIG)

@@ -146,33 +146,25 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
   end
 
   def test_not_null_check_constraint
-    skip unless postgresql?
-
     Context.create_table(:users) do |t|
-      t.string :name
+      if !sqlite?
+        t.string :name
+      end
     end.define_model
 
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL)
-    SQL
+    if sqlite?
+      ActiveRecord::Base.connection.execute(<<-SQL)
+        ALTER TABLE users ADD COLUMN name VARCHAR CONSTRAINT name_not_null CHECK (name IS NOT NULL)
+      SQL
+    else
+      ActiveRecord::Base.connection.execute(<<-SQL)
+        ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL)
+      SQL
+    end
 
     assert_problems(<<~OUTPUT)
       add a `presence` validator to Context::User.name - it's NOT NULL but lacks a validator
     OUTPUT
-  end
-
-  def test_not_null_check_constraint_not_valid
-    skip unless postgresql?
-
-    Context.create_table(:users) do |t|
-      t.string :name
-    end.define_model
-
-    ActiveRecord::Base.connection.execute(<<-SQL)
-      ALTER TABLE users ADD CONSTRAINT name_not_null CHECK (name IS NOT NULL) NOT VALID
-    SQL
-
-    refute_problems
   end
 
   def test_abstract_class

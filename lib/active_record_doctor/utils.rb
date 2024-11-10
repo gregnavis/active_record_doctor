@@ -11,9 +11,14 @@ module ActiveRecordDoctor
         connection.adapter_name == "Mysql2"
       end
 
+      def sqlite?(connection = ActiveRecord::Base.connection)
+        connection.adapter_name == "SQLite"
+      end
+
       def expression_indexes_unsupported?(connection = ActiveRecord::Base.connection)
-        # Active Record is unable to correctly parse expression indexes for MySQL.
-        mysql?(connection) && ActiveRecord::VERSION::STRING < "7.1"
+        sqlite?(connection) ||
+          # Active Record is unable to correctly parse expression indexes for MySQL.
+          (mysql?(connection) && ActiveRecord::VERSION::STRING < "7.1")
       end
     end
   end

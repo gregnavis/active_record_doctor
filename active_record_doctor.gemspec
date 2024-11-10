@@ -28,5 +28,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "railties", ACTIVE_RECORD_SPEC
   s.add_development_dependency "rake", "~> 13.2.1"
   s.add_development_dependency "rubocop", "~> 1.68.0"
+  s.add_development_dependency "sqlite3", "~> 2.2.0"
   s.add_development_dependency "transient_record", "~> 2.0.0"
 end

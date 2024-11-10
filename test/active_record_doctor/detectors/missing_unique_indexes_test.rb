@@ -75,7 +75,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_present_partial_unique_index
-    skip("MySQL doesn't support partial indexes") if mysql?
+    require_partial_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -199,7 +199,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_unique_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -215,7 +215,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_non_unique_lower_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -234,7 +234,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_unique_lower_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -251,7 +251,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_compound_unique_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -267,7 +267,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_compound_non_unique_lower_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -286,7 +286,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_compound_unique_lower_index_exists
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -303,7 +303,7 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_unique_index_with_citext
-    skip unless postgresql?
+    require_citext!
 
     ActiveRecord::Base.connection.enable_extension(:citext)
 
@@ -320,8 +320,8 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
   end
 
   def test_case_insensitive_compound_unique_index_with_citext
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
-    skip unless postgresql?
+    require_expression_indexes!
+    require_citext!
 
     ActiveRecord::Base.connection.enable_extension(:citext)
 
