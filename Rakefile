@@ -24,9 +24,9 @@ RuboCop::RakeTask.new
 require "rake/testtask"
 
 namespace :test do
-  ["postgresql", "mysql2"].each do |adapter|
+  ["postgresql", "mysql2", "sqlite3"].each do |adapter|
     Rake::TestTask.new(adapter) do |t|
-      t.deps = ["set_#{adapter}_env"]
+      t.deps = ["prepare_#{adapter}"]
       t.libs = ["lib", "test"]
       t.ruby_opts = ["-rsetup"]
       t.pattern = "test/**/*_test.rb"
@@ -36,10 +36,12 @@ namespace :test do
       t.warning = false
     end
 
-    task("set_#{adapter}_env") { ENV["DATABASE_ADAPTER"] = adapter }
+    task :"prepare_#{adapter}" do
+      ENV["DATABASE_ADAPTER"] = adapter
+    end
   end
 end
 
-task test: ["test:postgresql", "test:mysql2"]
+task test: ["test:postgresql", "test:mysql2", "test:sqlite3"]
 
 task default: :test

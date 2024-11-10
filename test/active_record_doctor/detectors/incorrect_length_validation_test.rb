@@ -26,7 +26,7 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
   end
 
   def test_validation_and_no_limit_is_error
-    skip("MySQL always sets a limit on text columns") if mysql?
+    require_arbitrary_long_text_columns!
 
     Context.create_table(:users) do |t|
       t.string :email
@@ -51,7 +51,7 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
   end
 
   def test_no_validation_and_no_limit_is_ok
-    skip("MySQL always sets a limit on text columns") if mysql?
+    require_arbitrary_long_text_columns!
 
     Context.create_table(:users) do |t|
       t.string :email

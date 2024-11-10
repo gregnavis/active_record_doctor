@@ -12,7 +12,7 @@ OUTPUT
   end
 
   def test_partial_index_on_primary_key
-    skip("MySQL doesn't support partial indexes") if mysql?
+    require_partial_indexes!
 
     Context.create_table(:users) do |t|
       t.boolean :admin
@@ -92,7 +92,7 @@ OUTPUT
   end
 
   def test_expression_index_not_covered_by_multicolumn_index
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -105,7 +105,7 @@ OUTPUT
   end
 
   def test_unique_expression_index_not_covered_by_unique_multicolumn_index
-    skip("Expression indexes are not supported") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    require_expression_indexes!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -118,6 +118,8 @@ OUTPUT
   end
 
   def test_not_covered_by_different_index_type
+    require_additional_index_types!
+
     Context.create_table(:users) do |t|
       t.string :first_name
       t.string :last_name
@@ -125,7 +127,7 @@ OUTPUT
 
       if mysql?
         t.index :last_name, type: :fulltext
-      else
+      elsif postgresql?
         t.index :last_name, using: :hash
       end
     end
@@ -134,7 +136,7 @@ OUTPUT
   end
 
   def test_not_covered_by_partial_index
-    skip("MySQL doesn't support partial indexes") if mysql?
+    require_partial_indexes!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -148,7 +150,7 @@ OUTPUT
   end
 
   def test_not_covered_with_different_opclasses
-    skip("MySQL doesn't support operator classes") if mysql?
+    require_operator_classes!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -161,7 +163,7 @@ OUTPUT
   end
 
   def test_single_column_covered_by_multi_column_on_materialized_view_is_duplicate
-    skip("Only PostgreSQL supports materialized views") unless postgresql?
+    require_materialized_views!
 
     begin
       Context.create_table(:users) do |t|
@@ -188,8 +190,7 @@ OUTPUT
   end
 
   def test_include_index_covered_by_other_non_include_index
-    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
-    skip("Only PostgreSQL supports include indexes") unless postgresql?
+    require_non_key_index_columns!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -204,8 +205,7 @@ OUTPUT
   end
 
   def test_include_index_covered_by_other_include_index
-    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
-    skip("Only PostgreSQL supports include indexes") unless postgresql?
+    require_non_key_index_columns!
 
     Context.create_table(:users) do |t|
       t.string :first_name
@@ -221,8 +221,7 @@ OUTPUT
   end
 
   def test_include_index_not_covered_by_other_index
-    skip("ActiveRecord < 7.1 doesn't support include indexes") if ActiveRecord::VERSION::STRING < "7.1"
-    skip("Only PostgreSQL supports include indexes") unless postgresql?
+    require_non_key_index_columns!
 
     Context.create_table(:users) do |t|
       t.string :first_name
