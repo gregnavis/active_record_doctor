@@ -67,6 +67,7 @@ module ActiveRecordDoctor
         model.validators.select do |validator|
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
             !validator.options[:allow_nil] &&
+            validator.options[:on].blank? &&
             (rails_belongs_to_presence_validator?(validator) || !conditional_validator?(validator))
         end
       end
