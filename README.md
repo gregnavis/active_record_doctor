@@ -270,7 +270,7 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose indexes should never be reported as extraneous.
-- `ignore_columns` - indexes that should never be reported as extraneous.
+- `ignore_indexes` - indexes that should never be reported as extraneous.
 
 ### Detecting Unindexed `deleted_at` Columns
 
