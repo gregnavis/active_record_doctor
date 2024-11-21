@@ -310,4 +310,27 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
 
     refute_problems
   end
+
+  def test_timestamps_with_null_are_disallowed
+    Context.create_table(:users) do |t|
+      t.timestamps null: true
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to users.created_at - timestamp columns are set automatically by Active Record and allowing NULL may lead to inconsistencies introduced by bulk operations
+      add `NOT NULL` to users.updated_at - timestamp columns are set automatically by Active Record and allowing NULL may lead to inconsistencies introduced by bulk operations
+    OUTPUT
+  end
+
+  def test_created_on_updated_on_with_null_are_disallowed
+    Context.create_table(:users) do |t|
+      t.datetime :created_on
+      t.datetime :updated_on
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      add `NOT NULL` to users.created_on - timestamp columns are set automatically by Active Record and allowing NULL may lead to inconsistencies introduced by bulk operations
+      add `NOT NULL` to users.updated_on - timestamp columns are set automatically by Active Record and allowing NULL may lead to inconsistencies introduced by bulk operations
+    OUTPUT
+  end
 end
