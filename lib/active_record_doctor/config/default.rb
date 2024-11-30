@@ -27,6 +27,7 @@ ActiveRecordDoctor.configure do
 
   detector :incorrect_dependent_option,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_associations: []
 

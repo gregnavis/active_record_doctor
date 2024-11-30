@@ -440,6 +440,28 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     refute_problems
   end
 
+  def test_config_ignore_databases
+    SecondaryContext.create_table(:companies) do
+    end.define_model do
+      has_many :users, dependent: :destroy
+    end
+
+    SecondaryContext.create_table(:users) do |t|
+      t.references :companies
+    end.define_model do
+      belongs_to :company
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_dependent_option,
+          ignore_databases: ["secondary"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:companies) do
     end.define_model do
@@ -456,6 +478,27 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_dependent_option,
           ignore_models: ["Context::Company"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_databases
+    SecondaryContext.create_table(:companies) do
+    end.define_model do
+      has_many :users, dependent: :destroy
+    end
+
+    SecondaryContext.create_table(:users) do |t|
+      t.references :companies
+    end.define_model do
+      belongs_to :company
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, ["secondary"]
       end
     CONFIG
 

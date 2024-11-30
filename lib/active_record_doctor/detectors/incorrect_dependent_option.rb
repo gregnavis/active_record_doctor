@@ -7,6 +7,10 @@ module ActiveRecordDoctor
     class IncorrectDependentOption < Base # :nodoc:
       @description = "detect associations with incorrect dependent options"
       @config = {
+        ignore_databases: {
+          description: "databases whose models should not be checked",
+          global: true
+        },
         ignore_models: {
           description: "models whose associations should not be checked",
           global: true
@@ -51,7 +55,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+        each_model(except: config(:ignore_models), ignore_databases: config(:ignore_databases), existing_tables_only: true) do |model|
           each_association(model, except: config(:ignore_associations)) do |association|
             # A properly configured :through association will have a non-nil
             # source_reflection. If it's nil then it indicates the :through
