@@ -22,6 +22,7 @@ ActiveRecordDoctor.configure do
 
   detector :incorrect_length_validation,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_attributes: []
 

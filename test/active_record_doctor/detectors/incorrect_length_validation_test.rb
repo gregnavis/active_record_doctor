@@ -61,6 +61,21 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_config_ignore_databases
+    SecondaryContext.create_table(:users) do |t|
+      t.string :email, limit: 64
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :incorrect_length_validation,
+          ignore_databases: ["secondary"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
@@ -70,6 +85,20 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
       ActiveRecordDoctor.configure do |config|
         config.detector :incorrect_length_validation,
           ignore_models: ["Context::User"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_global_ignore_databases
+    SecondaryContext.create_table(:users) do |t|
+      t.string :email, limit: 64
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, ["secondary"]
       end
     CONFIG
 

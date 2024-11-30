@@ -7,6 +7,10 @@ module ActiveRecordDoctor
     class IncorrectLengthValidation < Base # :nodoc:
       @description = "detect mismatches between database length limits and model length validations"
       @config = {
+        ignore_databases: {
+          description: "databases whose models should not be checked",
+          global: true
+        },
         ignore_models: {
           description: "models whose validators should not be checked",
           global: true
@@ -31,7 +35,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+        each_model(except: config(:ignore_models), ignore_databases: config(:ignore_databases), existing_tables_only: true) do |model|
           each_attribute(model, except: config(:ignore_attributes), type: [:string, :text]) do |column|
             model_maximum = maximum_allowed_by_validations(model, column.name.to_sym)
             next if model_maximum == column.limit
