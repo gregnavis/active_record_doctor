@@ -90,7 +90,7 @@ module ActiveRecordDoctor
                 [[association.klass], nil]
               end
 
-            deletable_models, destroyable_models = associated_models.partition { |klass| deletable?(klass) }
+            deletable_models, destroyable_models = associated_models.partition { |klass| deletable?(klass, []) }
 
             case association.options[:dependent]
             when :destroy_async
@@ -147,14 +147,16 @@ module ActiveRecordDoctor
         end
       end
 
-      def deletable?(model)
+      def deletable?(model, processing_list)
+        return true if processing_list.include?(model)
+
         !defines_destroy_callbacks?(model) &&
           dependent_models(model).all? do |dependent_model|
             foreign_key = foreign_key(dependent_model.table_name, model.table_name)
 
             foreign_key.nil? ||
               foreign_key.on_delete == :nullify || (
-                foreign_key.on_delete == :cascade && deletable?(dependent_model)
+                foreign_key.on_delete == :cascade && deletable?(dependent_model, processing_list + [model])
               )
           end
       end
