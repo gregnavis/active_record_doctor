@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.metadata["rubygems_mfa_required"] = "true"
 
-  s.required_ruby_version = ">= 2.7.0"
+  s.required_ruby_version = ">= 3.1.0"
 
   s.add_dependency "activerecord", ACTIVE_RECORD_SPEC
 
