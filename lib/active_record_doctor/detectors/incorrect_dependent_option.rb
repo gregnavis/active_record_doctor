@@ -58,7 +58,7 @@ module ActiveRecordDoctor
             # model lacks the next leg in the :through relationship. For
             # instance, if user has many comments through posts then a nil
             # source_reflection means that Post doesn't define +has_many :comments+.
-            if through?(association) && association.source_reflection.nil?
+            if association.through_reflection? && association.source_reflection.nil?
               log("through association with nil source_reflection")
 
               through_association = model.reflect_on_association(association.options.fetch(:through))
@@ -84,7 +84,7 @@ module ActiveRecordDoctor
             associated_models, associated_models_type =
               if association.polymorphic?
                 [models_having_association_with_options(as: association.name), nil]
-              elsif through?(association)
+              elsif association.through_reflection?
                 [[association.source_reflection.active_record], "join"]
               else
                 [[association.klass], nil]
@@ -157,10 +157,6 @@ module ActiveRecordDoctor
                 foreign_key.on_delete == :cascade && deletable?(dependent_model)
               )
           end
-      end
-
-      def through?(reflection)
-        reflection.is_a?(ActiveRecord::Reflection::ThroughReflection)
       end
 
       def defines_destroy_callbacks?(model)
