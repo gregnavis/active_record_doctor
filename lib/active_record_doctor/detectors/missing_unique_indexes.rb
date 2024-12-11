@@ -66,7 +66,7 @@ module ActiveRecordDoctor
             case_sensitive = validator.options.fetch(:case_sensitive, true)
 
             # Avoid a false positive if expression indexes are unsupported.
-            next if !case_sensitive && Utils.expression_indexes_unsupported?
+            next if !case_sensitive && !connection.supports_expression_index?
 
             validator.attributes.each do |attribute|
               columns = resolve_attributes(model, scope + [attribute])
