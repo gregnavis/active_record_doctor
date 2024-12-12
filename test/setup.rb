@@ -146,7 +146,7 @@ class Minitest::Test
   end
 
   def require_expression_indexes!
-    skip("#{current_adapter} doesn't support expression indexes") if ActiveRecordDoctor::Utils.expression_indexes_unsupported?
+    skip("#{current_adapter} doesn't support expression indexes") if ActiveRecord::Base.connection.supports_expression_index?
   end
 
   def require_non_indexed_foreign_keys!
