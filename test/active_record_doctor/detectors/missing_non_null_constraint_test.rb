@@ -137,6 +137,16 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     refute_problems
   end
 
+  def test_validators_with_specific_context_on_optional_columns_are_allowed
+    Context.create_table(:users) do |t|
+      t.string :name, null: true
+    end.define_model do
+      validates :name, presence: true, on: :create
+    end
+
+    refute_problems
+  end
+
   def test_models_with_non_existent_tables_are_skipped
     Context.define_model(:User)
 
