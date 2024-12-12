@@ -16,6 +16,7 @@ can detect:
 * primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
+* tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
 
 It can also:
 
@@ -641,6 +642,29 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose primary key existence should not be checked
+
+### Detecting Tables Without Timestamps
+
+Tables should have timestamp columns (`created_at`/`updated_at`). Otherwise, it becomes problematic
+to easily find when the record was created/updated, if the table is active or can be removed,
+automatic Rails cache expiration after record updates is not possible.
+
+Running the command below will list all tables without default timestamp columns:
+
+```
+bundle exec rake active_record_doctor:table_without_timestamps
+```
+
+The output of the command looks like this:
+
+```
+add a created_at column to companies
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_tables` - tables whose timestamp columns existence should not be checked
 
 ## Ruby and Rails Compatibility Policy
 
