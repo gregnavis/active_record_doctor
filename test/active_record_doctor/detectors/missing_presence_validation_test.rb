@@ -42,6 +42,65 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_column_is_not_reported_if_polymorphic_association_is_required_and_columns_are_required
+    Context.create_table(:images) do |t|
+      t.references :imageable, null: false, polymorphic: true
+    end.define_model do
+      if ActiveRecord::VERSION::MAJOR >= 6
+        belongs_to :imageable, polymorphic: true, optional: false
+      else
+        belongs_to :imageable, polymorphic: true, required: true
+      end
+    end
+
+    refute_problems
+  end
+
+  def test_non_null_column_is_reported_if_polymorphic_association_is_optional_and_columns_are_required
+    Context.create_table(:images) do |t|
+      t.references :imageable, null: false, polymorphic: true
+    end.define_model do
+      if ActiveRecord::VERSION::MAJOR >= 6
+        belongs_to :imageable, polymorphic: true, optional: true
+      else
+        belongs_to :imageable, polymorphic: true, required: false
+      end
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::Image.imageable_id - it's NOT NULL but lacks a validator
+      add a `presence` validator to Context::Image.imageable_type - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
+  def test_non_null_column_is_not_reported_if_polymorphic_association_is_required_and_columns_are_optional
+    Context.create_table(:images) do |t|
+      t.references :imageable, polymorphic: true
+    end.define_model do
+      if ActiveRecord::VERSION::MAJOR >= 6
+        belongs_to :imageable, polymorphic: true, optional: false
+      else
+        belongs_to :imageable, polymorphic: true, required: true
+      end
+    end
+
+    refute_problems
+  end
+
+  def test_non_null_column_is_not_reported_if_polymorphic_association_is_optional_and_columns_are_optional
+    Context.create_table(:images) do |t|
+      t.references :imageable, polymorphic: true
+    end.define_model do
+      if ActiveRecord::VERSION::MAJOR >= 6
+        belongs_to :imageable, polymorphic: true, optional: true
+      else
+        belongs_to :imageable, polymorphic: true, required: false
+      end
+    end
+
+    refute_problems
+  end
+
   def test_not_null_column_is_not_reported_if_habtm_association
     Context.create_table(:users).define_model do
       has_and_belongs_to_many :projects, class_name: "Context::Project"
