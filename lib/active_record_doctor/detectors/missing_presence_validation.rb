@@ -30,6 +30,7 @@ module ActiveRecordDoctor
           each_attribute(model, except: config(:ignore_attributes)) do |column|
             next unless validator_needed?(model, column)
             next if validator_present?(model, column)
+            next if counter_cache_column?(model, column)
 
             problem!(column: column.name, model: model.name)
           end
@@ -93,6 +94,12 @@ module ActiveRecordDoctor
 
       def inclusion_validator_items(validator)
         validator.options[:in] || validator.options[:within] || []
+      end
+
+      def counter_cache_column?(model, column)
+        model.reflect_on_all_associations(:has_many).any? do |reflection|
+          reflection.has_cached_counter? && reflection.counter_cache_column == column.name
+        end
       end
     end
   end
