@@ -259,6 +259,24 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
     refute_problems
   end
 
+  def test_views_are_ignored
+    Context.create_table(:old_comments, force: true) do |t|
+      t.integer :user_id
+    end
+
+    Context.execute(<<-SQL)
+      CREATE VIEW comments AS SELECT * FROM old_comments
+    SQL
+
+    Context.define_model(:Comment) do
+      belongs_to :user, required: true
+    end
+
+    refute_problems
+  ensure
+    Context.execute("DROP VIEW comments")
+  end
+
   def test_config_ignore_tables
     Context.create_table(:users) do |t|
       t.string :name, null: true
