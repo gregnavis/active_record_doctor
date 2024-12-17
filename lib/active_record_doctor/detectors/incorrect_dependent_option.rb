@@ -77,8 +77,8 @@ module ActiveRecordDoctor
                   associated_models: [through_association.klass.name],
                   associated_models_type: "join"
                 )
-                next
               end
+              next
             end
 
             associated_models, associated_models_type =
