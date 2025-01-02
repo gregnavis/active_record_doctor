@@ -21,6 +21,26 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     refute_problems
   end
 
+  def test_non_integer_missing_foreign_key_is_reported
+    Context.create_table(:users) do |t|
+      t.string :external_id
+    end
+
+    refute_problems
+  end
+
+  def test_uuid_missing_foreign_key_is_reported
+    require_uuid_column_type!
+
+    Context.create_table(:users) do |t|
+      t.uuid :company_id
+    end
+
+    assert_problems(<<~OUTPUT)
+      create a foreign key on users.company_id - looks like an association without a foreign key constraint
+    OUTPUT
+  end
+
   def test_config_ignore_models
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
