@@ -13,6 +13,7 @@ can detect:
 * incorrect presence validations on boolean columns - [`active_record_doctor:incorrect_boolean_presence_validation`](#detecting-incorrect-presence-validations-on-boolean-columns)
 * mismatches between model length validations and database validation constraints - [`active_record_doctor:incorrect_length_validation`](#detecting-incorrect-length-validation)
 * incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
+* incorrectly configured associations - [`active_record_doctor:incorrect_association`](#detecting-incorrectly-configured-associations)
 * primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
@@ -547,6 +548,31 @@ The output of the command looks like this:
 ```
 use `dependent: :delete_all` or similar on Company.users - associated models have no validations and can be deleted in bulk
 use `dependent: :destroy` or similar on Post.comments - the associated model has callbacks that are currently skipped
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_models` - models whose associations should not be checked.
+- `ignore_associations` - associations, written as Model.association, that should not
+  be checked.
+
+### Detecting Incorrectly Configured Associations
+
+There are many reasons for the association to be configured incorrectly - the associated model
+or table does not exist, the provided `:through` association does not exist etc.
+
+To detect incorrectly configured associations run the following command:
+
+```
+bundle exec rake active_record_doctor:incorrect_association
+```
+
+The output of the command looks like this:
+
+```
+association User.company is incorrect - associated 'Company' model does not exist
+association Post.comments is incorrect - associated 'comments' table does not exist
 ```
 
 Supported configuration options:
