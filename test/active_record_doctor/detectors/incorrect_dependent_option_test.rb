@@ -405,6 +405,25 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     OUTPUT
   end
 
+  def test_has_through_associations_with_bad_source
+    Context.create_table(:users).define_model do
+      has_many :posts
+      has_many :comments, through: :posts, source: :non_existent
+    end
+
+    Context.create_table(:posts) do |t|
+      t.references :users
+    end.define_model do
+      has_many :comments
+    end
+
+    Context.create_table(:comments) do |t|
+      t.references :posts
+    end.define_model
+
+    refute_problems
+  end
+
   def test_destroy_async_and_foreign_key_exists
     Context.create_table(:companies) do
     end.define_model do
