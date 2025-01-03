@@ -28,7 +28,7 @@ module ActiveRecordDoctor
             # We need to skip polymorphic associations as they can reference
             # multiple tables but a foreign key constraint can reference
             # a single predefined table.
-            next unless named_like_foreign_key?(column)
+            next unless looks_like_foreign_key?(column)
             next if foreign_key?(table, column)
             next if polymorphic_foreign_key?(table, column)
 
@@ -37,8 +37,11 @@ module ActiveRecordDoctor
         end
       end
 
-      def named_like_foreign_key?(column)
-        column.name.end_with?("_id")
+      def looks_like_foreign_key?(column)
+        type = column.type.to_s
+
+        column.name.end_with?("_id") &&
+          (type == "integer" || type.include?("uuid"))
       end
 
       def foreign_key?(table, column)
