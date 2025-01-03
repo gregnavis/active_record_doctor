@@ -34,9 +34,11 @@ module ActiveRecordDoctor
 
       def detect
         table_models = models.select(&:table_exists?).group_by(&:table_name)
+        views = connection.views
 
         table_models.each do |table, models|
           next if ignored?(table, config(:ignore_tables))
+          next if views.include?(table)
 
           concrete_models = models.reject do |model|
             model.abstract_class? || sti_base_model?(model)
