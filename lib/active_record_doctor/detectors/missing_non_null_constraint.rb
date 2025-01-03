@@ -18,8 +18,18 @@ module ActiveRecordDoctor
 
       private
 
+      TIMESTAMPS = ["created_at", "created_on", "updated_at", "updated_on"].freeze
+
       def message(column:, table:)
-        "add `NOT NULL` to #{table}.#{column} - models validates its presence but it's not non-NULL in the database"
+        if TIMESTAMPS.include?(column)
+          <<~WARN.squish
+            add `NOT NULL` to #{table}.#{column} - timestamp columns are set
+            automatically by Active Record and allowing NULL may lead to
+            inconsistencies introduced by bulk operations
+          WARN
+        else
+          "add `NOT NULL` to #{table}.#{column} - models validates its presence but it's not non-NULL in the database"
+        end
       end
 
       def detect
@@ -50,6 +60,8 @@ module ActiveRecordDoctor
       end
 
       def non_null_needed?(model, column)
+        return true if TIMESTAMPS.include?(column.name)
+
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
           reflection.foreign_key == column.name ||
             (reflection.polymorphic? && reflection.foreign_type == column.name)
