@@ -244,6 +244,13 @@ module ActiveRecordDoctor
         end
       end
 
+      def looks_like_foreign_key?(column)
+        type = column.type.to_s
+
+        column.name.end_with?("_id") &&
+          (type == "integer" || type.include?("uuid"))
+      end
+
       def each_foreign_key(table_name)
         log("Iterating over foreign keys on #{table_name}") do
           connection.foreign_keys(table_name).each do |foreign_key|

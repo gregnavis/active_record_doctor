@@ -27,7 +27,7 @@ module ActiveRecordDoctor
       def detect
         each_table(except: config(:ignore_tables)) do |table|
           each_column(table, except: config(:ignore_columns)) do |column|
-            next unless named_like_foreign_key?(column) || foreign_key?(table, column)
+            next unless looks_like_foreign_key?(column) || foreign_key?(table, column)
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)
             next if connection.primary_key(table) == column.name
@@ -44,10 +44,6 @@ module ActiveRecordDoctor
             problem!(table: table, columns: columns)
           end
         end
-      end
-
-      def named_like_foreign_key?(column)
-        column.name.end_with?("_id")
       end
 
       def foreign_key?(table, column)
