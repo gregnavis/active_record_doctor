@@ -52,6 +52,26 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
     refute_problems
   end
 
+  def test_non_integer_unindexed_foreign_key_is_not_reported
+    Context.create_table(:users) do |t|
+      t.string :external_id
+    end
+
+    refute_problems
+  end
+
+  def test_uuid_unindexed_foreign_key_is_reported
+    require_uuid_column_type!
+
+    Context.create_table(:users) do |t|
+      t.uuid :company_id
+    end
+
+    assert_problems(<<~OUTPUT)
+      add an index on users(company_id) - foreign keys are often used in database lookups and should be indexed for performance reasons
+    OUTPUT
+  end
+
   def test_indexed_foreign_key_is_not_reported
     Context.create_table(:companies)
     Context.create_table(:users) do |t|

@@ -37,13 +37,6 @@ module ActiveRecordDoctor
         end
       end
 
-      def looks_like_foreign_key?(column)
-        type = column.type.to_s
-
-        column.name.end_with?("_id") &&
-          (type == "integer" || type.include?("uuid"))
-      end
-
       def foreign_key?(table, column)
         connection.foreign_keys(table).any? do |foreign_key|
           foreign_key.options[:column] == column.name
