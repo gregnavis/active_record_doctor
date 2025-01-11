@@ -42,6 +42,17 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_type_column_is_not_reported_if_association_validation_present
+    Context.create_table(:comments) do |t|
+      t.integer :commentable_id, null: false
+      t.string :commentable_type, null: false
+    end.define_model do
+      belongs_to :commentable, polymorphic: true, required: true
+    end
+
+    refute_problems
+  end
+
   def test_not_null_column_is_not_reported_if_habtm_association
     Context.create_table(:users).define_model do
       has_and_belongs_to_many :projects, class_name: "Context::Project"
