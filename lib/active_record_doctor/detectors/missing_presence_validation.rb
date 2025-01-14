@@ -44,7 +44,7 @@ module ActiveRecordDoctor
       end
 
       def default_value_instead_of_validation?(column)
-        !column.default.nil? && config(:ignore_columns_with_default)
+        (!column.default.nil? || column.default_function) && config(:ignore_columns_with_default)
       end
 
       def validator_present?(model, column)
