@@ -123,6 +123,38 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     OUTPUT
   end
 
+  def test_non_null_is_not_reported_if_nil_not_included
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      validates :role, inclusion: { in: ["admin", "user"] }
+    end
+
+    refute_problems
+  end
+
+  def test_non_null_is_reported_if_nil_included
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      validates :role, inclusion: { in: ["admin", "user", nil] }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::User.role - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
+  def test_non_null_is_not_reported_if_nil_excluded
+    Context.create_table(:users) do |t|
+      t.boolean :role, null: false
+    end.define_model do
+      validates :role, exclusion: { in: [nil] }
+    end
+
+    refute_problems
+  end
+
   def test_timestamps_are_not_reported
     Context.create_table(:users) do |t|
       # Create created_at/updated_at timestamps.
