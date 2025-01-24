@@ -167,6 +167,15 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     end.define_model do
       belongs_to :company, counter_cache: :custom_users_count
     end
+  end
+
+  def test_composite_primary_key_is_not_reported
+    require_composite_primary_keys!
+
+    Context.create_table(:users, primary_key: [:company_id, :id]) do |t|
+      t.bigint :company_id
+      t.bigint :id
+    end.define_model
 
     refute_problems
   end

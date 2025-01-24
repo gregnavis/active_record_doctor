@@ -63,6 +63,17 @@ class ActiveRecordDoctor::Detectors::ShortPrimaryKeyTypeTest < Minitest::Test
     refute_problems
   end
 
+  def test_composite_primary_key_is_not_reported
+    require_composite_primary_keys!
+
+    Context.create_table(:companies, primary_key: [:country_id, :id]) do |t|
+      t.integer :country_id
+      t.integer :id
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_tables
     skip if sqlite?
 
