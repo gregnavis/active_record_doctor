@@ -62,7 +62,7 @@ module ActiveRecordDoctor
           each_table(except: config(:ignore_tables)) do |table|
             each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index|
               primary_key = connection.primary_key(table)
-              if index.columns == [primary_key] && index.where.nil?
+              if replaceable_columns?(index, primary_key, true, []) && index.where.nil?
                 problem!(table: table, extraneous_index: index.name, replacement_indexes: nil)
               end
             end
@@ -76,17 +76,21 @@ module ActiveRecordDoctor
         return false if index1.where != index2.where
         return false if opclasses(index1) != opclasses(index2)
 
-        index1_columns = Array(index1.columns)
-        index2_columns = Array(index2.columns)
+        replaceable_columns?(index1, index2.columns, index2.unique, includes(index2))
+      end
 
-        case [index1.unique, index2.unique]
+      def replaceable_columns?(index, columns2, unique2, includes2)
+        columns1 = Array(index.columns)
+        columns2 = Array(columns2)
+
+        case [index.unique, unique2]
         when [true, true]
-          contains_all?(index1_columns, index2_columns)
+          contains_all?(columns1, columns2)
         when [true, false]
           false
         else
-          prefix?(index1_columns, index2_columns) &&
-            contains_all?(index2_columns + includes(index2), includes(index1))
+          prefix?(columns1, columns2) &&
+            contains_all?(columns2 + includes2, includes(index))
         end
       end
 
