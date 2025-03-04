@@ -178,4 +178,17 @@ class ActiveRecordDoctor::Detectors::UnindexedForeignKeysTest < Minitest::Test
 
     refute_problems
   end
+
+  def test_habtm_table_with_composite_primary_key_is_not_reported
+    require_non_indexed_foreign_keys!
+
+    Context.create_table(:companies)
+    Context.create_table(:users)
+    Context.create_table(:companies_users, primary_key: [:company_id, :user_id]) do |t|
+      t.references :companies, foreign_key: true, null: false
+      t.references :partner, foreign_key: true, null: false
+    end
+
+    refute_problems
+  end
 end
