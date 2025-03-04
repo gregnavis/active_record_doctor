@@ -54,7 +54,9 @@ module ActiveRecordDoctor
 
       def indexed?(table, column)
         connection.indexes(table).any? do |index|
-          index.columns.first == column.name
+          index.columns.first == column.name ||
+            (connection.primary_key(table).is_a?(Array) &&
+             connection.primary_key(table).include?(column.name))
         end
       end
 
