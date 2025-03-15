@@ -264,9 +264,24 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     OUTPUT
   end
 
-  def test_config_ignore_columns_with_default
+  def test_config_ignore_columns_with_default_when_using_value
     Context.create_table(:users) do |t|
       t.integer :posts_count, null: false, default: 0
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_columns_with_default: true
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_columns_with_default_when_using_function
+    Context.create_table(:users) do |t|
+      t.timestamp :started_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
     end.define_model
 
     config_file(<<-CONFIG)
