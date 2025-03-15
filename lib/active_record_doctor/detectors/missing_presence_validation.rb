@@ -48,12 +48,9 @@ module ActiveRecordDoctor
       end
 
       def validator_present?(model, column)
-        if column.type == :boolean
-          inclusion_validator_present?(model, column) ||
-            exclusion_validator_present?(model, column)
-        else
+        inclusion_validator_present?(model, column) ||
+          exclusion_validator_present?(model, column) ||
           presence_validator_present?(model, column)
-        end
       end
 
       def inclusion_validator_present?(model, column)
@@ -62,7 +59,7 @@ module ActiveRecordDoctor
           return true if validator_items.is_a?(Proc)
 
           validator.is_a?(ActiveModel::Validations::InclusionValidator) &&
-            validator.attributes.include?(column.name.to_sym) &&
+            validator.attributes.map(&:to_s).include?(column.name) &&
             !validator_items.include?(nil)
         end
       end
