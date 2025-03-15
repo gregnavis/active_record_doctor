@@ -50,6 +50,20 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     OUTPUT
   end
 
+  def test_sti_subclasses_are_ignored
+    Context.create_table(:users) do |t|
+      t.string :email, limit: 64
+      t.string :type, null: false
+    end.define_model do
+    end
+
+    Context.define_model(:Client, Context::User)
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.email to 64 characters but there's no length validator on Context::User.email - remove the database limit or add the validator
+    OUTPUT
+  end
+
   def test_no_validation_and_no_limit_is_ok
     require_arbitrary_long_text_columns!
 
