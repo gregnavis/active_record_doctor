@@ -33,7 +33,7 @@ module ActiveRecordDoctor
       def detect
         each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
           each_attribute(model, except: config(:ignore_attributes), type: [:string, :text]) do |column|
-            model_maximum = maximum_allowed_by_validations(model, column.name.to_sym)
+            model_maximum = maximum_allowed_by_validations(model, column.name)
             next if model_maximum == column.limit
 
             problem!(
@@ -49,9 +49,11 @@ module ActiveRecordDoctor
 
       def maximum_allowed_by_validations(model, column)
         length_validator = model.validators.find do |validator|
+          attributes = validator.attributes.map(&:to_s)
+
           validator.kind == :length &&
             validator.options.include?(:maximum) &&
-            validator.attributes.include?(column)
+            attributes.include?(column)
         end
         length_validator ? length_validator.options[:maximum] : nil
       end

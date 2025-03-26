@@ -6,7 +6,7 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
       t.string :email, limit: 64
       t.string :name, limit: 32
     end.define_model do
-      validates :email, length: { maximum: 64 }
+      validates "email", length: { maximum: 64 } # use a string on purpose
       validates :name, length: { maximum: 32 }
     end
 
