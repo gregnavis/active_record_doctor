@@ -37,7 +37,8 @@ module ActiveRecordDoctor
 
       def has_presence_validator?(model, column)
         model.validators.any? do |validator|
-          validator.kind == :presence && validator.attributes.include?(column.name.to_sym)
+          attributes = validator.attributes.map(&:to_s)
+          validator.kind == :presence && attributes.include?(column.name)
         end
       end
     end

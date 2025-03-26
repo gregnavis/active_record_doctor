@@ -58,8 +58,9 @@ module ActiveRecordDoctor
           validator_items = inclusion_validator_items(validator)
           return true if validator_items.is_a?(Proc)
 
+          attributes = validator.attributes.map(&:to_s)
           validator.is_a?(ActiveModel::Validations::InclusionValidator) &&
-            validator.attributes.map(&:to_s).include?(column.name) &&
+            attributes.include?(column.name) &&
             !validator_items.include?(nil)
         end
       end
@@ -69,23 +70,26 @@ module ActiveRecordDoctor
           validator_items = inclusion_validator_items(validator)
           return true if validator_items.is_a?(Proc)
 
+          attributes = validator.attributes.map(&:to_s)
           validator.is_a?(ActiveModel::Validations::ExclusionValidator) &&
-            validator.attributes.include?(column.name.to_sym) &&
+            attributes.include?(column.name) &&
             validator_items.include?(nil)
         end
       end
 
       def presence_validator_present?(model, column)
-        allowed_attributes = [column.name.to_sym]
+        allowed_attributes = [column.name]
 
         belongs_to = model.reflect_on_all_associations(:belongs_to).find do |reflection|
           reflection.foreign_key == column.name
         end
-        allowed_attributes << belongs_to.name.to_sym if belongs_to
+        allowed_attributes << belongs_to.name.to_s if belongs_to
 
         model.validators.any? do |validator|
+          attributes = validator.attributes.map(&:to_s)
+
           validator.is_a?(ActiveRecord::Validations::PresenceValidator) &&
-            (validator.attributes & allowed_attributes).present?
+            (attributes & allowed_attributes).present?
         end
       end
 
