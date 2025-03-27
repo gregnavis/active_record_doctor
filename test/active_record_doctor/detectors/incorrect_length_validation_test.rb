@@ -61,6 +61,40 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_array_inclusion_validation_with_shorter_values_and_limit_is_ok
+    Context.create_table(:users) do |t|
+      t.string :status, limit: 64
+    end.define_model do
+      validates :status, inclusion: { in: ["new", "vip"] }
+    end
+
+    refute_problems
+  end
+
+  def test_array_inclusion_validation_with_longer_values_and_limit_is_error
+    Context.create_table(:users) do |t|
+      t.string :status, limit: 64
+    end.define_model do
+      validates :status, inclusion: { in: ["new", "vip", "a" * 100] }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.status to 64 characters but there's no length validator on Context::User.status - remove the database limit or add the validator
+    OUTPUT
+  end
+
+  def test_proc_inclusion_validation_and_limit_is_error
+    Context.create_table(:users) do |t|
+      t.string :status, limit: 64
+    end.define_model do
+      validates :status, inclusion: { in: ->(user) { STATUSES[user.country] } }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.status to 64 characters but there's no length validator on Context::User.status - remove the database limit or add the validator
+    OUTPUT
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
