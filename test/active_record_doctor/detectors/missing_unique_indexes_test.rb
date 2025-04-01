@@ -589,6 +589,23 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     refute_problems
   end
 
+  def test_config_ignore_case_insensitive_columns
+    Context.create_table(:users) do |t|
+      t.string :email
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_unique_indexes,
+          ignore_columns: ["Context::User(lower(email))"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_config_ignore_columns_for_has_one
     Context.create_table(:users).define_model do
       has_one :account, class_name: "Context::Account"
