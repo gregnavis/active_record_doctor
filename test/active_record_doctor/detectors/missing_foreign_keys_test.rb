@@ -41,6 +41,21 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     OUTPUT
   end
 
+  def test_destroy_async_is_not_reported
+    Context.create_table(:companies).define_model do
+      # We need an ActiveJob job defined to appease the ActiveRecord
+      class_attribute :destroy_association_async_job, default: Class.new
+
+      has_many :users, dependent: :destroy_async
+    end
+
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: false
+    end.define_model
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:companies)
     Context.create_table(:users) do |t|

@@ -31,6 +31,7 @@ module ActiveRecordDoctor
             next unless looks_like_foreign_key?(column)
             next if foreign_key?(table, column)
             next if polymorphic_foreign_key?(table, column)
+            next if model_destroyed_async?(table, column)
 
             problem!(table: table, column: column.name)
           end
@@ -47,6 +48,18 @@ module ActiveRecordDoctor
         type_column_name = column.name.sub(/_id\Z/, "_type")
         connection.columns(table).any? do |another_column|
           another_column.name == type_column_name
+        end
+      end
+
+      def model_destroyed_async?(table, column)
+        # Check if there are any models having `has_many ..., dependent: :destroy_async`
+        # referencing the specified table.
+        models.any? do |model|
+          model.reflect_on_all_associations(:has_many).any? do |reflection|
+            reflection.options[:dependent] == :destroy_async &&
+              reflection.foreign_key == column.name &&
+              reflection.klass.table_name == table
+          end
         end
       end
     end
