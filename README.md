@@ -161,14 +161,15 @@ obtained via the help mechanism described in the previous section.
 
 ### Regexp-Based Ignores
 
-Settings like `ignore_tables`, `ignore_indexes`, `ignore_models` and so on accept list of
-identifiers to ignore. These can be either:
+Settings like `ignore_tables`, `ignore_indexes`, `ignore_models` and so on
+accept list of identifiers to ignore. These can be either:
 
 1. Strings - in which case an exact match is needed.
 2. Regexps - which are matched against object names, and matching ones are
    excluded from output.
 
-For example, to ignore all tables starting with `legacy_` and all models under the `Legacy::` namespace you can write:
+For example, to ignore all tables starting with `legacy_` and all models under
+the `Legacy::` namespace you can write:
 
 ```ruby
 ActiveRecordDoctor.configure do
@@ -177,6 +178,7 @@ ActiveRecordDoctor.configure do
     /^legacy_/
   ]
   global :ignore_models, [
+    # Ignore all legacy models.
     /^Legacy::/
   ]
 end
