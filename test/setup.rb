@@ -6,6 +6,7 @@
 # Ruby 2.7.2 / Rails 6.
 require "uri"
 
+require "logger"
 require "active_record"
 require "pg"
 require "mysql2"
