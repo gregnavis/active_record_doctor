@@ -36,7 +36,7 @@ ActiveRecordDoctor.configure do
 
   detector :missing_foreign_keys,
     enabled: true,
-    ignore_tables: [],
+    ignore_models: [],
     ignore_columns: []
 
   detector :missing_non_null_constraint,
