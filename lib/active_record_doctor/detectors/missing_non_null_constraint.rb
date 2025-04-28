@@ -70,10 +70,10 @@ module ActiveRecordDoctor
         end
 
         required_presence_validators(model).any? do |validator|
-          attributes = validator.attributes
+          attributes = validator.attributes.map(&:to_s)
 
-          attributes.include?(column.name.to_sym) ||
-            (belongs_to && attributes.include?(belongs_to.name.to_sym))
+          attributes.include?(column.name) ||
+            (belongs_to && attributes.include?(belongs_to.name.to_s))
         end
       end
 
