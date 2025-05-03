@@ -29,6 +29,11 @@ ActiveRecordDoctor.configure do
     ignore_models: [],
     ignore_associations: []
 
+  detector :incorrect_association,
+    enabled: true,
+    ignore_models: [],
+    ignore_associations: []
+
   detector :mismatched_foreign_key_type,
     enabled: true,
     ignore_tables: [],
