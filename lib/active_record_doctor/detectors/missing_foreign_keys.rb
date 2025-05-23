@@ -7,8 +7,8 @@ module ActiveRecordDoctor
     class MissingForeignKeys < Base # :nodoc:
       @description = "detect foreign-key-like columns lacking an actual foreign key constraint"
       @config = {
-        ignore_tables: {
-          description: "tables whose columns should not be checked",
+        ignore_models: {
+          description: "models whose columns should not be checked",
           global: true
         },
         ignore_columns: {
@@ -23,42 +23,18 @@ module ActiveRecordDoctor
       end
 
       def detect
-        each_table(except: config(:ignore_tables)) do |table|
-          each_column(table, except: config(:ignore_columns)) do |column|
-            # We need to skip polymorphic associations as they can reference
-            # multiple tables but a foreign key constraint can reference
-            # a single predefined table.
-            next unless looks_like_foreign_key?(column)
-            next if foreign_key?(table, column)
-            next if polymorphic_foreign_key?(table, column)
-            next if model_destroyed_async?(table, column)
+        each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
+          foreign_keys = connection.foreign_keys(model.table_name)
+          foreign_key_columns = foreign_keys.map { |key| key.options[:column] }
 
-            problem!(table: table, column: column.name)
-          end
-        end
-      end
+          each_association(model, type: :belongs_to) do |association|
+            next if ignored?(association.foreign_key, config(:ignore_columns))
+            next if association.options[:polymorphic]
 
-      def foreign_key?(table, column)
-        connection.foreign_keys(table).any? do |foreign_key|
-          foreign_key.options[:column] == column.name
-        end
-      end
+            has_foreign_key = foreign_key_columns.include?(association.foreign_key)
+            next if has_foreign_key
 
-      def polymorphic_foreign_key?(table, column)
-        type_column_name = column.name.sub(/_id\Z/, "_type")
-        connection.columns(table).any? do |another_column|
-          another_column.name == type_column_name
-        end
-      end
-
-      def model_destroyed_async?(table, column)
-        # Check if there are any models having `has_many ..., dependent: :destroy_async`
-        # referencing the specified table.
-        models.any? do |model|
-          model.reflect_on_all_associations(:has_many).any? do |reflection|
-            reflection.options[:dependent] == :destroy_async &&
-              reflection.foreign_key == column.name &&
-              reflection.klass.table_name == table
+            problem!(table: model.table_name, column: association.foreign_key)
           end
         end
       end
