@@ -118,10 +118,10 @@ module ActiveRecordDoctor
       end
 
       def primary_key(table_name)
-        primary_key_name = connection.primary_key(table_name)
-        return nil if primary_key_name.nil?
+        primary_key_names = Array(connection.primary_key(table_name))
+        return nil if primary_key_names.empty?
 
-        column(table_name, primary_key_name)
+        primary_key_names.map { |column_name| column(table_name, column_name) }
       end
 
       def column(table_name, column_name)
