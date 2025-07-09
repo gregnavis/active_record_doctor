@@ -80,6 +80,13 @@ ActiveRecord::Base.establish_connection :primary
 # what Rails uses out of the box.
 ActiveRecord::Base.belongs_to_required_by_default = true
 
+# Set the default datetime type to TIMESTAMP WITH TIME ZONE to avoid noise
+# in unrelated tests. The default value detector is tested in a dedicated
+# test method.
+if adapter == "postgresql"
+  ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.datetime_type = :timestamptz
+end
+
 # Transient Record contexts used by the test class below.
 Context = TransientRecord.context_for ApplicationRecord
 
