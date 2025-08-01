@@ -178,6 +178,10 @@ class Minitest::Test
     skip("#{current_adapter} doesn't support foreign keys of different type than the referenced column") if mysql?
   end
 
+  def require_composite_primary_keys!
+    skip("ActiveRecord < 7.1 doesn't support composite primary keys") if ActiveRecord::VERSION::STRING < "7.1"
+  end
+
   def current_adapter
     ActiveRecord::Base.connection.adapter_name
   end

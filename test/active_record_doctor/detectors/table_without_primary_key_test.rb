@@ -16,6 +16,16 @@ class ActiveRecordDoctor::Detectors::TableWithoutPrimaryKeyTest < Minitest::Test
     refute_problems
   end
 
+  def test_table_with_composite_primary_key_is_not_reported
+    require_composite_primary_keys!
+
+    Context.create_table(:orders, primary_key: [:shop_id, :id]) do |t|
+      t.bigint :shop_id
+      t.bigint :id
+    end
+    refute_problems
+  end
+
   def test_config_ignore_tables
     Context.create_table(:companies, id: false) do |t|
       t.string :name
