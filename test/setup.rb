@@ -75,6 +75,11 @@ end
 
 ActiveRecord::Base.establish_connection :primary
 
+# Enable pgcrypto extension for PostgreSQL if needed (for gen_random_uuid)
+if adapter == "postgresql"
+  ActiveRecord::Base.connection.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto;")
+end
+
 # Transient Record contexts used by the test class below.
 Context = TransientRecord.context_for ApplicationRecord
 

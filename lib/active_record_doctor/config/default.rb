@@ -24,6 +24,11 @@ ActiveRecordDoctor.configure do
     ignore_models: [],
     ignore_attributes: []
 
+  detector :incorrect_timestamp_type,
+    enabled: true,
+    ignore_tables: [],
+    ignore_columns: []
+
   detector :incorrect_dependent_option,
     enabled: true,
     ignore_models: [],

@@ -17,6 +17,7 @@ can detect:
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 * tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
+* incorrect timestamp types on PostgreSQL (timestamps without time zone) - [`active_record_doctor:incorrect_timestamp_type`](#detecting-incorrect-timestamp-types-on-postgresql)
 
 It can also:
 
@@ -664,6 +665,63 @@ Supported configuration options:
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose timestamp columns existence should not be checked
 
+### Detecting Incorrect Timestamp Types on PostgreSQL
+
+PostgreSQL offers two main timestamp types: `timestamp without time zone` and
+`timestamp with time zone` (often aliased as `timestamptz`). It is generally
+best practice to use `timestamp with time zone` as it stores timestamps in UTC
+and automatically handles conversions to and from the client's time zone.
+Rails, by default (even in version 8), uses `timestamp without time zone` for
+newly generated `datetime` columns in PostgreSQL for legacy reasons.
+
+This detector checks if any timestamp columns in your PostgreSQL
+database are using `timestamp without time zone` instead of the recommended
+`timestamp with time zone`.
+
+Running the command below will list all such columns:
+
+```
+bundle exec rake active_record_doctor:incorrect_timestamp_type
+```
+
+The output of the command looks like this:
+
+```
+Incorrect timestamp type: The column `users.created_at` is `timestamp without time zone`.
+It's recommended to use `timestamp with time zone` for PostgreSQL.
+
+To make `timestamp with time zone` the default for new columns, add the following to `config/application.rb`:
+
+```ruby
+ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.datetime_type = :timestamptz
+```
+
+After adding this configuration, run `bin/rails db:migrate` to update your `schema.rb`.
+For existing columns, you'll need to create a new migration to change the column type, eg:
+
+```ruby
+class ChangeTimestampColumnsToTimestamptz < ActiveRecord::Migration[7.0]
+  def change
+    change_column :users, :created_at, :timestamptz
+  end
+end
+```
+
+Long term, once all columns have been migrated, or for new projects, you should set the default
+timestamp type in your `config/application.rb` to ensure all new timestamp columns use UTC:
+
+```ruby
+# config/application.rb
+config.time_zone = "Europe/London"
+config.active_record.default_timezone = :utc
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_tables` - tables whose timestamp columns should not be checked.
+- `ignore_columns` - specific columns, written as `table_name.column_name`, that should not be checked.
+
 ## Ruby and Rails Compatibility Policy
 
 The goal of the policy is to ensure proper functioning in reasonable
@@ -674,6 +732,21 @@ combinations of Ruby and Rails versions. Specifically:
 2. If a Ruby version is compatible with a supported Rails version then it's
    also supported by `active_record_doctor`.
 3. Only the most recent teeny Ruby versions and patch Rails versions are supported.
+
+## Testing changes
+
+To test changes to `active_record_doctor` you should have a database instance running with a
+database of the right name:
+
+```bash
+docker run -p 5432:5432 postgres:9.6.0
+PGPASSWORD="postgres" psql -U postgres -h localhost -c "CREATE DATABASE active_record_doctor_primary;" -c "CREATE DATABASE active_record_doctor_secondary;"
+```
+
+Then execute the tests with:
+```bash
+DATABASE_USERNAME=postgres DATABASE_HOST=localhost DATABASE_PORT=5432 bundle exec rake test:postgresql
+```
 
 ## Author
 
