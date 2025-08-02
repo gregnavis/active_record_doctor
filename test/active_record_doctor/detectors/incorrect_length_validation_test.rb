@@ -13,9 +13,70 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_validation_and_lteq_check_constraint_limit_equal_is_ok
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.check_constraint "length(email) <= 64"
+    end.define_model do
+      validates :email, length: { maximum: 64 }
+    end
+
+    refute_problems
+  end
+
+  def test_validation_and_lt_check_constraint_limit_equal_is_ok
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.check_constraint "length(email) < 65"
+    end.define_model do
+      validates :email, length: { maximum: 64 }
+    end
+
+    refute_problems
+  end
+
   def test_validation_and_limit_different_is_error
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
+    end.define_model do
+      validates :email, length: { maximum: 63 }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.email to 64 characters but the length validator on Context::User.email enforces a maximum of 63 characters - set both limits to the same value or remove both
+    OUTPUT
+  end
+
+  def test_validation_and_check_lteq_constraint_limit_different_is_error
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.check_constraint "length(email) <= 33"
+    end.define_model do
+      validates :email, length: { maximum: 32 }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.email to 33 characters but the length validator on Context::User.email enforces a maximum of 32 characters - set both limits to the same value or remove both
+    OUTPUT
+  end
+
+  def test_validation_and_check_lt_constraint_limit_different_is_error
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.check_constraint "length(email) < 32"
+    end.define_model do
+      validates :email, length: { maximum: 32 }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.email to 31 characters but the length validator on Context::User.email enforces a maximum of 32 characters - set both limits to the same value or remove both
+    OUTPUT
+  end
+
+  def test_validation_and_check_constraint_limit_and_column_limit_different_is_error
+    Context.create_table(:users) do |t|
+      t.string :email, limit: 128
+      t.check_constraint "length(email) <= 64"
     end.define_model do
       validates :email, length: { maximum: 32 }
     end
@@ -42,6 +103,18 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
   def test_no_validation_and_limit_is_error
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
+    end.define_model do
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.email to 64 characters but there's no length validator on Context::User.email - remove the database limit or add the validator
+    OUTPUT
+  end
+
+  def test_no_validation_and_check_constraint_limit_is_error
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.check_constraint "length(email) <= 64"
     end.define_model do
     end
 
