@@ -36,6 +36,9 @@ module ActiveRecordDoctor
             model_maximum = maximum_allowed_by_validations(model, column.name.to_sym)
             next if model_maximum == column.limit
 
+            # Add violation only to the root model of STI.
+            next if (model_maximum.nil? || column.limit.nil?) && sti_subclass?(model)
+
             problem!(
               model: model.name,
               attribute: column.name,
@@ -54,6 +57,11 @@ module ActiveRecordDoctor
             validator.attributes.include?(column)
         end
         length_validator ? length_validator.options[:maximum] : nil
+      end
+
+      def sti_subclass?(model)
+        model.columns_hash.include?(model.inheritance_column.to_s) &&
+          model.base_class != model
       end
     end
   end
