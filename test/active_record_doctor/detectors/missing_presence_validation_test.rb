@@ -42,6 +42,28 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_association_type_non_null_column_is_not_reported_if_polymorphic_association_validation_present
+    Context.create_table(:comments) do |t|
+      t.references :commentable, null: false, polymorphic: true
+    end.define_model do
+      belongs_to :commentable, polymorphic: true, optional: false
+    end
+
+    refute_problems
+  end
+
+  def test_association_type_non_null_column_is_reported_if_polymorphic_association_validation_absent
+    Context.create_table(:comments) do |t|
+      t.references :commentable, null: false, polymorphic: true
+    end.define_model do
+      belongs_to :commentable, polymorphic: true, optional: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add `optional: false` to Context::Comment.commentable - the foreign key commentable_id or type commentable_type are NOT NULL
+    OUTPUT
+  end
+
   def test_not_null_column_is_not_reported_if_habtm_association
     Context.create_table(:users).define_model do
       has_and_belongs_to_many :projects, class_name: "Context::Project"
@@ -280,6 +302,23 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_presence_validation,
           ignore_attributes: ["Context::User.name"]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
+  def test_config_ignore_polymorphic_associations_via_relationship_name
+    Context.create_table(:comments) do |t|
+      t.references :commentable, null: false, polymorphic: true
+    end.define_model do
+      belongs_to :commentable, optional: true, polymorphic: true
+    end
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_attributes: ["Context::Comment.commentable"]
       end
     CONFIG
 
