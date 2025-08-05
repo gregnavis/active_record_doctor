@@ -75,6 +75,10 @@ end
 
 ActiveRecord::Base.establish_connection :primary
 
+# After connecting to the database, ensure default settings are compatible with
+# what Rails uses out of the box.
+ActiveRecord::Base.belongs_to_required_by_default = true
+
 # Transient Record contexts used by the test class below.
 Context = TransientRecord.context_for ApplicationRecord
 
