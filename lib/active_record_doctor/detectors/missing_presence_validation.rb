@@ -62,10 +62,10 @@ module ActiveRecordDoctor
           # At this point the only columns that are left are those that DO
           # need presence validation in the model. Let's iterate over all
           # validators to see which columns are actually validated, but before
-          # we do that let's define a map for quickly translating column names
-          # to association names.
+          # we do that let's define a map for quickly translating foreign key
+          # names to belongs_to association names.
           column_name_to_association_name = {}
-          model.reflect_on_all_associations.each do |reflection|
+          model.reflect_on_all_associations(:belongs_to).each do |reflection|
             column_name_to_association_name[reflection.foreign_key] = reflection.name
             if reflection.polymorphic?
               column_name_to_association_name[reflection.foreign_type] = reflection.name
