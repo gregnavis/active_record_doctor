@@ -17,6 +17,7 @@ can detect:
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 * tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
+* undefined model references - [`active_record_doctor:undefined_model_references](#detecting-undefined-model-references)
 
 It can also:
 
@@ -663,6 +664,27 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose timestamp columns existence should not be checked
+
+### Detecting Undefined Model References
+
+When a table is no longer used by the application, it should usually be dropped from the database.
+
+Running the command below will list all tables without default timestamp columns:
+
+```
+bundle exec rake active_record_doctor:undefined_model_references
+```
+
+The output of the command looks like this:
+
+```
+The users table is not referenced by a Rails model. If you are in the process of migrating it away, temporarily ignore it by adding it to the `ignore_tables` configuration and then remove it after the ruby code no longer uses it. Remember, do not delete the table until your deployed application code no longer uses it.
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_tables` - tables that are not represented by models but cannot yet be dropped from the database (i.e. because the deployed version of the code may still be reading it)
 
 ## Ruby and Rails Compatibility Policy
 
