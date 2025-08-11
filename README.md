@@ -17,6 +17,7 @@ can detect:
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 * tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
+* unused tables - [`active_record_doctor:unused_tables](#detecting-unused-tables)
 
 It can also:
 
@@ -664,6 +665,29 @@ Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
 - `ignore_tables` - tables whose timestamp columns existence should not be checked
+
+### Detecting Unused Tables
+
+**WARNING**: this detector is disabled by default and has to be turned on explicitly.
+
+When a table is not used by the application it should usually be dropped from the database.
+
+Running the command below will list all tables that are not referenced by any model:
+
+```
+bundle exec rake active_record_doctor:unused_tables
+```
+
+The output of the command looks like this:
+
+```
+The users table is not referenced by any Rails model and can be dropped
+```
+
+Supported configuration options:
+
+- `enabled` - set to `true` to enable the detector
+- `ignore_tables` - tables that are not represented by models but cannot yet be dropped from the database (i.e. because the deployed version of the code may still be reading it)
 
 ## Ruby and Rails Compatibility Policy
 
