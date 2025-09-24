@@ -1,3 +1,30 @@
+# Version 2.0.0
+
+* Breaking change: drop support for Active Record 6.0 and older.
+* New detector: `table_without_timestamps` detects tables that don't define
+  the timestamp columns (contributed by fatkodima).
+* New feature: official SQLite support.
+* New feature: `missing_non_null_constraint` checks whether timestamp columns
+  are not `NULL` (contributed by Jon Dufresne).
+* Enhancement: `missing_foreign_keys` and `unindexed_foreign_keys` look only at
+  integer and UUID columns (contributed by fatkodima).
+* Enhancement: `missing_foreign_keys` supports tables with `destroy_async`
+  (contributed by fatkodima).
+* Enhancement: `missing_presence_validation` supports inclusion/exclusion
+  validators, ignores columns with default functions, (contributed by fatkodima)
+  and supports polymorphic associations.
+* Enhancement: `incorrect_length_validation` allows inclusion validations as an
+  alternative (contributed by fatkodima).
+* Bug fix: `missing_presence_validation` ignores counter cache columns
+  (contributed by fatkodima).
+* Bug fix: `incorrect_dependent_option` no longer raises an exception on
+  incorrectly configured associations (contributed by fatkodima).
+* Bug fix: `missing_non_null_constraint` skips contextual validators and
+  database views (contributed by fatkodima).
+* Bug fix: expression index support check (contribued by fatkodima).
+* Bug fix: typos and documentation enhancements (Jon Dufresne, Kristján Oddsson,
+  and Viktor).
+
 # Version 1.15.0
 
 * New feature: detector to find tables without a primary key (contributed by

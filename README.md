@@ -402,7 +402,8 @@ Supported configuration options:
 
 If there's an unconditional presence validation on a column then it should be
 marked as non-`NULL`-able at the database level or should have a `IS NOT NULL`
-constraint.
+constraint. Timestamp columns are also expected to be made `NOT NULL` as they're
+managed automatically by Active Record.
 
 In order to detect columns whose presence is required but that are marked
 `null: true` in the database run the following command:
@@ -432,7 +433,8 @@ Supported configuration options:
 ### Detecting Missing Presence Validations
 
 If a column is marked as `null: false` then it's likely it should have the
-corresponding presence validator.
+corresponding presence validator or an appropriately configured inclusion or
+exclusion validation.
 
 In order to detect models lacking these validations run:
 
