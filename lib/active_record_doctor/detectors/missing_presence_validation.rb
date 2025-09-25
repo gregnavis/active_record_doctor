@@ -56,7 +56,7 @@ module ActiveRecordDoctor
               (config(:ignore_columns_with_default) && (column.default || column.default_function)) ||
 
               # Explicitly ignored columns should be skipped.
-              config(:ignore_attributes).include?("#{model.name}.#{column.name}")
+              ignored?("#{model.name}.#{column.name}", config(:ignore_attributes))
           end
 
           # At this point the only columns that are left are those that DO

@@ -308,6 +308,21 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_config_ignore_attributes_regexp
+    Context.create_table(:users) do |t|
+      t.string :name, null: false
+    end.define_model
+
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :missing_presence_validation,
+          ignore_attributes: [/name/]
+      end
+    CONFIG
+
+    refute_problems
+  end
+
   def test_config_ignore_polymorphic_associations_via_relationship_name
     Context.create_table(:comments) do |t|
       t.references :commentable, null: false, polymorphic: true
