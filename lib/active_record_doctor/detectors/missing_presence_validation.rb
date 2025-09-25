@@ -21,14 +21,14 @@ module ActiveRecordDoctor
 
       private
 
-      def message(type:, column_or_association:, model:)
+      def message(type:, column:, reflection:, model:)
         case type
         when :missing_validator
-          "add a `presence` validator to #{model}.#{column_or_association} - it's NOT NULL but lacks a validator"
+          "add a `presence` validator to #{model}.#{column} - it's NOT NULL but lacks a validator"
         when :optional_association
-          "add `optional: false` to #{model}.#{column_or_association} - the foreign key #{column_or_association}_id is NOT NULL" # rubocop:disable Layout/LineLength
+          "add `optional: false` to #{model}.#{reflection.name} - the foreign key #{reflection.foreign_key} is NOT NULL"
         when :optional_polymorphic_association
-          "add `optional: false` to #{model}.#{column_or_association} - the foreign key #{column_or_association}_id or type #{column_or_association}_type are NOT NULL" # rubocop:disable Layout/LineLength
+          "add `optional: false` to #{model}.#{reflection.name} - the foreign key #{reflection.foreign_key} or type #{reflection.foreign_type} are NOT NULL" # rubocop:disable Layout/LineLength
         end
       end
 
@@ -125,7 +125,7 @@ module ActiveRecordDoctor
 
               # ... report an error about an incorrectly configured polymorphic
               # association.
-              problematic_polymorphic_associations << reflection.name
+              problematic_polymorphic_associations << reflection
             else
               # If the foreign key is not one of the columns that lack a
               # validator then it means the association added a validator and is
@@ -137,7 +137,7 @@ module ActiveRecordDoctor
               problematic_columns.delete(foreign_key_column)
 
               # ... report an error about an incorrectly configured association.
-              problematic_associations << reflection.name
+              problematic_associations << reflection
             end
           end
 
@@ -145,22 +145,22 @@ module ActiveRecordDoctor
           # ignored should be removed from the output. It's NOT enough to skip
           # processing them in the loop above because their underlying foreign
           # key and type columns must be removed from output, too.
-          problematic_associations.reject! do |name|
-            config(:ignore_attributes).include?("#{model.name}.#{name}")
+          problematic_associations.reject! do |reflection|
+            config(:ignore_attributes).include?("#{model.name}.#{reflection.name}")
           end
-          problematic_polymorphic_associations.reject! do |name|
-            config(:ignore_attributes).include?("#{model.name}.#{name}")
+          problematic_polymorphic_associations.reject! do |reflection|
+            config(:ignore_attributes).include?("#{model.name}.#{reflection.name}")
           end
 
           # Job is done and all accumulated errors can be reported.
-          problematic_polymorphic_associations.each do |name|
-            problem!(type: :optional_polymorphic_association, column_or_association: name, model: model.name)
+          problematic_polymorphic_associations.each do |reflection|
+            problem!(type: :optional_polymorphic_association, column: nil, reflection: reflection, model: model.name)
           end
-          problematic_associations.each do |name|
-            problem!(type: :optional_association, column_or_association: name, model: model.name)
+          problematic_associations.each do |reflection|
+            problem!(type: :optional_association, column: nil, reflection: reflection, model: model.name)
           end
           problematic_columns.each do |column|
-            problem!(type: :missing_validator, column_or_association: column.name, model: model.name)
+            problem!(type: :missing_validator, column: column.name, reflection: nil, model: model.name)
           end
         end
       end
