@@ -5,6 +5,8 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
+    end.define_model do
+      belongs_to :company
     end
 
     assert_problems(<<~OUTPUT)
@@ -16,14 +18,29 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: true
+    end.define_model do
+      belongs_to :company
     end
 
     refute_problems
   end
 
-  def test_non_integer_missing_foreign_key_is_reported
+  def test_missing_foreign_key_on_abstract_class_is_not_reported
+    Context.create_table(:companies)
     Context.create_table(:users) do |t|
-      t.string :external_id
+      t.references :company, foreign_key: false
+    end.define_model do
+      self.abstract_class = true
+      belongs_to :company
+    end
+
+    refute_problems
+  end
+
+  def test_missing_foreign_key_without_belongs_to_is_not_reported
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: false
     end
 
     refute_problems
@@ -32,8 +49,13 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   def test_uuid_missing_foreign_key_is_reported
     require_uuid_column_type!
 
+    Context.create_table(:companies) do |t|
+      t.uuid :id, default: "gen_random_uuid()"
+    end
     Context.create_table(:users) do |t|
-      t.uuid :company_id
+      t.references :company, type: :uuid, foreign_key: false
+    end.define_model do
+      belongs_to :company
     end
 
     assert_problems(<<~OUTPUT)
@@ -60,12 +82,14 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
+    end.define_model do
+      belongs_to :company
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_foreign_keys,
-          ignore_tables: ["users"]
+          ignore_models: [Context::User]
       end
     CONFIG
 
@@ -76,11 +100,13 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
+    end.define_model do
+      belongs_to :company
     end
 
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
-        config.global :ignore_tables, ["users"]
+        config.global :ignore_models, [Context::User]
       end
     CONFIG
 
@@ -99,6 +125,17 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
           ignore_columns: ["users.company_id"]
       end
     CONFIG
+
+    refute_problems
+  end
+
+  def test_polymorphic_association_is_not_reported
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
+      t.references :commentable, polymorphic: true, foreign_key: false
+    end.define_model do
+      belongs_to :commentable, polymorphic: true
+    end
 
     refute_problems
   end
