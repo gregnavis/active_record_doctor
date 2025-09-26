@@ -49,7 +49,7 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
   def test_uuid_missing_foreign_key_is_reported
     require_uuid_column_type!
 
-    Context.create_table(:companies) do |t|
+    Context.create_table(:companies, { id: false }) do |t|
       t.uuid :id, default: "gen_random_uuid()"
     end
     Context.create_table(:users) do |t|
