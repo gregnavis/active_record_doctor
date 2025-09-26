@@ -76,28 +76,30 @@ module ActiveRecordDoctor
           # that are validated directly or via an association name.
           model.validators.each do |validator|
             problematic_columns.reject! do |column|
-              # Translate a foreign key or type to the association name.
-              attribute = column_name_to_association_name[column.name] || column.name.to_sym
+              attribute_names = [
+                column.name.to_sym,
+                column_name_to_association_name[column.name]
+              ].compact
 
               case validator
 
               # A regular presence validator is enough if the column name is
               # listed among the attributes it's validating.
               when ActiveRecord::Validations::PresenceValidator
-                validator.attributes.include?(attribute)
+                (validator.attributes & attribute_names).present?
 
               # An inclusion validator ensures the column is not nil if it covers
               # the column and nil is NOT one of the values it allows.
               when ActiveModel::Validations::InclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
-                validator.attributes.include?(attribute) &&
+                (validator.attributes & attribute_names).present? &&
                   (validator_items.is_a?(Proc) || validator_items.exclude?(nil))
 
               # An exclusion validator ensures the column is not nil if it covers
               # the column and excludes nil as an allowed value explicitly.
               when ActiveModel::Validations::ExclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
-                validator.attributes.include?(attribute) &&
+                (validator.attributes & attribute_names).present? &&
                   (validator_items.is_a?(Proc) || validator_items.include?(nil))
 
               end
@@ -109,7 +111,7 @@ module ActiveRecordDoctor
           problematic_associations = []
           problematic_polymorphic_associations = []
 
-          model.reflect_on_all_associations.each do |reflection|
+          model.reflect_on_all_associations(:belongs_to).each do |reflection|
             foreign_key_column = problematic_columns.find { |column| column.name == reflection.foreign_key }
             if reflection.polymorphic?
               # If the foreign key and type are not one of the columns that lack

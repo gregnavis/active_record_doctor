@@ -261,6 +261,43 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_both_foreign_key_column_and_association_validators_are_checked
+    Context.create_table(:registrations) do |t|
+      t.string :email, null: false
+    end.define_model do
+      # email is NOT NULL, but its presence is validated via the following
+      # required association, no complaints about the column should be set.
+      belongs_to :user, primary_key: :email, foreign_key: :email, inverse_of: :registrations, optional: false
+    end
+
+    Context.create_table(:users) do |t|
+      t.string :email, null: false
+    end.define_model do
+      has_many :registrations, primary_key: :email, foreign_key: :email, inverse_of: :user, dependent: nil
+      validates :email, presence: true
+    end
+
+    refute_problems
+  end
+
+  def test_explicit_foreign_key_validator_allows_optional_belongs_to
+    Context.create_table(:registrations) do |t|
+      t.string :email, null: false
+    end.define_model do
+      # The association below is optional, but email has an explicit presence
+      # validator so no errors should be reported.
+      belongs_to :user, primary_key: :email, foreign_key: :email, inverse_of: :registrations, optional: true
+      validates :email, presence: true
+    end
+
+    Context.create_table(:users) do
+    end.define_model do
+      has_many :registrations, primary_key: :email, foreign_key: :email, inverse_of: :user, dependent: nil
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :name, null: false
