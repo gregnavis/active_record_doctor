@@ -1,3 +1,16 @@
+# Version 2.0.1
+
+* Breaking change (which I forgot to include in 2.0.0): `missing_foreign_keys`
+  uses `belongs_to` associations to identify columns used as foreign key,
+  instead of guessing based on the `_id` suffix (contributed by hatsu38).
+* Enhancement: `missing_presence_validation` recognizes explicit presence
+  validators on foreign key columns allowing the corresponding `belongs_to`
+  associations to be marked as optional.
+* Bug fix: `missing_presence_validation` recognizes regexp ignores (contributed
+  by fatkodima).
+* Bug fix: `missing_presence_validation` reports correct association and column
+  names in error messages.
+
 # Version 2.0.0
 
 * Breaking change: drop support for Active Record 6.0 and older.
