@@ -113,7 +113,7 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     refute_problems
   end
 
-  def test_config_ignore_columns
+  def test_config_ignore_associations
     Context.create_table(:companies)
     Context.create_table(:users) do |t|
       t.references :company, foreign_key: false
@@ -122,7 +122,7 @@ class ActiveRecordDoctor::Detectors::MissingForeignKeysTest < Minitest::Test
     config_file(<<-CONFIG)
       ActiveRecordDoctor.configure do |config|
         config.detector :missing_foreign_keys,
-          ignore_columns: ["users.company_id"]
+          ignore_associations: ["User.company"]
       end
     CONFIG
 

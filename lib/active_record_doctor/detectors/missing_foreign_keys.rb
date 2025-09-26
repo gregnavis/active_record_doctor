@@ -11,8 +11,8 @@ module ActiveRecordDoctor
           description: "models whose columns should not be checked",
           global: true
         },
-        ignore_columns: {
-          description: "columns, written as table.column, that should not be checked"
+        ignore_associations: {
+          description: "associations, written as Model.association, that should not be checked"
         }
       }
 
@@ -28,7 +28,7 @@ module ActiveRecordDoctor
           foreign_key_columns = foreign_keys.map { |key| key.options[:column] }
 
           each_association(model, type: :belongs_to) do |association|
-            next if ignored?(association.foreign_key, config(:ignore_columns))
+            next if ignored?("#{model.name}.#{association.name}", config(:ignore_associations))
             next if association.options[:polymorphic]
 
             has_foreign_key = foreign_key_columns.include?(association.foreign_key)

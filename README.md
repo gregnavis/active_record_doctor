@@ -302,16 +302,15 @@ Supported configuration options:
 
 ### Detecting Missing Foreign Key Constraints
 
-If `users.profile_id` references a row in `profiles` then this can be expressed
-at the database level with a foreign key constraint. It _forces_
-`users.profile_id` to point to an existing row in `profiles`. The problem is
-that in many legacy Rails apps, the constraint isn't enforced at the database
-level.
+If `User` defines a `belongs_to` association to `Profile` then the underlying
+column (`users.profile_id` by convention) should be marked as a foreign key in
+the database. If it's not then it's possible to end up in a situation where a
+user is referencing a non-existent profile.
 
 `active_record_doctor` can automatically detect foreign keys that could benefit
 from a foreign key constraint (a future version will generate a migration that
-add the constraint; for now, it's your job). You can obtain the list of foreign
-keys with the following command:
+add the constraint; for now, it's your job). You can obtain the list of missing
+foreign key constraints with the following command:
 
 ```bash
 bundle exec rake active_record_doctor:missing_foreign_keys
@@ -331,9 +330,9 @@ end
 Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether
-- `ignore_tables` - tables whose columns should not be checked.
-- `ignore_columns` - columns, written as table.column, that should not be
-  checked.
+- `ignore_models` - models whose associations should not be checked.
+- `ignore_associations` - associations, written as Model.association, that
+  should not be checked.
 
 ### Detecting Models Referencing Undefined Tables
 
