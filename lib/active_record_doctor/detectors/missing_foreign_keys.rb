@@ -24,7 +24,7 @@ module ActiveRecordDoctor
 
       def detect
         each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
-          foreign_keys = connection.foreign_keys(model.table_name)
+          foreign_keys = foreign_keys(model.table_name)
           foreign_key_columns = foreign_keys.map { |key| key.options[:column] }
 
           each_association(model, type: :belongs_to) do |association|

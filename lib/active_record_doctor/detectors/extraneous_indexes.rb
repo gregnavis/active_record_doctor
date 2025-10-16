@@ -61,7 +61,7 @@ module ActiveRecordDoctor
         log(__method__) do
           each_table(except: config(:ignore_tables)) do |table|
             each_index(table, except: config(:ignore_indexes), multicolumn_only: true) do |index|
-              primary_key = connection.primary_key(table)
+              primary_key = primary_key(table)
               if index.columns == [primary_key] && index.where.nil?
                 problem!(table: table, extraneous_index: index.name, replacement_indexes: nil)
               end
