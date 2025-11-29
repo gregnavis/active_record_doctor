@@ -129,6 +129,18 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_array_attribute_with_limit
+    skip("#{current_adapter} doesn't support array columns") if !postgresql?
+
+    Context.create_table(:users) do |t|
+      t.string :phones, limit: 64, array: true
+    end.define_model
+
+    assert_problems(<<~OUTPUT)
+      the schema limits each users.phones array element to 64 characters - use a custom validation for this attribute or add it to the ignore list
+    OUTPUT
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
