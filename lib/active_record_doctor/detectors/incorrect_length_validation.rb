@@ -18,9 +18,12 @@ module ActiveRecordDoctor
 
       private
 
-      def message(model:, attribute:, table:, database_maximum:, model_maximum:)
+      def message(model:, column:, table:, database_maximum:, model_maximum:)
+        attribute = column.name
         # rubocop:disable Layout/LineLength
-        if database_maximum && model_maximum
+        if database_maximum && column.respond_to?(:array?) && column.array?
+          "the schema limits each #{table}.#{attribute} array element to #{database_maximum} characters - use a custom validation for this attribute or add it to the ignore list"
+        elsif database_maximum && model_maximum
           "the schema limits #{table}.#{attribute} to #{database_maximum} characters but the length validator on #{model}.#{attribute} enforces a maximum of #{model_maximum} characters - set both limits to the same value or remove both"
         elsif database_maximum && model_maximum.nil?
           "the schema limits #{table}.#{attribute} to #{database_maximum} characters but there's no length validator on #{model}.#{attribute} - remove the database limit or add the validator"
@@ -40,7 +43,7 @@ module ActiveRecordDoctor
 
             problem!(
               model: model.name,
-              attribute: column.name,
+              column: column,
               table: model.table_name,
               database_maximum: database_maximum,
               model_maximum: model_maximum
