@@ -184,6 +184,16 @@ ActiveRecordDoctor.configure do
 end
 ```
 
+### Multiple Databases
+
+`active_record_doctor` currently only analyzes models connected to the primary
+database. Models that use a different database connection — whether via
+`establish_connection`, `connects_to`, or by inheriting from an abstract class
+with its own connection — are automatically skipped by all detectors.
+
+This means that if you have gems or parts of your application that connect to a
+secondary database, their models won't be checked and won't cause errors.
+
 ### Indexing Unindexed Foreign Keys
 
 Foreign keys should be indexed unless it's proven ineffective. However, Rails
