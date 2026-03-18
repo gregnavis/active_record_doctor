@@ -8,9 +8,11 @@ require "uri"
 
 require "logger"
 require "active_record"
-require "pg"
-require "mysql2"
-require "sqlite3"
+%w[pg mysql2 sqlite3].each do |adapter_gem|
+  require adapter_gem
+rescue LoadError
+  # Not all adapters need to be installed; only the one matching DATABASE_ADAPTER is required.
+end
 
 adapter = ENV.fetch("DATABASE_ADAPTER")
 
@@ -90,6 +92,8 @@ class SecondaryRecord < ApplicationRecord
 end
 
 SecondaryRecord.establish_connection :secondary
+
+SecondaryContext = TransientRecord.context_for SecondaryRecord
 
 if ActiveRecord.version >= Gem::Version.new("7.1")
   # See https://github.com/rails/rails/pull/46522 for details.
