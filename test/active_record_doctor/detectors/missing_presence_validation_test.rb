@@ -133,6 +133,38 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_column_is_not_reported_if_inclusion_in_is_symbol
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      validates :role, inclusion: { in: :allowed_roles }
+
+      def allowed_roles
+        ["admin", "user"]
+      end
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::User.role - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
+  def test_non_null_column_is_not_reported_if_exclusion_in_is_symbol
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      validates :role, exclusion: { in: :disallowed_roles }
+
+      def disallowed_roles
+        ["banned"]
+      end
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::User.role - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
   def test_non_null_boolean_is_reported_if_nil_not_excluded
     Context.create_table(:users) do |t|
       t.boolean :active, null: false

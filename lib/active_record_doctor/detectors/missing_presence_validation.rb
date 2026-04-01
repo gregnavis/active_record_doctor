@@ -93,6 +93,7 @@ module ActiveRecordDoctor
               when ActiveModel::Validations::InclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
+                  !validator_items.is_a?(Symbol) &&
                   (validator_items.is_a?(Proc) || validator_items.exclude?(nil))
 
               # An exclusion validator ensures the column is not nil if it covers
@@ -100,6 +101,7 @@ module ActiveRecordDoctor
               when ActiveModel::Validations::ExclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
+                  !validator_items.is_a?(Symbol) &&
                   (validator_items.is_a?(Proc) || validator_items.include?(nil))
 
               end
