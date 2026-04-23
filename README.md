@@ -116,6 +116,18 @@ to open an issue or a PR with the fix.
 ACTIVE_RECORD_DOCTOR_DEBUG=1 bundle exec rake active_record_doctor
 ```
 
+### Application Record base class
+
+Rails applications often use `ApplicationRecord` instead of inheriting directly from `ActiveRecord::Base`. Detectors resolve models and connections from a configurable root class:
+
+- **`ACTIVE_RECORD_DOCTOR_BASE_CLASS`** — constant name (e.g. `ApplicationRecord`). Defaults to `ActiveRecord::Base` when unset. Useful when multiple abstract roots exist (for example multi-database setups) so checks use the intended connection and model hierarchy.
+
+Example:
+
+```
+ACTIVE_RECORD_DOCTOR_BASE_CLASS=ApplicationRecord bundle exec rake active_record_doctor
+```
+
 ### Configuration
 
 `active_record_doctor` can be configured to better suit your project's needs.

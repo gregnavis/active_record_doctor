@@ -64,12 +64,16 @@ module ActiveRecordDoctor
       private
 
       def runner
-        @runner ||= ActiveRecordDoctor::Runner.new(config: config, logger: logger)
+        @runner ||= ActiveRecordDoctor::Runner.new(config: config, logger: logger, base_class: base_class)
       end
 
       def config
         @config ||=
           ActiveRecordDoctor.load_config_with_defaults(effective_config_path)
+      end
+
+      def base_class
+        @base_class ||= ENV.fetch("ACTIVE_RECORD_DOCTOR_BASE_CLASS", "ActiveRecord::Base").constantize
       end
 
       def effective_config_path
