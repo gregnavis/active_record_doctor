@@ -133,6 +133,20 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_is_not_reported_if_inclusion_in_is_a_method
+    Context.create_table(:users) do |t|
+      t.string :role, null: false
+    end.define_model do
+      validates :role, inclusion: { in: :allowed_roles }
+
+      def allowed_roles
+        ["admin", "user"]
+      end
+    end
+
+    refute_problems
+  end
+
   def test_non_null_boolean_is_reported_if_nil_not_excluded
     Context.create_table(:users) do |t|
       t.boolean :active, null: false
