@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "activerecord", ACTIVE_RECORD_SPEC
 
+  s.add_development_dependency "minitest", ">= 5.0", "< 6.0"
   s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
   s.add_development_dependency "mysql2", "~> 0.5.6"
   s.add_development_dependency "pg", "~> 1.5.9"
