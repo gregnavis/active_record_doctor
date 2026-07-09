@@ -38,10 +38,11 @@ module ActiveRecordDoctor
         end
       end
 
-      def initialize(config:, logger:, io:)
+      def initialize(config:, logger:, base_class:, io:)
         @problems = []
         @config = config
         @logger = logger
+        @base_class = base_class
         @io = io
       end
 
@@ -110,7 +111,7 @@ module ActiveRecordDoctor
       end
 
       def connection
-        @connection ||= ActiveRecord::Base.connection
+        @connection ||= @base_class.connection
       end
 
       def indexes(table_name)
@@ -156,7 +157,7 @@ module ActiveRecordDoctor
       end
 
       def models
-        ActiveRecord::Base.descendants.sort_by(&:name)
+        @base_class.descendants.sort_by(&:name)
       end
 
       def underscored_name

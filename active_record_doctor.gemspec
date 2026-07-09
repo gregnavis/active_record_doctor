@@ -22,6 +22,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency "activerecord", ACTIVE_RECORD_SPEC
 
+  # minitest-fork_executor 1.x still hooks Minitest.run_one_method (removed in Minitest 6).
+  s.add_development_dependency "minitest", ">= 5.1", "< 6"
   s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
   s.add_development_dependency "mysql2", "~> 0.5.6"
   s.add_development_dependency "pg", "~> 1.5.9"
