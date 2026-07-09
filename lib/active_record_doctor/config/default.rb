@@ -34,6 +34,10 @@ ActiveRecordDoctor.configure do
     ignore_tables: [],
     ignore_columns: []
 
+  detector :mismatched_sequence_type,
+    enabled: true,
+    ignore_tables: []
+
   detector :missing_foreign_keys,
     enabled: true,
     ignore_models: [],
