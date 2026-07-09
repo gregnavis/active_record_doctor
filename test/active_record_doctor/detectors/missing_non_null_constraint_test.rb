@@ -349,4 +349,17 @@ class ActiveRecordDoctor::Detectors::MissingNonNullConstraintTest < Minitest::Te
       add `NOT NULL` to users.updated_on - timestamp columns are set automatically by Active Record and allowing NULL may lead to inconsistencies introduced by bulk operations
     OUTPUT
   end
+
+  def test_models_with_non_primary_connection_are_skipped
+    # Models connected to a secondary database should be silently skipped.
+    # Previously this would crash with e.g. PG::UndefinedTable when the
+    # secondary table didn't exist in the primary database (see #149).
+    SecondaryContext.create_table(:users) do |t|
+      t.string :name, null: true
+    end.define_model do
+      validates :name, presence: true
+    end
+
+    refute_problems
+  end
 end
