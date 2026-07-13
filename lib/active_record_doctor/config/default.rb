@@ -83,4 +83,8 @@ ActiveRecordDoctor.configure do
     enabled: true,
     ignore_tables: [],
     ignore_columns: []
+
+  detector :undefined_model_references,
+    enabled: true,
+    ignore_tables: []
 end
