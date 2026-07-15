@@ -147,14 +147,16 @@ module ActiveRecordDoctor
         end
       end
 
-      def deletable?(model)
+      def deletable?(model, deletable_models = [])
+        return true if deletable_models.include?(model)
+
         !defines_destroy_callbacks?(model) &&
           dependent_models(model).all? do |dependent_model|
             foreign_key = foreign_key(dependent_model.table_name, model.table_name)
 
             foreign_key.nil? ||
               foreign_key.on_delete == :nullify || (
-                foreign_key.on_delete == :cascade && deletable?(dependent_model)
+                foreign_key.on_delete == :cascade && deletable?(dependent_model, deletable_models + [model])
               )
           end
       end
