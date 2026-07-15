@@ -23,7 +23,7 @@ module ActiveRecordDoctor
         return if ActiveRecordDoctor::Utils.sqlite?
 
         each_table(except: config(:ignore_tables)) do |table|
-          column = primary_key(table)
+          column = column(table, primary_key(table))
           next if column.nil?
           next if !integer?(column) || bigint?(column)
 

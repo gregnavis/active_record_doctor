@@ -180,7 +180,7 @@ module ActiveRecordDoctor
       end
 
       def foreign_key(from_table, to_table)
-        connection.foreign_keys(from_table).find do |foreign_key|
+        foreign_keys(from_table).find do |foreign_key|
           foreign_key.to_table == to_table
         end
       end
