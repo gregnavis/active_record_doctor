@@ -45,6 +45,14 @@ Style/EmptyElse:
 Style/NegatedIf:
   Enabled: false
 
+# Breaks the linear flow.
+Style/Next:
+  Enabled: false
+
+# Breaks the linear flow.
+Style/GuardClause:
+  Enabled: false
+
 # We allow the old key-value syntax (key => value) in Rakefiles as that's how
 # we define task dependencies.
 Style/HashSyntax:
