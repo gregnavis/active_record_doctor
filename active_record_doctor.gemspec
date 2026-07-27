@@ -22,12 +22,14 @@ Gem::Specification.new do |s|
 
   s.add_dependency "activerecord", ACTIVE_RECORD_SPEC
 
+  s.add_development_dependency "minitest", ">= 5.0", "< 6.0"
   s.add_development_dependency "minitest-fork_executor", "~> 1.0.2"
   s.add_development_dependency "mysql2", "~> 0.5.6"
   s.add_development_dependency "pg", "~> 1.5.9"
   s.add_development_dependency "railties", ACTIVE_RECORD_SPEC
   s.add_development_dependency "rake", "~> 13.2.1"
+  s.add_development_dependency "rdoc"
   s.add_development_dependency "rubocop", "~> 1.68.0"
-  s.add_development_dependency "sqlite3", "~> 2.2.0"
+  s.add_development_dependency "sqlite3", ">= 1.4", "< 3.0"
   s.add_development_dependency "transient_record", "~> 3.0.0"
 end
