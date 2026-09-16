@@ -55,10 +55,12 @@ module ActiveRecordDoctor
       def maximum_allowed_by_length_validation(model, column)
         length_validator = model.validators.find do |validator|
           validator.kind == :length &&
-            validator.options.include?(:maximum) &&
-            validator.attributes.include?(column)
+            validator.attributes.include?(column) &&
+            (validator.options.include?(:maximum) || validator.options[:is].is_a?(Integer))
         end
-        length_validator ? length_validator.options[:maximum] : nil
+        return nil if length_validator.nil?
+
+        length_validator.options[:maximum] || length_validator.options[:is]
       end
 
       def covered_by_inclusion_validation?(model, column, limit)

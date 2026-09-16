@@ -39,6 +39,42 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     OUTPUT
   end
 
+  def test_is_validation_and_limit_equal_is_ok
+    Context.create_table(:users) do |t|
+      t.string :code, limit: 64
+    end.define_model do
+      validates :code, length: { is: 64 }
+    end
+
+    refute_problems
+  end
+
+  def test_is_validation_and_limit_different_is_error
+    Context.create_table(:users) do |t|
+      t.string :code, limit: 64
+    end.define_model do
+      validates :code, length: { is: 32 }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the schema limits users.code to 64 characters but the length validator on Context::User.code enforces a maximum of 32 characters - set both limits to the same value or remove both
+    OUTPUT
+  end
+
+  def test_is_validation_and_no_limit_is_error
+    require_arbitrary_long_text_columns!
+
+    Context.create_table(:users) do |t|
+      t.string :code
+    end.define_model do
+      validates :code, length: { is: 32 }
+    end
+
+    assert_problems(<<~OUTPUT)
+      the length validator on Context::User.code enforces a maximum of 32 characters but there's no schema limit on users.code - remove the validator or the schema length limit
+    OUTPUT
+  end
+
   def test_no_validation_and_limit_is_error
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
