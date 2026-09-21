@@ -10,6 +10,8 @@
   by fatkodima).
 * Bug fix: `missing_presence_validation` reports correct association and column
   names in error messages.
+* Bug fix: `incorrect_length_validation` recognizes `length: { is: N }` as
+  enforcing a maximum of N.
 
 # Version 2.0.0
 
