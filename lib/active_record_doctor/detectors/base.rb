@@ -290,7 +290,8 @@ module ActiveRecordDoctor
         end
       end
 
-      def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to], has_scope: nil, through: nil)
+      def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to, :has_and_belongs_to_many],
+                           has_scope: nil, through: nil)
         type = Array(type)
 
         log("Iterating over associations on #{model.name}") do
