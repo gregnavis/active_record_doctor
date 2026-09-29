@@ -1,3 +1,8 @@
+# Next version
+
+* New detector: `unused_tables` detects tables that are not referenced by any
+  model (contributed by Jason Robinaugh).
+
 # Version 2.0.1
 
 * Breaking change (which I forgot to include in 2.0.0): `missing_foreign_keys`

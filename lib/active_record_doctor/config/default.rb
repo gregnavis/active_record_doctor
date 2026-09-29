@@ -83,4 +83,8 @@ ActiveRecordDoctor.configure do
     enabled: true,
     ignore_tables: [],
     ignore_columns: []
+
+  detector :unused_tables,
+    enabled: false,
+    ignore_tables: []
 end
