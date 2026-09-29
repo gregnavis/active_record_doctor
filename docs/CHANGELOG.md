@@ -1,7 +1,11 @@
-# Next version
+# Version 2.1.0
 
 * New detector: `unused_tables` detects tables that are not referenced by any
   model (contributed by Jason Robinaugh).
+* Enhancement: `incorrect_length_validation` shows a more descriptive error
+  message for array columns (contributed by fatkodima).
+* Enhancement: `missing_presence_validation` support symbols in :in (contributed
+  by Sai Asish Y).
 
 # Version 2.0.1
 
