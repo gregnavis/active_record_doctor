@@ -52,4 +52,12 @@ class ActiveRecordDoctor::Detectors::UndefinedTableReferencesTest < Minitest::Te
 
     refute_problems
   end
+
+  def test_models_with_non_primary_connection_are_skipped
+    # Models connected to a secondary database should be silently skipped,
+    # not reported as referencing undefined tables (see #149).
+    SecondaryContext.create_table(:users).define_model
+
+    refute_problems
+  end
 end

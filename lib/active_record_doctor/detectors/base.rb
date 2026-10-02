@@ -156,7 +156,10 @@ module ActiveRecordDoctor
       end
 
       def models
-        ActiveRecord::Base.descendants.sort_by(&:name)
+        base_pool = ActiveRecord::Base.connection_pool
+        ActiveRecord::Base.descendants
+          .reject { |model| model.connection_pool != base_pool }
+          .sort_by(&:name)
       end
 
       def underscored_name
