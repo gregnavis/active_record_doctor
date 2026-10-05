@@ -34,7 +34,6 @@ module ActiveRecordDoctor
 
       def detect
         table_models = models.select(&:table_exists?).group_by(&:table_name)
-        views = connection.views
 
         table_models.each do |table, models|
           next if ignored?(table, config(:ignore_tables))
@@ -44,7 +43,7 @@ module ActiveRecordDoctor
             model.abstract_class? || sti_base_model?(model)
           end
 
-          connection.columns(table).each do |column|
+          columns(table).each do |column|
             next if ignored?("#{table}.#{column.name}", config(:ignore_columns))
             next if !column.null
             next if !concrete_models.all? { |model| non_null_needed?(model, column) }

@@ -64,7 +64,11 @@ module ActiveRecordDoctor
       private
 
       def runner
-        @runner ||= ActiveRecordDoctor::Runner.new(config: config, logger: logger)
+        @runner ||= begin
+          connection = ActiveRecord::Base.connection
+          schema_inspector = ActiveRecordDoctor::CachingSchemaInspector.new(connection)
+          ActiveRecordDoctor::Runner.new(config: config, logger: logger, schema_inspector: schema_inspector)
+        end
       end
 
       def config
