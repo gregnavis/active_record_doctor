@@ -17,7 +17,8 @@ can detect:
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 * tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
-* unused tables - [`active_record_doctor:unused_tables](#detecting-unused-tables)
+* unused tables - [`active_record_doctor:unused_tables`](#detecting-unused-tables)
+* PostgreSQL timestamps without time zone - [`active_record_doctor:postgres_timestamps_without_time_zone`](#detecting-postgresql-timestamps-without-time-zone)
 
 It can also:
 
@@ -688,6 +689,53 @@ Supported configuration options:
 
 - `enabled` - set to `true` to enable the detector
 - `ignore_tables` - tables that are not represented by models but cannot yet be dropped from the database (i.e. because the deployed version of the code may still be reading it)
+
+### Detecting PostgreSQL Timestamps without Time Zone
+
+PostgreSQL supports two timestamp types: `TIMESTAMP WITHOUT TIME ZONE` and
+`TIMESTAMP WITH TIME ZONE` (aliased as `TIMESTAMPTZ`). PostgreSQL suggests
+using the `WITH TIME ZONE` variant as it stores a single moment in time;
+`WITHOUT TIME ZONE` stores date and time values, but these **cannot** be
+converted to a point in time without knowing the time zone. Rails uses
+`TIMESTAMP WITHOUT TIME ZONE` for backwards-compatibility reasons, but [the
+documentation explains how to change the default](https://guides.rubyonrails.org/active_record_postgresql.html#timestamps).
+
+This detector checks if any timestamp columns in your PostgreSQL
+database are using `TIMESTAMP WITHOUT TIME ZONE` instead of the recommended
+`TIMESTAMP WITH TIME ZONE`. Running the command below will list all such columns:
+
+```
+bundle exec rake active_record_doctor:postgres_timestamps_without_time_zone
+```
+
+The output of the command looks like this:
+
+```
+users.confirmed_at should be using the recommended TIMESTAMP WITH TIME ZONE type
+```
+
+Additionally, the detector checks whether the default datetime type is set to
+the right value on the PostgreSQL adapter. If not, it'll report an error like
+this:
+
+```
+PostgreSQL default datetime type should be set to :timestamptz, not :timestamp
+```
+
+The default type can be set by adding the following to `config/application.rb`:
+
+```ruby
+ActiveSupport.on_load(:active_record_postgresqladapter) do
+  self.datetime_type = :timestamptz
+end
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector
+- `ignore_tables` - tables whose timestamp columns should not be checked
+- `ignore_columns` - columns, written as table.column, that should not be checked
+- `ignore_datetime_type` - allow other default datetime types
 
 ## Ruby and Rails Compatibility Policy
 

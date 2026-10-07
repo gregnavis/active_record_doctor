@@ -24,6 +24,12 @@ ActiveRecordDoctor.configure do
     ignore_models: [],
     ignore_attributes: []
 
+  detector :postgres_timestamps_without_time_zone,
+    enabled: true,
+    ignore_tables: [],
+    ignore_columns: [],
+    ignore_datetime_type: false
+
   detector :incorrect_dependent_option,
     enabled: true,
     ignore_models: [],
