@@ -94,7 +94,7 @@ module ActiveRecordDoctor
 
             case association.options[:dependent]
             when :destroy_async
-              foreign_key = foreign_key(association.klass, model.table_name)
+              foreign_key = foreign_key(association.klass, model)
               if foreign_key
                 problem!(
                   model: model.name,
@@ -136,8 +136,9 @@ module ActiveRecordDoctor
         end
       end
 
+      # Polymorphic owners can live in any database.
       def models_having_association_with_options(as:)
-        models.select do |model|
+        named_models.select do |model|
           associations = model.reflect_on_all_associations(:has_one) +
                          model.reflect_on_all_associations(:has_many)
 
@@ -150,7 +151,7 @@ module ActiveRecordDoctor
       def deletable?(model)
         !defines_destroy_callbacks?(model) &&
           dependent_models(model).all? do |dependent_model|
-            foreign_key = foreign_key(dependent_model, model.table_name)
+            foreign_key = foreign_key(dependent_model, model)
 
             foreign_key.nil? ||
               foreign_key.on_delete == :nullify || (
@@ -179,9 +180,13 @@ module ActiveRecordDoctor
         reflections.map(&:klass)
       end
 
-      def foreign_key(from_model, to_table)
+      def foreign_key(from_model, to_model)
+        # Foreign keys can't reference a table in another database, even one
+        # with the same name.
+        return nil if from_model.connection_pool.db_config != to_model.connection_pool.db_config
+
         from_model.connection.foreign_keys(from_model.table_name).find do |foreign_key|
-          foreign_key.to_table == to_table
+          foreign_key.to_table == to_model.table_name
         end
       end
     end

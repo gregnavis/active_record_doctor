@@ -178,6 +178,47 @@ class ActiveRecordDoctor::MultipleDatabasesTest < Minitest::Test
     assert(success, output)
   end
 
+  def test_polymorphic_owners_are_found_across_databases
+    SecondaryContext.create_table(:images) do |t|
+      t.bigint :imageable_id, null: false
+      t.string :imageable_type, null: true
+    end.define_model do
+      belongs_to :imageable, polymorphic: true, dependent: :delete
+    end
+    Context.create_table(:users).define_model do
+      has_one :image, as: :imageable, class_name: "#{SecondaryContext.name}::Image"
+
+      before_destroy :log
+
+      def log
+      end
+    end
+
+    success, output = run_named_detector(:incorrect_dependent_option)
+
+    refute(success)
+    assert_equal(<<~OUTPUT, output)
+      use `dependent: :destroy` or similar on #{SecondaryContext.name}::Image.imageable - associated model Context::User has callbacks that are currently skipped
+    OUTPUT
+  end
+
+  def test_foreign_keys_on_a_same_named_table_in_another_database_are_ignored
+    Context.create_table(:companies)
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: true
+    end.define_model
+    SecondaryContext.create_table(:companies).define_model do
+      # We need an ActiveJob job defined to appease the ActiveRecord
+      class_attribute :destroy_association_async_job, default: Class.new
+
+      has_many :users, class_name: "Context::User", dependent: :destroy_async
+    end
+
+    success, output = run_named_detector(:incorrect_dependent_option)
+
+    assert(success, output)
+  end
+
   def test_has_one_across_databases_without_unique_index
     Context.create_table(:users).define_model do
       has_one :account, class_name: "#{SecondaryContext.name}::Account"
