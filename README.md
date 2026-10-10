@@ -198,6 +198,19 @@ through different abstract classes are checked together.
 as Rails doesn't create foreign keys across databases. Other detectors look up
 an associated model's indexes and foreign keys through that model's connection.
 
+To skip a database, for example one owned by a gem, add it to the
+`ignore_databases` setting, which every detector accepts, globally or per
+detector. Entries are matched against the database's name in
+`config/database.yml` and against its database name or file path. The latter is
+needed for connections established from a hash, as Active Record names them all
+`primary`:
+
+```ruby
+ActiveRecordDoctor.configure do
+  global :ignore_databases, ["analytics", /some_gem\.sqlite3\z/]
+end
+```
+
 Known limitations:
 
 * Databases no loaded model is connected to aren't checked.

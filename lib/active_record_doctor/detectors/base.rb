@@ -7,6 +7,10 @@ module ActiveRecordDoctor
       BASE_CONFIG = {
         enabled: {
           description: "set to false to disable the detector altogether"
+        },
+        ignore_databases: {
+          description: "databases, by config/database.yml name or database name or path, that should not be checked",
+          global: true
         }
       }.freeze
 
@@ -116,11 +120,20 @@ module ActiveRecordDoctor
       # Runs the block once per database, with #connection and #models scoped
       # to that database. Databases without any loaded model aren't checked.
       def each_database(&block)
-        databases.each do |connection, models|
-          @connection = connection
+        databases.each do |db_config, models|
+          label = "#{db_config.name} (#{db_config.database})"
+
+          # Connections established from a hash are all named "primary", so the
+          # database name or path is matched too.
+          if [db_config.name, db_config.database].compact.any? { |name| ignored?(name, config(:ignore_databases)) }
+            log("Database #{label} - ignored via the configuration; skipping")
+            next
+          end
+
+          @connection = models.empty? ? ActiveRecord::Base.connection : models.first.connection
           @models = models
 
-          log("Database #{connection.pool.db_config.name}", &block)
+          log("Database #{label}", &block)
         end
       ensure
         @connection = nil
@@ -139,9 +152,9 @@ module ActiveRecordDoctor
           end
         models_by_database.delete(nil)
 
-        return [[ActiveRecord::Base.connection, []]] if models_by_database.empty?
+        return [[ActiveRecord::Base.connection_pool.db_config, []]] if models_by_database.empty?
 
-        models_by_database.map { |_db_config, models| [models.first.connection, models] }
+        models_by_database.to_a
       end
 
       def indexes(table_name)

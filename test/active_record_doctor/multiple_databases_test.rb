@@ -277,6 +277,94 @@ class ActiveRecordDoctor::MultipleDatabasesTest < Minitest::Test
     assert(success, output)
   end
 
+  def test_config_ignore_databases
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, ["secondary"]
+      end
+    CONFIG
+
+    Context.create_table(:users, id: false) do |t|
+      t.string :name
+    end
+    SecondaryContext.create_table(:widgets, id: false) do |t|
+      t.string :name
+    end.define_model
+
+    success, output = run_named_detector(:table_without_primary_key)
+
+    refute(success)
+    assert_equal(<<~OUTPUT, output)
+      add a primary key to users
+    OUTPUT
+  end
+
+  def test_config_ignore_databases_by_database_name
+    skip("both SQLite test databases are named :memory:") if sqlite?
+
+    secondary = SecondaryRecord.connection_pool.db_config.database
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, [#{secondary.inspect}]
+      end
+    CONFIG
+
+    Context.create_table(:users, id: false) do |t|
+      t.string :name
+    end
+    SecondaryContext.create_table(:widgets, id: false) do |t|
+      t.string :name
+    end.define_model
+
+    success, output = run_named_detector(:table_without_primary_key)
+
+    refute(success)
+    assert_equal(<<~OUTPUT, output)
+      add a primary key to users
+    OUTPUT
+  end
+
+  def test_detector_ignore_databases_by_pattern
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :table_without_primary_key, ignore_databases: [/secondary/]
+      end
+    CONFIG
+
+    Context.create_table(:users, id: false) do |t|
+      t.string :name
+    end
+    SecondaryContext.create_table(:widgets, id: false) do |t|
+      t.string :name
+    end.define_model
+
+    success, output = run_named_detector(:table_without_primary_key)
+
+    refute(success)
+    assert_equal(<<~OUTPUT, output)
+      add a primary key to users
+    OUTPUT
+  end
+
+  def test_ignored_databases_are_not_connected_to
+    config_file(<<-CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.global :ignore_databases, [/nonexistent/]
+      end
+    CONFIG
+
+    Context.define_model(:GemRecord) do
+      self.abstract_class = true
+
+      establish_connection(adapter: "sqlite3", database: "/nonexistent/gem.sqlite3")
+    end
+
+    success, output = run_named_detector(:table_without_primary_key)
+
+    assert(success, output)
+    assert_empty(Context::GemRecord.connection_pool.connections)
+  end
+
   private
 
   def run_named_detector(name)

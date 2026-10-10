@@ -6,6 +6,9 @@
   crashed on or misreported models connected elsewhere. Databases that weren't
   checked before are checked after upgrading, so new problems may be reported
   (contributed by Tobias Maier).
+* New feature: `ignore_databases` skips databases by their name in
+  `config/database.yml` or by their database name or file path (contributed by
+  Tobias Maier).
 
 # Version 2.1.0
 

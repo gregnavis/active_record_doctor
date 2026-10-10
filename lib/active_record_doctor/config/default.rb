@@ -11,75 +11,90 @@ ActiveRecordDoctor.configure do
 
   detector :extraneous_indexes,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_indexes: []
 
   detector :incorrect_boolean_presence_validation,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_attributes: []
 
   detector :incorrect_length_validation,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_attributes: []
 
   detector :postgres_timestamps_without_time_zone,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_columns: [],
     ignore_datetime_type: false
 
   detector :incorrect_dependent_option,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_associations: []
 
   detector :mismatched_foreign_key_type,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_columns: []
 
   detector :missing_foreign_keys,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_associations: []
 
   detector :missing_non_null_constraint,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_columns: []
 
   detector :missing_presence_validation,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_attributes: [],
     ignore_columns_with_default: false
 
   detector :missing_unique_indexes,
     enabled: true,
+    ignore_databases: [],
     ignore_models: [],
     ignore_columns: [],
     ignore_join_tables: []
 
   detector :short_primary_key_type,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: []
 
   detector :table_without_primary_key,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: []
 
   detector :table_without_timestamps,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: []
 
   detector :undefined_table_references,
     enabled: true,
+    ignore_databases: [],
     ignore_models: []
 
   detector :unindexed_deleted_at,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_columns: [],
     ignore_indexes: [],
@@ -87,10 +102,12 @@ ActiveRecordDoctor.configure do
 
   detector :unindexed_foreign_keys,
     enabled: true,
+    ignore_databases: [],
     ignore_tables: [],
     ignore_columns: []
 
   detector :unused_tables,
     enabled: false,
+    ignore_databases: [],
     ignore_tables: []
 end
