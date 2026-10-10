@@ -37,13 +37,17 @@ module ActiveRecordDoctor
       def detect
         return unless Utils.postgresql?(connection)
 
+        # The default datetime type is shared by all PostgreSQL databases, so
+        # it's reported once.
         if !config(:ignore_datetime_type) &&
+           !@datetime_type_checked &&
            ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.datetime_type != :timestamptz
           problem!(
             problem: :default_datetime_type,
             type: ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.datetime_type
           )
         end
+        @datetime_type_checked = true
 
         each_table(except: config(:ignore_tables)) do |table|
           each_column(table, except: config(:ignore_columns)) do |column|

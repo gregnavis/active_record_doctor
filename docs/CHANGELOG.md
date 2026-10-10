@@ -1,3 +1,12 @@
+# Next version
+
+* New feature: support for multiple databases. Each detector checks every
+  database a loaded model is connected to, using that database's connection and
+  models, instead of checking every model against the primary database, which
+  crashed on or misreported models connected elsewhere. Databases that weren't
+  checked before are checked after upgrading, so new problems may be reported
+  (contributed by Tobias Maier).
+
 # Version 2.1.0
 
 * New detector: `unused_tables` detects tables that are not referenced by any

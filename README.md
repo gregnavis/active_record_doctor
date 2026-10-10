@@ -186,6 +186,29 @@ ActiveRecordDoctor.configure do
 end
 ```
 
+### Multiple Databases
+
+Applications using [multiple databases](https://guides.rubyonrails.org/active_record_multiple_databases.html)
+are supported out of the box. Each detector checks every database that at least
+one loaded model is connected to, using that database's connection and only the
+models connected to it. Models connected to the same `config/database.yml` entry
+through different abstract classes are checked together.
+
+`missing_foreign_keys` skips associations between models in different databases,
+as Rails doesn't create foreign keys across databases. Other detectors look up
+an associated model's indexes and foreign keys through that model's connection.
+
+Known limitations:
+
+* Databases no loaded model is connected to aren't checked.
+* A database reached through two `config/database.yml` entries (e.g. a Solid
+  Queue `queue` entry reusing the primary database), or through connections
+  established from a hash or URL, is checked once per entry or connection. Its
+  problems are reported more than once, and `unused_tables` reports the tables
+  used only by models of the other entry.
+* The `add_indexes` generator writes every migration to `db/migrate`, the
+  primary database's migrations directory.
+
 ### Indexing Unindexed Foreign Keys
 
 Foreign keys should be indexed unless it's proven ineffective. However, Rails

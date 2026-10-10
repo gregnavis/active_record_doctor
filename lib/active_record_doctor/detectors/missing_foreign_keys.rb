@@ -27,7 +27,7 @@ module ActiveRecordDoctor
           foreign_keys = connection.foreign_keys(model.table_name)
           foreign_key_columns = foreign_keys.map { |key| key.options[:column] }
 
-          each_association(model, type: :belongs_to) do |association|
+          each_association(model, type: :belongs_to, same_database: true) do |association|
             next if ignored?("#{model.name}.#{association.name}", config(:ignore_associations))
             next if association.options[:polymorphic]
 

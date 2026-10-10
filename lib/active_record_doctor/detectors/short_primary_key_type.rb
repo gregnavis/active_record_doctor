@@ -20,7 +20,7 @@ module ActiveRecordDoctor
       end
 
       def detect
-        return if ActiveRecordDoctor::Utils.sqlite?
+        return if ActiveRecordDoctor::Utils.sqlite?(connection)
 
         each_table(except: config(:ignore_tables)) do |table|
           column = primary_key(table)

@@ -94,7 +94,7 @@ module ActiveRecordDoctor
 
             case association.options[:dependent]
             when :destroy_async
-              foreign_key = foreign_key(association.klass.table_name, model.table_name)
+              foreign_key = foreign_key(association.klass, model.table_name)
               if foreign_key
                 problem!(
                   model: model.name,
@@ -150,7 +150,7 @@ module ActiveRecordDoctor
       def deletable?(model)
         !defines_destroy_callbacks?(model) &&
           dependent_models(model).all? do |dependent_model|
-            foreign_key = foreign_key(dependent_model.table_name, model.table_name)
+            foreign_key = foreign_key(dependent_model, model.table_name)
 
             foreign_key.nil? ||
               foreign_key.on_delete == :nullify || (
@@ -179,8 +179,8 @@ module ActiveRecordDoctor
         reflections.map(&:klass)
       end
 
-      def foreign_key(from_table, to_table)
-        connection.foreign_keys(from_table).find do |foreign_key|
+      def foreign_key(from_model, to_table)
+        from_model.connection.foreign_keys(from_model.table_name).find do |foreign_key|
           foreign_key.to_table == to_table
         end
       end

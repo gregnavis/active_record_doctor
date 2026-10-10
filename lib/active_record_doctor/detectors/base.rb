@@ -50,7 +50,7 @@ module ActiveRecordDoctor
           @problems = []
 
           if config(:enabled)
-            detect
+            each_database { detect }
           else
             log("disabled; skipping")
           end
@@ -113,6 +113,37 @@ module ActiveRecordDoctor
         @connection ||= ActiveRecord::Base.connection
       end
 
+      # Runs the block once per database, with #connection and #models scoped
+      # to that database. Databases without any loaded model aren't checked.
+      def each_database(&block)
+        databases.each do |connection, models|
+          @connection = connection
+          @models = models
+
+          log("Database #{connection.pool.db_config.name}", &block)
+        end
+      ensure
+        @connection = nil
+        @models = nil
+      end
+
+      # Models grouped by database. Abstract classes connecting to the same
+      # database get separate pools, so the grouping uses the database config.
+      def databases
+        models_by_database =
+          named_models.group_by do |model|
+            model.connection_pool.db_config
+          rescue ActiveRecord::ConnectionNotEstablished => e
+            warning("#{model.name} - no connection pool found (#{e.message}); skipping")
+            nil
+          end
+        models_by_database.delete(nil)
+
+        return [[ActiveRecord::Base.connection, []]] if models_by_database.empty?
+
+        models_by_database.map { |_db_config, models| [models.first.connection, models] }
+      end
+
       def indexes(table_name)
         connection.indexes(table_name)
       end
@@ -156,7 +187,11 @@ module ActiveRecordDoctor
       end
 
       def models
-        ActiveRecord::Base.descendants.sort_by(&:name)
+        @models ||= named_models
+      end
+
+      def named_models
+        ActiveRecord::Base.descendants.reject { |model| model.name.nil? }.sort_by(&:name)
       end
 
       def underscored_name
@@ -290,7 +325,8 @@ module ActiveRecordDoctor
         end
       end
 
-      def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to], has_scope: nil, through: nil)
+      def each_association(model, except: [], type: [:has_many, :has_one, :belongs_to], has_scope: nil, through: nil,
+                           same_database: false)
         type = Array(type)
 
         log("Iterating over associations on #{model.name}") do
@@ -304,6 +340,8 @@ module ActiveRecordDoctor
             case
             when ignored?("#{model.name}.#{association.name}", except)
               log("#{model.name}.#{association.name} - ignored via the configuration; skipping")
+            when same_database && other_database?(model, association)
+              log("#{model.name}.#{association.name} - associated model uses another database; skipping")
             when through && !association.is_a?(ActiveRecord::Reflection::ThroughReflection)
               log("#{model.name}.#{association.name} - is not a through association; skipping")
             when through == false && association.is_a?(ActiveRecord::Reflection::ThroughReflection)
@@ -319,6 +357,23 @@ module ActiveRecordDoctor
             end
           end
         end
+      end
+
+      def other_database?(model, association)
+        return false if association.polymorphic?
+
+        klass =
+          begin
+            association.klass
+          rescue NoMethodError
+            raise
+          rescue NameError, ArgumentError
+            nil
+          end
+        # Unresolvable associations behave as if this check didn't exist.
+        return false if klass.nil?
+
+        klass.connection_pool.db_config != model.connection_pool.db_config
       end
 
       def ignored?(name, patterns)
