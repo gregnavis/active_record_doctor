@@ -19,7 +19,9 @@ Detectors must meet the following criteria:
    configuration options (more on that below.)
 5. Define a private method named `detect`, the entry point to the detector, that
    will attempt to detect errors the detector should detect and report them by
-   calling `#problem!`.
+   calling `#problem!`. `detect` may run once per database, so it should use
+   `connection` and `models` instead of `ActiveRecord::Base.connection`, and
+   initialize per-run state inside `detect`.
 6. Define a private method named `message` that will be called for each
    invocation of `problem!` (with the same arguments) and that should return the
    user-facing description of the detected problem.

@@ -19,11 +19,6 @@ module ActiveRecordDoctor
         }
       }
 
-      def initialize(**)
-        super
-        @reported_join_tables = []
-      end
-
       private
 
       # rubocop:disable Layout/LineLength
@@ -43,6 +38,8 @@ module ActiveRecordDoctor
       # rubocop:enable Layout/LineLength
 
       def detect
+        @reported_join_tables = []
+
         validations_without_indexes
         has_ones_without_indexes
         has_and_belongs_to_many_without_indexes
@@ -108,9 +105,10 @@ module ActiveRecordDoctor
               end
             next if ignored?("#{has_one.klass.name}(#{columns.join(',')})", ignore_columns)
 
+            # The associated model may be connected to another database.
             table_name = has_one.klass.table_name
-            next if unique_index?(table_name, columns)
-            next if Array(connection.primary_key(table_name)) == columns
+            next if unique_index?(table_name, columns, connection: has_one.klass.connection)
+            next if Array(has_one.klass.connection.primary_key(table_name)) == columns
 
             problem!(model: model, table: table_name, columns: columns, problem: :has_ones)
           end
@@ -150,9 +148,9 @@ module ActiveRecordDoctor
         end.map(&:to_s)
       end
 
-      def unique_index?(table_name, columns, scope = nil)
+      def unique_index?(table_name, columns, scope = nil, connection: self.connection)
         columns = (Array(scope) + columns).map(&:to_s)
-        indexes(table_name).any? do |index|
+        connection.indexes(table_name).any? do |index|
           index_columns =
             # For expression indexes, Active Record returns columns as string.
             if index.columns.is_a?(String)
