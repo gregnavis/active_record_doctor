@@ -213,6 +213,16 @@ class ActiveRecordDoctor::Detectors::IncorrectDependentOptionTest < Minitest::Te
     refute_problems
   end
 
+  def test_cascade_and_same_class_association
+    Context.create_table(:users) do |t|
+      t.references :parent, foreign_key: { to_table: :users, on_delete: :cascade }
+    end.define_model do
+      has_many :children, class_name: "Context::User", foreign_key: :parent_id
+    end
+
+    refute_problems
+  end
+
   def test_no_dependent_suggests_nothing
     Context.create_table(:companies) do
     end.define_model do
