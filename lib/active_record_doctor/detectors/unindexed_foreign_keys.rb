@@ -30,7 +30,7 @@ module ActiveRecordDoctor
             next unless looks_like_foreign_key?(column) || foreign_key?(table, column)
             next if indexed?(table, column)
             next if indexed_as_polymorphic?(table, column)
-            next if connection.primary_key(table) == column.name
+            next if primary_key(table) == column.name
 
             type_column_name = type_column_name(column)
 
@@ -47,25 +47,25 @@ module ActiveRecordDoctor
       end
 
       def foreign_key?(table, column)
-        connection.foreign_keys(table).any? do |foreign_key|
+        foreign_keys(table).any? do |foreign_key|
           foreign_key.column == column.name
         end
       end
 
       def indexed?(table, column)
-        connection.indexes(table).any? do |index|
+        indexes(table).any? do |index|
           index.columns.first == column.name
         end
       end
 
       def indexed_as_polymorphic?(table, column)
-        connection.indexes(table).any? do |index|
+        indexes(table).any? do |index|
           index.columns[0, 2] == [type_column_name(column), column.name]
         end
       end
 
       def column_exists?(table, column_name)
-        connection.columns(table).any? { |column| column.name == column_name }
+        columns(table).any? { |column| column.name == column_name }
       end
 
       def type_column_name(column)

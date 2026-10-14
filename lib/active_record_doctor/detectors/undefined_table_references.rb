@@ -21,7 +21,7 @@ module ActiveRecordDoctor
 
       def detect
         each_model(except: config(:ignore_models), abstract: false) do |model|
-          next if connection.data_source_exists?(model.table_name)
+          next if data_source_exists?(model.table_name)
 
           problem!(model: model.name, table: model.table_name)
         end

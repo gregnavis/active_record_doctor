@@ -5,9 +5,10 @@ module ActiveRecordDoctor # :nodoc:
   # and an output device for use by detectors.
   class Runner
     # io is injected via constructor parameters to facilitate testing.
-    def initialize(config:, logger:, io: $stdout)
+    def initialize(config:, logger:, schema_inspector:, io: $stdout)
       @config = config
       @logger = logger
+      @schema_inspector = schema_inspector
       @io = io
     end
 
@@ -16,7 +17,8 @@ module ActiveRecordDoctor # :nodoc:
         ActiveRecordDoctor.detectors.fetch(name).run(
           config: config,
           logger: logger,
-          io: io
+          io: io,
+          schema_inspector: schema_inspector
         )
       end
     end
@@ -41,6 +43,6 @@ module ActiveRecordDoctor # :nodoc:
 
     private
 
-    attr_reader :config, :logger, :io
+    attr_reader :config, :logger, :io, :schema_inspector
   end
 end
