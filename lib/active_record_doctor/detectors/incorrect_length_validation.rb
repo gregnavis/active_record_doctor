@@ -41,6 +41,9 @@ module ActiveRecordDoctor
             next if model_maximum == database_maximum
             next if database_maximum && covered_by_inclusion_validation?(model, column.name.to_sym, database_maximum)
 
+            # Add violation only to the root model of STI.
+            next if (model_maximum.nil? || column.limit.nil?) && sti_subclass?(model)
+
             problem!(
               model: model.name,
               column: column,
@@ -73,6 +76,11 @@ module ActiveRecordDoctor
 
         values = inclusion_validator.options[:in] || inclusion_validator.options[:within]
         values.is_a?(Array) && values.all? { |value| value.is_a?(String) && value.size <= limit }
+      end
+
+      def sti_subclass?(model)
+        model.columns_hash.include?(model.inheritance_column.to_s) &&
+          model.base_class != model
       end
     end
   end
