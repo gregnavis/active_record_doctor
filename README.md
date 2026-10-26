@@ -139,6 +139,7 @@ ActiveRecordDoctor.configure do
     "schema_migrations",
     "active_storage_blobs",
     "active_storage_attachments",
+    "active_storage_variant_records",
     "action_text_rich_texts",
 
     # Add project-specific tables here.

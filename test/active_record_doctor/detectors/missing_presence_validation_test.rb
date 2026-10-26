@@ -169,6 +169,28 @@ class ActiveRecordDoctor::Detectors::MissingPresenceValidationTest < Minitest::T
     refute_problems
   end
 
+  def test_non_null_enum_is_not_reported_if_enum_validated
+    Context.create_table(:users) do |t|
+      t.string :condition, null: false
+    end.define_model do
+      enum :condition, { good: "good", worn: "worn" }, validate: true
+    end
+
+    refute_problems
+  end
+
+  def test_non_null_enum_is_reported_if_enum_validates_with_allow_nil
+    Context.create_table(:users) do |t|
+      t.string :condition, null: false
+    end.define_model do
+      enum :condition, { good: "good", worn: "worn" }, validate: { allow_nil: true }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a `presence` validator to Context::User.condition - it's NOT NULL but lacks a validator
+    OUTPUT
+  end
+
   def test_non_null_is_reported_if_nil_included
     Context.create_table(:users) do |t|
       t.string :role, null: false

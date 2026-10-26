@@ -1,5 +1,10 @@
 # Version 2.1.0
 
+* Bug fix: `missing_presence_validation` no longer ignores `allow_nil: true` and
+  `allow_blank: true` on inclusion and exclusion validators, fixing false negatives
+  for validated enums declared with `validate: { allow_nil: true }`.
+* Enhancement: `active_storage_variant_records` is included in the default
+  `ignore_tables` list in the README example config.
 * New detector: `unused_tables` detects tables that are not referenced by any
   model (contributed by Jason Robinaugh).
 * Enhancement: `incorrect_length_validation` shows a more descriptive error

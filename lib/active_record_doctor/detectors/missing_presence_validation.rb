@@ -77,6 +77,7 @@ module ActiveRecordDoctor
           model.validators.each do |validator|
             problematic_columns.reject! do |column|
               attribute_names = [
+                column.name,
                 column.name.to_sym,
                 column_name_to_association_name[column.name]
               ].compact
@@ -93,14 +94,16 @@ module ActiveRecordDoctor
               when ActiveModel::Validations::InclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
-                  (dynamic_validator_items?(validator_items) || validator_items.exclude?(nil))
+                  (dynamic_validator_items?(validator_items) || validator_items.exclude?(nil)) &&
+                  !validator.options[:allow_nil] && !validator.options[:allow_blank]
 
               # An exclusion validator ensures the column is not nil if it covers
               # the column and excludes nil as an allowed value explicitly.
               when ActiveModel::Validations::ExclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
-                  (dynamic_validator_items?(validator_items) || validator_items.include?(nil))
+                  (dynamic_validator_items?(validator_items) || validator_items.include?(nil)) &&
+                  !validator.options[:allow_nil] && !validator.options[:allow_blank]
 
               end
             end
