@@ -1,3 +1,8 @@
+# Unreleased
+
+* New detector: `mismatched_sequence_type` reports primary key sequences whose
+  type is smaller than the primary key column type.
+
 # Version 2.1.0
 
 * New detector: `unused_tables` detects tables that are not referenced by any

@@ -15,6 +15,7 @@ can detect:
 * incorrect values of `dependent` on associations - [`active_record_doctor:incorrect_dependent_option`](#detecting-incorrect-dependent-option-on-associations)
 * primary keys having short integer types - [`active_record_doctor:short_primary_key_type`](#detecting-primary-keys-having-short-integer-types)
 * mismatched foreign key types - [`active_record_doctor:mismatched_foreign_key_type`](#detecting-mismatched-foreign-key-types)
+* mismatched primary key sequence types - [`active_record_doctor:mismatched_sequence_type`](#detecting-mismatched-sequence-types)
 * tables without primary keys - [`active_record_doctor:table_without_primary_key`](#detecting-tables-without-primary-keys)
 * tables without timestamps - [`active_record_doctor:table_without_timestamps`](#detecting-tables-without-timestamps)
 * unused tables - [`active_record_doctor:unused_tables`](#detecting-unused-tables)
@@ -620,6 +621,30 @@ Supported configuration options:
 - `ignore_tables` - tables whose foreign keys should not be checked.
 - `ignore_columns` - foreign keys, written as table.column, that should not be
   checked.
+
+### Detecting Mismatched Sequence Types
+
+PostgreSQL sequences should have an integer type at least as large as the
+primary key column they provide IDs for. Otherwise, the sequence may run out
+of values before the column does.
+
+Run the following command to find primary key sequences that are too small:
+
+```
+bundle exec rake active_record_doctor:mismatched_sequence_type
+```
+
+For example, the detector reports when a `bigint` primary key uses an
+`integer` sequence:
+
+```
+the sequence public.companies_id_seq has type integer but companies.id is bigint - change the sequence type to bigint
+```
+
+Supported configuration options:
+
+- `enabled` - set to `false` to disable the detector altogether
+- `ignore_tables` - tables whose primary key sequences should not be checked.
 
 ### Detecting Tables Without Primary Keys
 
