@@ -3,6 +3,15 @@
 * New detector: `mismatched_sequence_type` reports primary key sequences whose
   type is smaller than the primary key column type.
 
+# Version 2.1.0
+
+* New detector: `unused_tables` detects tables that are not referenced by any
+  model (contributed by Jason Robinaugh).
+* Enhancement: `incorrect_length_validation` shows a more descriptive error
+  message for array columns (contributed by fatkodima).
+* Enhancement: `missing_presence_validation` support symbols in :in (contributed
+  by Sai Asish Y).
+
 # Version 2.0.1
 
 * Breaking change (which I forgot to include in 2.0.0): `missing_foreign_keys`

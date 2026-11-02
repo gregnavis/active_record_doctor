@@ -93,14 +93,14 @@ module ActiveRecordDoctor
               when ActiveModel::Validations::InclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
-                  (validator_items.is_a?(Proc) || validator_items.exclude?(nil))
+                  (dynamic_validator_items?(validator_items) || validator_items.exclude?(nil))
 
               # An exclusion validator ensures the column is not nil if it covers
               # the column and excludes nil as an allowed value explicitly.
               when ActiveModel::Validations::ExclusionValidator
                 validator_items = inclusion_or_exclusion_validator_items(validator)
                 (validator.attributes & attribute_names).present? &&
-                  (validator_items.is_a?(Proc) || validator_items.include?(nil))
+                  (dynamic_validator_items?(validator_items) || validator_items.include?(nil))
 
               end
             end
@@ -170,6 +170,12 @@ module ActiveRecordDoctor
       # Normalizes the list of values passed to an inclusion or exclusion validator.
       def inclusion_or_exclusion_validator_items(validator)
         validator.options[:in] || validator.options[:within] || []
+      end
+
+      # The allowed values can be a Proc or a method name (Symbol) that's resolved
+      # at validation time, so the set of values isn't known statically.
+      def dynamic_validator_items?(validator_items)
+        validator_items.is_a?(Proc) || validator_items.is_a?(Symbol)
       end
 
       # Determines whether the given column is used as a counter cache column by
