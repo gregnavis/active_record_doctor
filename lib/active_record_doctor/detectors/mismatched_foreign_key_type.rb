@@ -13,6 +13,9 @@ module ActiveRecordDoctor
         },
         ignore_columns: {
           description: "foreign keys, written as table.column, that should not be checked"
+        },
+        ignore_columns_with_larger_type: {
+          description: "ignore integer foreign keys wider than the referenced integer column"
         }
       }
 
@@ -35,6 +38,9 @@ module ActiveRecordDoctor
             to_column = column(to_table, foreign_key.primary_key)
 
             next if from_column.sql_type == to_column.sql_type
+            next if config(:ignore_columns_with_larger_type) &&
+                    from_column.type == :integer && to_column.type == :integer &&
+                    from_column.limit && to_column.limit && from_column.limit > to_column.limit
 
             problem!(
               from_table: table,

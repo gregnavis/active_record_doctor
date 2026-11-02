@@ -120,4 +120,75 @@ class ActiveRecordDoctor::Detectors::MismatchedForeignKeyTypeTest < Minitest::Te
 
     refute_problems
   end
+
+  def test_larger_integer_foreign_key_is_ignored_when_configured
+    skip unless postgresql?
+
+    Context.create_table(:companies, id: :integer)
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: true, type: :bigint
+    end
+
+    ignore_columns_with_larger_type
+
+    refute_problems
+  end
+
+  def test_foreign_key_wider_than_smallint_is_ignored_when_configured
+    skip unless postgresql?
+
+    Context.create_table(:companies, id: :smallint)
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: true, type: :integer
+    end
+
+    ignore_columns_with_larger_type
+
+    refute_problems
+  end
+
+  def test_smaller_integer_foreign_key_is_still_reported_when_configured
+    skip unless postgresql?
+
+    Context.create_table(:companies, id: :bigint)
+    Context.create_table(:users) do |t|
+      t.references :company, foreign_key: true, type: :integer
+    end
+
+    ignore_columns_with_larger_type
+
+    assert_problems(<<~OUTPUT)
+      users.company_id is a foreign key of type integer and references companies.id of type bigint - foreign keys should be of the same type as the referenced column
+    OUTPUT
+  end
+
+  def test_non_integer_mismatch_is_still_reported_when_configured
+    skip unless postgresql?
+
+    Context.create_table(:companies) do |t|
+      t.string :code
+      t.index :code, unique: true
+    end
+    Context.create_table(:users) do |t|
+      t.text :code
+      t.foreign_key :companies, column: :code, primary_key: :code
+    end
+
+    ignore_columns_with_larger_type
+
+    assert_problems(<<~OUTPUT)
+      users.code is a foreign key of type text and references companies.code of type character varying - foreign keys should be of the same type as the referenced column
+    OUTPUT
+  end
+
+  private
+
+  def ignore_columns_with_larger_type
+    config_file(<<~CONFIG)
+      ActiveRecordDoctor.configure do |config|
+        config.detector :mismatched_foreign_key_type,
+          ignore_columns_with_larger_type: true
+      end
+    CONFIG
+  end
 end

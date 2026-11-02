@@ -620,6 +620,8 @@ Supported configuration options:
 - `ignore_tables` - tables whose foreign keys should not be checked.
 - `ignore_columns` - foreign keys, written as table.column, that should not be
   checked.
+- `ignore_columns_with_larger_type` - set to `true` to allow integer foreign
+  keys wider than the referenced integer column. Defaults to `false`.
 
 ### Detecting Tables Without Primary Keys
 

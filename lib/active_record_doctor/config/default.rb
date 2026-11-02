@@ -38,7 +38,8 @@ ActiveRecordDoctor.configure do
   detector :mismatched_foreign_key_type,
     enabled: true,
     ignore_tables: [],
-    ignore_columns: []
+    ignore_columns: [],
+    ignore_columns_with_larger_type: false
 
   detector :missing_foreign_keys,
     enabled: true,
