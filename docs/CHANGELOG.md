@@ -1,3 +1,8 @@
+# Unreleased
+
+* Enhancement: `mismatched_foreign_key_type` supports
+  `ignore_columns_with_larger_type` to allow wider integer foreign keys.
+
 # Version 2.1.0
 
 * New detector: `unused_tables` detects tables that are not referenced by any
