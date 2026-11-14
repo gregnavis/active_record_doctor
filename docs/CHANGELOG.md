@@ -1,3 +1,9 @@
+# Next version
+
+* Enhancement: `missing_unique_indexes` accepts partial unique indexes whose
+  condition only excludes `NULL`s in the indexed columns, e.g.
+  `WHERE email IS NOT NULL`.
+
 # Version 2.1.0
 
 * New detector: `unused_tables` detects tables that are not referenced by any
