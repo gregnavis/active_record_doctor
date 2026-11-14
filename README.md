@@ -390,6 +390,11 @@ add a unique index on users(email) - validating uniqueness in the model without 
 
 This means that you should create a unique index on `users.email`.
 
+A partial unique index counts only if its condition is limited to `IS NOT NULL`
+on the indexed columns (e.g. `WHERE email IS NOT NULL`): a unique index lets
+any number of rows hold `NULL`, so such an index enforces the same uniqueness as
+a full one.
+
 Supported configuration options:
 
 - `enabled` - set to `false` to disable the detector altogether

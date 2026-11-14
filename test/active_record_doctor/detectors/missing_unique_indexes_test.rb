@@ -90,6 +90,66 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     OUTPUT
   end
 
+  def test_present_partial_unique_index_excluding_nulls
+    require_partial_indexes!
+
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.index :email, unique: true, where: "email IS NOT NULL"
+    end.define_model do
+      validates :email, uniqueness: true, allow_nil: true
+    end
+
+    refute_problems
+  end
+
+  def test_present_partial_unique_index_excluding_nulls_with_scope
+    require_partial_indexes!
+
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.integer :organization_id
+      t.index [:organization_id, :email], unique: true,
+        where: "organization_id IS NOT NULL AND email IS NOT NULL"
+    end.define_model do
+      validates :email, uniqueness: { scope: :organization_id }
+    end
+
+    refute_problems
+  end
+
+  def test_partial_unique_index_excluding_nulls_of_another_column
+    require_partial_indexes!
+
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.datetime :deleted_at
+      t.index :email, unique: true, where: "deleted_at IS NOT NULL"
+    end.define_model do
+      validates :email, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in Context::User without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_partial_unique_index_excluding_nulls_and_more
+    require_partial_indexes!
+
+    Context.create_table(:users) do |t|
+      t.string :email
+      t.boolean :active
+      t.index :email, unique: true, where: "email IS NOT NULL AND active"
+    end.define_model do
+      validates :email, uniqueness: true
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in Context::User without an index can lead to duplicates
+    OUTPUT
+  end
+
   def test_unique_index_with_extra_columns_with_scope
     Context.create_table(:users) do |t|
       t.string :email

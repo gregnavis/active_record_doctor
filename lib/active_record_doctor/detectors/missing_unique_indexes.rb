@@ -162,8 +162,18 @@ module ActiveRecordDoctor
             end
 
           index.unique &&
-            index.where.nil? &&
+            (index.where.nil? || only_excludes_nulls?(index.where, index_columns)) &&
             (index_columns - columns).empty?
+        end
+      end
+
+      # A unique index already lets any number of rows hold NULL, so a partial
+      # one limited to rows where its own columns are NOT NULL enforces exactly
+      # the same uniqueness as the full index.
+      def only_excludes_nulls?(where, index_columns)
+        where.sub(/\A\((.*)\)\z/m, '\1').split(/\s+AND\s+/i).all? do |condition|
+          match = condition.strip.match(/\A\(?\s*["`]?(\w+)["`]?\s+IS\s+NOT\s+NULL\s*\)?\z/i)
+          match && index_columns.include?(match[1])
         end
       end
 
