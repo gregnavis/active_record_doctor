@@ -65,30 +65,32 @@ module ActiveRecordDoctor
             # put true literally.
             case_sensitive = validator.options.fetch(:case_sensitive, true)
 
-            # Avoid a false positive if expression indexes are unsupported.
-            next if !case_sensitive && !connection.supports_expression_index?
-
             validator.attributes.each do |attribute|
               columns = resolve_attributes(model, scope + [attribute])
 
               next if ignore_columns.include?("#{model.name}(#{columns.join(',')})")
 
-              # citext is case-insensitive by default, so it doesn't have to be
-              # lowered.
-              if !case_sensitive && model.columns_hash[columns[-1]].type != :citext
+              expression_index_required =
+                !case_sensitive && case_insensitive_expression_index_required?(model, columns[-1])
+
+              # Avoid a false positive if the case-insensitive comparison needs
+              # an expression the database cannot index.
+              next if expression_index_required && !connection.supports_expression_index?
+
+              if expression_index_required
                 columns[-1] = "lower(#{columns[-1]})"
               end
               next if unique_index?(model.table_name, columns)
 
-              if case_sensitive
-                problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
-              else
+              if expression_index_required
                 problem!(
                   model: model,
                   table: model.table_name,
                   columns: columns,
                   problem: :case_insensitive_validations
                 )
+              else
+                problem!(model: model, table: model.table_name, columns: columns, problem: :validations)
               end
             end
           end
@@ -119,6 +121,11 @@ module ActiveRecordDoctor
 
       def conditional_validator?(validator)
         (validator.options.keys & [:if, :unless, :conditions]).present?
+      end
+
+      def case_insensitive_expression_index_required?(model, column_name)
+        column = model.columns_hash.fetch(column_name)
+        connection.send(:can_perform_case_insensitive_comparison_for?, column)
       end
 
       def has_and_belongs_to_many_without_indexes # rubocop:disable Naming/PredicateName
