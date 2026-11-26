@@ -36,10 +36,13 @@ module ActiveRecordDoctor
       def detect
         each_model(except: config(:ignore_models), existing_tables_only: true) do |model|
           each_attribute(model, except: config(:ignore_attributes), type: [:string, :text]) do |column|
-            model_maximum = maximum_allowed_by_length_validation(model, column.name.to_sym)
+            column_name = column.name.to_sym
+            next if encrypted_attribute?(model, column_name)
+
+            model_maximum = maximum_allowed_by_length_validation(model, column_name)
             database_maximum = column.limit
             next if model_maximum == database_maximum
-            next if database_maximum && covered_by_inclusion_validation?(model, column.name.to_sym, database_maximum)
+            next if database_maximum && covered_by_inclusion_validation?(model, column_name, database_maximum)
 
             problem!(
               model: model.name,
@@ -50,6 +53,10 @@ module ActiveRecordDoctor
             )
           end
         end
+      end
+
+      def encrypted_attribute?(model, column)
+        model.encrypted_attributes&.include?(column)
       end
 
       def maximum_allowed_by_length_validation(model, column)

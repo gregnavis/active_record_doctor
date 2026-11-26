@@ -141,6 +141,27 @@ class ActiveRecordDoctor::Detectors::IncorrectLengthValidationTest < Minitest::T
     OUTPUT
   end
 
+  def test_validation_and_no_limit_on_encrypted_column_is_ok
+    Context.create_table(:users) do |t|
+      t.string :password
+    end.define_model do
+      encrypts :password
+      validates :password, length: { maximum: 32 }
+    end
+
+    refute_problems
+  end
+
+  def test_no_validation_and_limit_on_encrypted_column_is_ok
+    Context.create_table(:users) do |t|
+      t.string :password, limit: 512
+    end.define_model do
+      encrypts :password
+    end
+
+    refute_problems
+  end
+
   def test_config_ignore_models
     Context.create_table(:users) do |t|
       t.string :email, limit: 64
