@@ -214,6 +214,48 @@ class ActiveRecordDoctor::Detectors::MissingUniqueIndexesTest < Minitest::Test
     OUTPUT
   end
 
+  def test_case_insensitive_unique_index_exists_with_case_insensitive_collation
+    skip if !mysql?
+
+    Context.create_table(:users) do |t|
+      t.string :email, collation: "utf8mb4_unicode_ci"
+      t.index :email, unique: true
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    refute_problems
+  end
+
+  def test_case_insensitive_unique_index_missing_with_case_insensitive_collation
+    skip if !mysql?
+
+    Context.create_table(:users) do |t|
+      t.string :email, collation: "utf8mb4_unicode_ci"
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique index on users(email) - validating uniqueness in Context::User without an index can lead to duplicates
+    OUTPUT
+  end
+
+  def test_case_insensitive_unique_index_with_case_sensitive_collation
+    skip if !mysql?
+
+    Context.create_table(:users) do |t|
+      t.string :email, collation: "utf8mb4_bin"
+      t.index :email, unique: true
+    end.define_model do
+      validates :email, uniqueness: { case_sensitive: false }
+    end
+
+    assert_problems(<<~OUTPUT)
+      add a unique expression index on users(lower(email)) - validating case-insensitive uniqueness in Context::User without an expression index can lead to duplicates (a regular unique index is not enough)
+    OUTPUT
+  end
+
   def test_case_insensitive_non_unique_lower_index_exists
     require_expression_indexes!
 
